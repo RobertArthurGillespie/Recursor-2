@@ -1,0 +1,32 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @* In this specific component, 'context' is the fixed name for AuthenticationState *@
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <div class="auth-alert text-center m-5">
+                            <h3>Access Denied</h3>
+                            <p>You must be logged in to use the NCAT AI Assistant.</p>
+                            <a href="auth-login" class="btn btn-primary">Log In</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center m-5">
+                            <p role="alert">You do not have permission to view this resource.</p>
+                        </div>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

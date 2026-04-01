@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    
+    <PackageReference Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
+    
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+    
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.25.0" />
+    
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+    
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="OpenAI" Version="2.3.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\NCATAIBlazorFrontendTest.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\vendor\choices.js\public\types\src\" />
+    <Folder Include="wwwroot\vendor\choices.js\src\" />
+    <Folder Include="wwwroot\vendor\datatables.net-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-buttons-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-buttons\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-fixedcolumns-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-fixedcolumns\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-fixedheader-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-fixedheader\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-keytable-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-keytable\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-responsive-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-responsive\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-select-bs5\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net-select\types\" />
+    <Folder Include="wwwroot\vendor\datatables.net\types\" />
+    <Folder Include="wwwroot\vendor\daterangepicker\example\" />
+    <Folder Include="wwwroot\vendor\flatpickr\types\" />
+    <Folder Include="wwwroot\vendor\flatpickr\utils\" />
+    <Folder Include="wwwroot\vendor\gmaps\docs\" />
+    <Folder Include="wwwroot\vendor\gmaps\examples\" />
+    <Folder Include="wwwroot\vendor\gmaps\test\" />
+    <Folder Include="wwwroot\vendor\gridjs\src\" />
+    <Folder Include="wwwroot\vendor\jquery-datatables-checkboxes\types\" />
+    <Folder Include="wwwroot\vendor\jquery.counterup\demo\" />
+    <Folder Include="wwwroot\vendor\waypoints\src\" />
+    <Folder Include="wwwroot\vendor\waypoints\test\" />
+  </ItemGroup>
+
+  
+
+</Project>

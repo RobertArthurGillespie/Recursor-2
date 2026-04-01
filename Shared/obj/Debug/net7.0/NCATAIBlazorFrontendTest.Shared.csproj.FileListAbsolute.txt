@@ -1,0 +1,12 @@
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\bin\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.deps.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\bin\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\bin\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.pdb
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.AssemblyInfoInputs.cache
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.AssemblyInfo.cs
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.csproj.CoreCompileInputs.cache
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\refint\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.pdb
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\ref\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Debug\net7.0\NCATAIBlazorFrontendTest.Shared.csproj.AssemblyReference.cache

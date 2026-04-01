@@ -1,0 +1,17 @@
+@page "/pages-starter"
+ 
+@inject IJSRuntime JsRuntime;
+
+<Topbar title="Starter Page"/>
+
+
+ @code {
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+			await JsRuntime.InvokeVoidAsync("loadApps");
+		}
+	}
+}

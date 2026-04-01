@@ -1,0 +1,11 @@
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Client\obj\Debug\net7.0\staticwebassets.build.json

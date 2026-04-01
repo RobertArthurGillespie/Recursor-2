@@ -1,0 +1,48 @@
+[
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.ChatController",
+    "Method": "Chat",
+    "RelativePath": "Chat",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "NCATAIBlazorFrontendTest.Server.Controllers.ChatRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.ChatController",
+    "Method": "TestEndpoint",
+    "RelativePath": "Chat/TestEndpoint",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.WeatherForecastController",
+    "Method": "Get",
+    "RelativePath": "WeatherForecast",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[NCATAIBlazorFrontendTest.Shared.WeatherForecast, NCATAIBlazorFrontendTest.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]

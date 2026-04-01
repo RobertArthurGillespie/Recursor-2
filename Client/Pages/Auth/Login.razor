@@ -1,0 +1,139 @@
+@page "/auth-login"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using NCATAIBlazorFrontendTest.Client
+@using NCATAIBlazorFrontendTest.Shared
+
+@inject IJSRuntime JsRuntime
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject LocalStorageService LocalStorage
+
+@layout BaseLayout
+
+<div class="auth-bg d-flex min-vh-100">
+    <div class="row g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
+        <div class="col-xxl-3 col-lg-5 col-md-6">
+            <a href="/" class="auth-brand d-flex justify-content-center mb-2">
+                <img src="/images/logo-dark.png" alt="dark logo" height="26" class="logo-dark">
+                <img src="/images/logo.png" alt="logo light" height="26" class="logo-light">
+            </a>
+
+            <p class="fw-semibold mb-4 text-center text-muted fs-15">Admin Panel Design by Coderthemes</p>
+
+            <div class="card overflow-hidden text-center p-xxl-4 p-3 mb-0">
+                <h4 class="fw-semibold mb-3 fs-18">Log in to your account</h4>
+
+                @* Use EditForm for Blazor data binding and validation *@
+                <EditForm Model="@loginRequest" OnValidSubmit="HandleLogin" class="text-start mb-3">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <InputText id="email" class="form-control" @bind-Value="loginRequest.Username" placeholder="Enter your email" />
+                        <ValidationMessage For="@(() => loginRequest.Username)" class="text-danger fs-13" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <InputText type="password" id="password" class="form-control" @bind-Value="loginRequest.Password" placeholder="Enter your password" />
+                        <ValidationMessage For="@(() => loginRequest.Password)" class="text-danger fs-13" />
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="checkbox-signin">
+                            <label class="form-check-label" for="checkbox-signin">Remember me</label>
+                        </div>
+                        <a href="auth-recoverpw" class="text-muted border-bottom border-dashed text-decoration-none fs-13">Forget Password</a>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger py-2 fs-13" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary fw-semibold" type="submit" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            }
+                            Login
+                        </button>
+                    </div>
+                </EditForm>
+
+                <p class="text-muted fs-14 mb-0">
+                    Don't have an account?
+                    <a href="auth-register" class="fw-semibold text-danger ms-1">Sign Up !</a>
+                </p>
+            </div>
+            <p class="mt-4 text-center mb-0">
+                <span class="fw-bold text-decoration-underline text-uppercase text-reset fs-12">NCAT</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    public string FullYear = DateTime.Now.Year.ToString();
+    private LoginRequest loginRequest = new();
+    private string? errorMessage;
+    private bool isSubmitting = false;
+
+    private async Task HandleLogin()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            // Call your AuthController's login endpoint
+            var response = await Http.PostAsJsonAsync("api/auth/login", loginRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+                if (result != null && !string.IsNullOrEmpty(result.Token))
+                {
+                    // 1. Save token using your native JS LocalStorage service
+                    await LocalStorage.SetItemAsync("authToken", result.Token);
+
+                    // 2. Notify the state provider (cast it to your custom type)
+                    var customAuthStateProvider = (CustomAuthStateProvider)AuthStateProvider;
+                    customAuthStateProvider.NotifyUserAuthentication(result.Token);
+
+                    // 3. Redirect to chat
+                    NavManager.NavigateTo("/pages-aichat");
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid login credentials.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred during login. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+            await JsRuntime.InvokeVoidAsync("loadApps");
+        }
+    }
+}

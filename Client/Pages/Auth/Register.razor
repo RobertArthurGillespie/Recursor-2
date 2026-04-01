@@ -1,0 +1,125 @@
+@page "/auth-register"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using NCATAIBlazorFrontendTest.Shared
+
+@inject IJSRuntime JsRuntime
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+@layout BaseLayout
+
+<div class="auth-bg d-flex min-vh-100">
+    <div class="row g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
+        <div class="col-xxl-3 col-lg-5 col-md-6">
+            <a href="/" class="auth-brand d-flex justify-content-center mb-2">
+                <img src="/images/logo-dark.png" alt="dark logo" height="26" class="logo-dark">
+                <img src="/images/logo.png" alt="logo light" height="26" class="logo-light">
+            </a>
+
+            <p class="fw-semibold mb-4 text-center text-muted fs-15">Admin Panel Design by Coderthemes</p>
+
+            <div class="card overflow-hidden text-center p-xxl-4 p-3 mb-0">
+                <h4 class="fw-semibold mb-3 fs-18">Sign Up to your account</h4>
+
+                <EditForm Model="@registerRequest" OnValidSubmit="HandleRegister" class="text-start mb-3">
+                    <DataAnnotationsValidator />
+
+                    @* Mapping 'Your Name' - purely for UI in this model *@
+                    <div class="mb-3">
+                        <label class="form-label" for="display-name">Your Name</label>
+                        <input type="text" id="display-name" class="form-control" placeholder="Enter your name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <InputText id="email" class="form-control" @bind-Value="registerRequest.Username" placeholder="Enter your email" />
+                        <ValidationMessage For="@(() => registerRequest.Username)" class="text-danger fs-13" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <InputText type="password" id="password" class="form-control" @bind-Value="registerRequest.Password" placeholder="Enter your password" />
+                        <ValidationMessage For="@(() => registerRequest.Password)" class="text-danger fs-13" />
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="checkbox-signin" required>
+                            <label class="form-check-label" for="checkbox-signin">I agree to all <a href="#!" class="link-dark text-decoration-underline">Terms & Condition</a> </label>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger py-2 fs-13" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary fw-semibold" type="submit" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            }
+                            Sign Up
+                        </button>
+                    </div>
+                </EditForm>
+
+                <p class="text-muted fs-14 mb-0">Already have an account? <a href="auth-login" class="fw-semibold text-danger ms-1">Login !</a></p>
+            </div>
+            <p class="mt-4 text-center mb-0">
+                @FullYear © Adminto - By <span class="fw-bold text-decoration-underline text-uppercase text-reset fs-12">Coderthemes</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    public string FullYear = DateTime.Now.Year.ToString();
+    private RegisterRequest registerRequest = new() { Role = "User" }; // Default role for new signups
+    private string? errorMessage;
+    private bool isSubmitting = false;
+
+    private async Task HandleRegister()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            // Call the Register endpoint in AuthController
+            var response = await Http.PostAsJsonAsync("api/auth/register", registerRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Redirect to login page upon successful account creation
+                NavManager.NavigateTo("auth-login");
+            }
+            else
+            {
+                var errorData = await response.Content.ReadAsStringAsync();
+                errorMessage = "Registration failed. The username may already exist.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred. Please check your connection.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+            await JsRuntime.InvokeVoidAsync("loadApps");
+        }
+    }
+}

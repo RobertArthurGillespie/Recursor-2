@@ -1,0 +1,146 @@
+# Recursor Engine ADX Plan
+
+## Scope
+
+Azure Data Explorer is the telemetry persistence/query layer for the first Recursor slice.
+
+Use ADX for:
+- raw events
+- feature windows
+- behavior profiles
+- hypothesis sets
+- adaptation decisions
+
+Do not use Blob, Cosmos DB, or SQL for those data classes in this slice unless explicitly requested.
+
+## ADX tables
+
+### RawEvents
+Columns:
+- SessionId: string
+- UserId: string
+- SimId: string
+- SimVersion: string
+- ScenarioId: string
+- BatchId: string
+- BatchSequence: int
+- EventId: string
+- SequenceNumber: long
+- TimestampUtc: datetime
+- EventType: string
+- Category: string
+- Actor: string
+- Target: string
+- Metrics: dynamic
+- Context: dynamic
+- Payload: dynamic
+
+### FeatureWindows
+Columns:
+- SessionId: string
+- WindowIndex: int
+- WindowType: string
+- WindowStartSequence: long
+- WindowEndSequence: long
+- WindowStartUtc: datetime
+- WindowEndUtc: datetime
+- SimId: string
+- ScenarioId: string
+- FeatureExtractorVersion: string
+- Features: dynamic
+
+### BehaviorProfiles
+Columns:
+- SessionId: string
+- WindowIndex: int
+- SourceFeatureWindowId: string
+- InterpreterVersion: string
+- DimensionScores: dynamic
+- CreatedAtUtc: datetime
+
+### HypothesisSets
+Columns:
+- SessionId: string
+- WindowIndex: int
+- SourceBehaviorProfileId: string
+- InterpreterMode: string
+- InterpreterVersion: string
+- Hypotheses: dynamic
+- CreatedAtUtc: datetime
+
+### AdaptationDecisions
+Columns:
+- SessionId: string
+- DecisionIndex: int
+- SourceHypothesisSetId: string
+- PolicyVersion: string
+- InterventionFamilies: dynamic
+- ParameterChanges: dynamic
+- ReasoningSummary: dynamic
+- ExpiresAfterWindow: int
+- CreatedAtUtc: datetime
+
+## ADX-facing services
+
+Implement these interfaces/services:
+
+- `IAdxIngestionService`
+- `AdxIngestionService`
+- `IAdxRecursorQueryService`
+- `AdxRecursorQueryService`
+
+## ADX row DTOs
+
+Implement row DTOs for ADX persistence/query mapping:
+- `RawEventRow`
+- `FeatureWindowRow`
+- `BehaviorProfileRow`
+- `HypothesisSetRow`
+- `AdaptationDecisionRow`
+
+## Mapper
+
+Implement:
+- `AdxRowMapper`
+
+Responsibilities:
+- map domain models to ADX row DTOs
+- serialize flexible nested content to JSON strings
+- keep mapping logic out of controllers
+
+## .NET integration approach
+
+Use the Kusto .NET libraries for ingest/query.
+Keep that logic behind service interfaces.
+Do not let controllers talk directly to ADX clients.
+
+## Program.cs expectations
+
+Register:
+- Kusto query provider
+- Kusto queued ingest client
+- `IAdxIngestionService`
+- `IAdxRecursorQueryService`
+
+Keep:
+- `ISessionRepository` as in-memory singleton
+- `ISimCatalogRepository` as in-memory singleton
+
+## Implementation constraints
+
+- Keep the existing controller/service orchestration shape.
+- Replace blob-oriented persistence with ADX ingestion for telemetry records.
+- Keep feature extraction and interpretation in .NET.
+- Keep adaptation policy in .NET.
+- Do not redesign the pipeline around ADX-native transforms for the first slice.
+- Do not move feature extraction into KQL for the first slice.
+
+## Debugging expectations
+
+Helpful debug endpoints may query latest records for a session from:
+- FeatureWindows
+- BehaviorProfiles
+- HypothesisSets
+- AdaptationDecisions
+
+These are acceptable for development.

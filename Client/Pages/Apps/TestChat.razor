@@ -1,0 +1,91 @@
+﻿@page "/testchat"
+
+@using NCATAIBlazorFrontendTest.Shared
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<div class="chat-container">
+    <div class="messages-display">
+        @foreach (var message in Messages)
+        {
+            <div class="message @(message.IsUser ? "user-message" : "ai-message")">
+                <strong>@(message.IsUser ? "You" : "AI"):</strong> @message.Text
+                @if (!string.IsNullOrEmpty(message.Context))
+                {
+                    <div class="context-toggle" @onclick="() => message.ShowContext = !message.ShowContext">
+                        Context @(message.ShowContext ? "▲" : "▼")
+                    </div>
+                    @if (message.ShowContext)
+                    {
+                        <pre class="context-display">@message.Context</pre>
+                    }
+                }
+            </div>
+        }
+        <div @ref="messagesEnd"></div> @* Scroll to bottom helper *@
+    </div>
+
+    <div class="message-input">
+        <input type="text" @bind-value="CurrentMessage" @onkeydown="HandleKeyDown" placeholder="Ask a question..." />
+        <button @onclick="SendMessage" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <span class="spinner"></span>
+            }
+            else
+            {
+                <span>Send</span>
+            }
+        </button>
+    </div>
+</div>
+
+@code {
+    private string CurrentMessage { get; set; }
+    private List<CustomChatMessage> Messages { get; set; } = new();
+    private bool IsLoading { get; set; } = false;
+    private ElementReference messagesEnd;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesEnd);
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(CurrentMessage) || IsLoading)
+            return;
+
+        IsLoading = true;
+        Messages.Add(new CustomChatMessage { Text = CurrentMessage, IsUser = true });
+        string userMessage = CurrentMessage;
+        CurrentMessage = string.Empty; // Clear input immediately
+
+        try
+        {
+            var request = new ChatRequest { Message = userMessage };
+            var response = await Http.PostAsJsonAsync("Chat/AIChat", request); // Matches API endpoint
+            response.EnsureSuccessStatusCode();
+
+            var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>();
+            Messages.Add(new CustomChatMessage { Text = chatResponse.Answer, IsUser = false, Context = chatResponse.Context });
+        }
+        catch (HttpRequestException ex)
+        {
+            Messages.Add(new CustomChatMessage { Text = $"Error: {ex.Message}", IsUser = false });
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+
+}

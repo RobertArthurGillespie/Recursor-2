@@ -1,0 +1,121 @@
+@page "/maps-vector"
+ 
+@inject IJSRuntime JsRuntime;
+
+<Topbar title="Vector Maps"/>
+
+  <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">World Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="world-map-markers" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">World Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="world-map-markers-line" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">India Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="india-vector-map" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">Canada Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="canada-vector-map" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">Russia Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="russia-vector-map" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">US Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="usa-vector-map" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">Iraq Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="iraq-vector-map" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header border-0 border-bottom border-dashed">
+                                <h4 class="header-title">Spain Vector Map</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="spain-vector-map" style="height: 360px"></div>
+                            </div> <!-- end card-body-->
+                        </div> <!-- card end -->
+                    </div>
+                </div>
+
+@code {
+  private IJSObjectReference? _module;
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/in-mill-en.js");
+      _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/canada.js");
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/iraq.js");
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/russia.js");
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/spain.js");
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/us-aea-en.js");
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/us-lcc-en.js");
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/maps/us-mill-en.js");
+
+			_module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/components/maps-vector.js");
+			await JsRuntime.InvokeVoidAsync("loadVectorMap");
+			await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+			await JsRuntime.InvokeVoidAsync("loadApps");
+		}
+	}
+}

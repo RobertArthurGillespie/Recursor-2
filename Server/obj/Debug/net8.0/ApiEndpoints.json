@@ -1,0 +1,130 @@
+[
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.AuthController",
+    "Method": "Authtestendpoint",
+    "RelativePath": "api/auth/Authtestendpoint",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "NCATAIBlazorFrontendTest.Shared.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.AuthController",
+    "Method": "Register",
+    "RelativePath": "api/auth/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "NCATAIBlazorFrontendTest.Shared.RegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.JtaController",
+    "Method": "Test",
+    "RelativePath": "api/Jta/Test",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.ChatController",
+    "Method": "AIChat",
+    "RelativePath": "Chat/AIChat",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "NCATAIBlazorFrontendTest.Shared.ChatRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.ChatController",
+    "Method": "TestChatController",
+    "RelativePath": "Chat/TestChatController",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.TestingController",
+    "Method": "Index",
+    "RelativePath": "Testing",
+    "HttpMethod": "",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.TestingController",
+    "Method": "TestingListDropbox",
+    "RelativePath": "Testing/TestingListDropbox",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.TestingController",
+    "Method": "TestVideoConversion",
+    "RelativePath": "Testing/TestVideoConversion",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.WeatherForecastController",
+    "Method": "Get",
+    "RelativePath": "WeatherForecast",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[NCATAIBlazorFrontendTest.Shared.WeatherForecast, NCATAIBlazorFrontendTest.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]
