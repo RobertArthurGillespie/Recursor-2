@@ -16,6 +16,13 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using NCATAIBlazorFrontendTest.Server.Data;
 using FFMpegCore;
+using Kusto.Data;
+using Kusto.Data.Common;
+using Kusto.Ingest;
+using NCATAIBlazorFrontendTest.Server.Configuration;
+using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
+using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
+using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
 
 
@@ -55,6 +62,61 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Configure FFMpegCore to find the executables in the local app directory
 GlobalFFOptions.Configure(options => options.BinaryFolder = Path.Combine(AppContext.BaseDirectory, "ffmpeg"));
+
+// ── Recursor Engine ───────────────────────────────────────────────────────────
+
+// In-memory repositories (singleton — session state and sim catalog stay in memory).
+builder.Services.AddSingleton<ISessionRepository, SessionRepository>();
+builder.Services.AddSingleton<ISimCatalogRepository, SimCatalogRepository>();
+
+// Bind typed ADX options from the "Adx" config section.
+builder.Services.Configure<AdxOptions>(builder.Configuration.GetSection("Adx"));
+var adxOpts = builder.Configuration.GetSection("Adx").Get<AdxOptions>() ?? new AdxOptions();
+
+// ADX Kusto clients — registered as singletons only when ClusterUri is configured.
+// Auth mode is driven by AdxOptions.AuthMode:
+//   "UserPrompt"       — interactive browser login (default; for local dev)
+//   "ManagedIdentity"  — system-assigned MSI (for production Azure hosting)
+//   "ServicePrincipal" — client ID + secret (for CI/CD or when MSI is unavailable)
+if (!string.IsNullOrEmpty(adxOpts.ClusterUri))
+{
+    builder.Services.AddSingleton<ICslQueryProvider>(_ =>
+        KustoClientFactory.CreateCslQueryProvider(BuildAdxCsb(adxOpts.ClusterUri, adxOpts)));
+
+    builder.Services.AddSingleton<IKustoQueuedIngestClient>(_ =>
+        KustoIngestFactory.CreateQueuedIngestClient(BuildAdxCsb(adxOpts.IngestUri, adxOpts)));
+}
+// else: ClusterUri is empty — clients are not registered.
+// AdxIngestionService and AdxRecursorQueryService resolve via IServiceProvider.GetService<T>(),
+// which returns null, and they skip ADX calls with a warning log.
+
+// ADX services.
+builder.Services.AddSingleton<IAdxIngestionService, AdxIngestionService>();
+builder.Services.AddSingleton<IAdxRecursorQueryService, AdxRecursorQueryService>();
+
+// Recursor pipeline services (scoped — one per request).
+builder.Services.AddScoped<IFeatureExtractionService, FeatureExtractionService>();
+builder.Services.AddScoped<IBehaviorInterpreter, BehaviorInterpreter>();
+builder.Services.AddScoped<IAdaptationPolicyService, AdaptationPolicyService>();
+builder.Services.AddScoped<IRecursorIngestionService, RecursorIngestionService>();
+builder.Services.AddScoped<IRecursorSessionService, RecursorSessionService>();
+
+// Builds a Kusto connection string for the given URI using the configured auth mode.
+static KustoConnectionStringBuilder BuildAdxCsb(string uri, AdxOptions opts) =>
+    opts.AuthMode switch
+    {
+        "ManagedIdentity" => new KustoConnectionStringBuilder(uri)
+            .WithAadSystemAssignedManagedIdentityAuthentication(),
+
+        "ServicePrincipal" => new KustoConnectionStringBuilder(uri)
+            .WithAadApplicationKeyAuthentication(uri, opts.ClientId, opts.ClientSecret, opts.TenantId),
+
+        _ => new KustoConnectionStringBuilder(uri) // "UserPrompt" — interactive browser (dev default)
+            .WithAadUserPromptAuthentication(opts.TenantId),
+    };
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

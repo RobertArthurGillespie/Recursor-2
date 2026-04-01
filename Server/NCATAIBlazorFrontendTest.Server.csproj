@@ -47,6 +47,10 @@
 
     <!-- Application Insights for monitoring -->
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+
+    <!-- Recursor Engine: Azure Data Explorer -->
+    <PackageReference Include="Microsoft.Azure.Kusto.Data" Version="12.3.2" />
+    <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="12.3.2" />
   </ItemGroup>
 
   <ItemGroup>

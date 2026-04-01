@@ -1,0 +1,109 @@
+// ============================================================
+// Recursor Engine — ADX Table Setup
+// ============================================================
+// Run this script once against the target ADX database to
+// create the five Recursor telemetry tables.
+//
+// Prerequisites:
+//   - An ADX cluster and a database named "RecursorDb"
+//     (or whatever is configured in Adx:Database)
+//   - Database Admin or Table Admin permissions
+//
+// Usage:
+//   Paste into the ADX Web UI query pane and run each block
+//   individually, or run the full script via the Kusto CLI.
+//
+// Schema source: docs/recursor-adx-plan.txt
+// No ingestion mappings or update policies are included here.
+// ============================================================
+
+
+// ── RawEvents ────────────────────────────────────────────────
+// One row per individual event within a batch.
+// Metrics, Context, and Payload are stored as dynamic (JSON).
+
+.create table RawEvents (
+    SessionId:       string,
+    UserId:          string,
+    SimId:           string,
+    SimVersion:      string,
+    ScenarioId:      string,
+    BatchId:         string,
+    BatchSequence:   int,
+    EventId:         string,
+    SequenceNumber:  long,
+    TimestampUtc:    datetime,
+    EventType:       string,
+    Category:        string,
+    Actor:           string,
+    Target:          string,
+    Metrics:         dynamic,
+    Context:         dynamic,
+    Payload:         dynamic
+)
+
+
+// ── FeatureWindows ───────────────────────────────────────────
+// One row per feature window derived from a batch.
+// Features is a dynamic object holding the BehavioralFeatureSet.
+
+.create table FeatureWindows (
+    SessionId:               string,
+    WindowIndex:             int,
+    WindowType:              string,
+    WindowStartSequence:     long,
+    WindowEndSequence:       long,
+    WindowStartUtc:          datetime,
+    WindowEndUtc:            datetime,
+    SimId:                   string,
+    ScenarioId:              string,
+    FeatureExtractorVersion: string,
+    Features:                dynamic
+)
+
+
+// ── BehaviorProfiles ─────────────────────────────────────────
+// One row per behavior profile built from a feature window.
+// DimensionScores is a dynamic object keyed by dimension name.
+
+.create table BehaviorProfiles (
+    SessionId:             string,
+    WindowIndex:           int,
+    SourceFeatureWindowId: string,
+    InterpreterVersion:    string,
+    DimensionScores:       dynamic,
+    CreatedAtUtc:          datetime
+)
+
+
+// ── HypothesisSets ───────────────────────────────────────────
+// One row per hypothesis set derived from a behavior profile.
+// Hypotheses is a dynamic array of BehavioralHypothesis objects.
+
+.create table HypothesisSets (
+    SessionId:              string,
+    WindowIndex:            int,
+    SourceBehaviorProfileId: string,
+    InterpreterMode:        string,
+    InterpreterVersion:     string,
+    Hypotheses:             dynamic,
+    CreatedAtUtc:           datetime
+)
+
+
+// ── AdaptationDecisions ──────────────────────────────────────
+// One row per adaptation decision produced by the policy layer.
+// InterventionFamilies and ParameterChanges are dynamic arrays.
+// ReasoningSummary is a plain string.
+
+.create table AdaptationDecisions (
+    SessionId:             string,
+    DecisionIndex:         int,
+    SourceHypothesisSetId: string,
+    PolicyVersion:         string,
+    InterventionFamilies:  dynamic,
+    ParameterChanges:      dynamic,
+    ReasoningSummary:      string,
+    ExpiresAfterWindow:    int,
+    CreatedAtUtc:          datetime
+)

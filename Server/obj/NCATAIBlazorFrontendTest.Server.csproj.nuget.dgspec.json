@@ -234,6 +234,14 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "Microsoft.Azure.Kusto.Data": {
+              "target": "Package",
+              "version": "[12.3.2, )"
+            },
+            "Microsoft.Azure.Kusto.Ingest": {
+              "target": "Package",
+              "version": "[12.3.2, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.8, )"
