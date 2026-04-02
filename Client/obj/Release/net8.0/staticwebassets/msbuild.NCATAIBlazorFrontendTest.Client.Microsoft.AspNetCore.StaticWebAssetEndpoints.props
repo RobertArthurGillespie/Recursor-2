@@ -996,6 +996,18 @@
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"tf1bhloemt"},{"Name":"integrity","Value":"sha256-CQF2xZjnnL9g9jPcwoLvbrnx2Ip30GEVxW4p3G4qXNg="},{"Name":"label","Value":"images/cards/visa.svg"}]]]></EndpointProperties>
       <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1000"},{"Name":"Content-Type","Value":"image/svg\u002Bxml"},{"Name":"ETag","Value":"\u0022CQF2xZjnnL9g9jPcwoLvbrnx2Ip30GEVxW4p3G4qXNg=\u0022"},{"Name":"Last-Modified","Value":"Tue, 24 Sep 2024 03:34:14 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="images/coaxiom-logo-eclipse-dark.iwxc2a1n65.png">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\coaxiom-logo-eclipse-dark.png'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"iwxc2a1n65"},{"Name":"integrity","Value":"sha256-orCHUCPWluZRrJknh6NEIN0rb5jiQN1sw/TK/aLqNlE="},{"Name":"label","Value":"images/coaxiom-logo-eclipse-dark.png"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"4364789"},{"Name":"Content-Type","Value":"image/png"},{"Name":"ETag","Value":"\u0022orCHUCPWluZRrJknh6NEIN0rb5jiQN1sw/TK/aLqNlE=\u0022"},{"Name":"Last-Modified","Value":"Thu, 05 Mar 2026 12:38:28 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="images/coaxiom-logo-eclipse-dark.png">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\coaxiom-logo-eclipse-dark.png'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-orCHUCPWluZRrJknh6NEIN0rb5jiQN1sw/TK/aLqNlE="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"4364789"},{"Name":"Content-Type","Value":"image/png"},{"Name":"ETag","Value":"\u0022orCHUCPWluZRrJknh6NEIN0rb5jiQN1sw/TK/aLqNlE=\u0022"},{"Name":"Last-Modified","Value":"Thu, 05 Mar 2026 12:38:28 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="images/coffee-cup.b8kwl5vcof.svg">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\coffee-cup.svg'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>

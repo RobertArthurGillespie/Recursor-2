@@ -52,6 +52,70 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.RecursorController",
+    "Method": "SubmitBatch",
+    "RelativePath": "api/recursor/events/batch",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "batch",
+        "Type": "NCATAIBlazorFrontendTest.Server.Recursor.Models.RawEventBatch",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.RecursorController",
+    "Method": "EndSession",
+    "RelativePath": "api/recursor/sessions/{sessionId}/end",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sessionId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.RecursorDebugController",
+    "Method": "GetLatestFeatureWindow",
+    "RelativePath": "api/recursor/sessions/{sessionId}/features/latest",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sessionId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.RecursorController",
+    "Method": "StartSession",
+    "RelativePath": "api/recursor/sessions/start",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "NCATAIBlazorFrontendTest.Server.Recursor.Api.StartSessionApiRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.ChatController",
     "Method": "AIChat",
     "RelativePath": "Chat/AIChat",

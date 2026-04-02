@@ -81,6 +81,7 @@ wwwroot\images\cards\stripe.svg
 wwwroot\images\cards\unionpay.svg
 wwwroot\images\cards\visa.svg
 wwwroot\images\cards\visa-white.svg
+wwwroot\images\coaxiom-logo-eclipse-dark.png
 wwwroot\images\coffee-cup.svg
 wwwroot\images\error\error.png
 wwwroot\images\error\error-2.png

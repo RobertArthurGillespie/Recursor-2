@@ -23,6 +23,7 @@ using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
+using Kusto.Data.Net.Client;
 
 
 
@@ -106,12 +107,15 @@ static KustoConnectionStringBuilder BuildAdxCsb(string uri, AdxOptions opts) =>
     opts.AuthMode switch
     {
         "ManagedIdentity" => new KustoConnectionStringBuilder(uri)
-            .WithAadSystemAssignedManagedIdentityAuthentication(),
+            .WithAadSystemManagedIdentity(),
 
         "ServicePrincipal" => new KustoConnectionStringBuilder(uri)
-            .WithAadApplicationKeyAuthentication(uri, opts.ClientId, opts.ClientSecret, opts.TenantId),
+            .WithAadApplicationKeyAuthentication(
+                opts.ClientId,
+                opts.ClientSecret,
+                opts.TenantId),
 
-        _ => new KustoConnectionStringBuilder(uri) // "UserPrompt" — interactive browser (dev default)
+        _ => new KustoConnectionStringBuilder(uri)
             .WithAadUserPromptAuthentication(opts.TenantId),
     };
 

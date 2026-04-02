@@ -1,4 +1,6 @@
 using System.Data;
+using Kusto.Data.Common;
+using Kusto.Data.Ingestion;
 using Kusto.Ingest;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -39,8 +41,18 @@ public class AdxIngestionService : IAdxIngestionService
         if (!CheckClient("RawEvents")) return;
 
         var table = BuildRawEventsTable(rows);
-        var props = new KustoQueuedIngestionProperties(_database, "RawEvents");
-        await _ingestClient!.IngestFromDataTableAsync(table, props);
+        var props = new KustoQueuedIngestionProperties(_database, "RawEvents")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "RawEventsCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
     public async Task IngestFeatureWindowAsync(FeatureWindowRow row)
@@ -48,8 +60,13 @@ public class AdxIngestionService : IAdxIngestionService
         if (!CheckClient("FeatureWindows")) return;
 
         var table = BuildFeatureWindowsTable(row);
-        var props = new KustoQueuedIngestionProperties(_database, "FeatureWindows");
-        await _ingestClient!.IngestFromDataTableAsync(table, props);
+        var props = new KustoQueuedIngestionProperties(_database, "FeatureWindows")
+        {
+            Format = DataSourceFormat.csv
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
     public async Task IngestBehaviorProfileAsync(BehaviorProfileRow row)
@@ -57,8 +74,13 @@ public class AdxIngestionService : IAdxIngestionService
         if (!CheckClient("BehaviorProfiles")) return;
 
         var table = BuildBehaviorProfilesTable(row);
-        var props = new KustoQueuedIngestionProperties(_database, "BehaviorProfiles");
-        await _ingestClient!.IngestFromDataTableAsync(table, props);
+        var props = new KustoQueuedIngestionProperties(_database, "BehaviorProfiles")
+        {
+            Format = DataSourceFormat.csv
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
     public async Task IngestHypothesisSetAsync(HypothesisSetRow row)
@@ -66,8 +88,13 @@ public class AdxIngestionService : IAdxIngestionService
         if (!CheckClient("HypothesisSets")) return;
 
         var table = BuildHypothesisSetsTable(row);
-        var props = new KustoQueuedIngestionProperties(_database, "HypothesisSets");
-        await _ingestClient!.IngestFromDataTableAsync(table, props);
+        var props = new KustoQueuedIngestionProperties(_database, "HypothesisSets")
+        {
+            Format = DataSourceFormat.csv
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
     public async Task IngestAdaptationDecisionAsync(AdaptationDecisionRow row)
@@ -75,8 +102,13 @@ public class AdxIngestionService : IAdxIngestionService
         if (!CheckClient("AdaptationDecisions")) return;
 
         var table = BuildAdaptationDecisionsTable(row);
-        var props = new KustoQueuedIngestionProperties(_database, "AdaptationDecisions");
-        await _ingestClient!.IngestFromDataTableAsync(table, props);
+        var props = new KustoQueuedIngestionProperties(_database, "AdaptationDecisions")
+        {
+            Format = DataSourceFormat.csv
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
     // ── DataTable builders ────────────────────────────────────────────────────
@@ -222,16 +254,16 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("CreatedAtUtc",         typeof(DateTime));
 
         table.Rows.Add(
-            row.SessionId,
-            row.DecisionIndex,
-            row.SourceHypothesisSetId,
-            row.PolicyVersion,
-            row.InterventionFamilies.GetRawText(),
-            row.ParameterChanges.GetRawText(),
-            row.ReasoningSummary,
-            row.ExpiresAfterWindow,
-            row.CreatedAtUtc
-        );
+     row.SessionId,
+     row.DecisionIndex,
+     row.SourceHypothesisSetId,
+     row.PolicyVersion,
+     row.InterventionFamilies.GetRawText(),
+     row.ParameterChanges.GetRawText(),
+     row.ReasoningSummary,
+     row.ExpiresAfterWindow,
+     row.CreatedAtUtc
+ );
 
         return table;
     }

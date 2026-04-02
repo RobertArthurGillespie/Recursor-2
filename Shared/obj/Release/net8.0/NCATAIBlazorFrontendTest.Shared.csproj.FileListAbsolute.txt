@@ -11,3 +11,16 @@ C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\r
 C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.pdb
 C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\ref\NCATAIBlazorFrontendTest.Shared.dll
 C:\Users\Rober\source\repos\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.sourcelink.json
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\bin\Release\net8.0\NCATAIBlazorFrontendTest.Shared.deps.json
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\bin\Release\net8.0\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\bin\Release\net8.0\NCATAIBlazorFrontendTest.Shared.pdb
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.csproj.AssemblyReference.cache
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.AssemblyInfoInputs.cache
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.AssemblyInfo.cs
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.csproj.CoreCompileInputs.cache
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.sourcelink.json
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\refint\NCATAIBlazorFrontendTest.Shared.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\NCATAIBlazorFrontendTest.Shared.pdb
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Shared\obj\Release\net8.0\ref\NCATAIBlazorFrontendTest.Shared.dll
