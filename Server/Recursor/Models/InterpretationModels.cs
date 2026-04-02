@@ -1,3 +1,5 @@
+using NCATAIBlazorFrontendTest.Shared;
+
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Models;
 
 public class BehaviorProfileDocument
@@ -7,6 +9,7 @@ public class BehaviorProfileDocument
     public string SessionId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string SourceFeatureWindowId { get; set; } = "";
+    public BehaviorScores? BehaviorScores { get; set; }
     public Dictionary<string, DimensionScore> DimensionScores { get; set; } = new();
 }
 
@@ -14,7 +17,7 @@ public class DimensionScore
 {
     public double Score { get; set; }
     public double Confidence { get; set; }
-    public string Evidence { get; set; } = "";
+    public string Evidence { get; set; }
 }
 
 public class HypothesisSetDocument
@@ -34,5 +37,5 @@ public class BehavioralHypothesis
     public string Label { get; set; } = "";
     public List<string> Dimensions { get; set; } = new();
     public double Confidence { get; set; }
-    public string Evidence { get; set; } = "";
+    public List<string> Evidence { get; set; } = new();
 }

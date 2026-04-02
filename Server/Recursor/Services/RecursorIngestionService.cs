@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
+using System.Linq;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
@@ -18,6 +19,8 @@ public class IngestionResult
     public List<ParameterChange> ParameterChanges { get; init; } = [];
     public string? ReasoningSummary { get; init; }
     public string? AdaptationId { get; init; }
+
+    public List<string> HypothesisLabels { get; init; } = new ();
 }
 
 public class RecursorIngestionService : IRecursorIngestionService
@@ -87,6 +90,9 @@ public class RecursorIngestionService : IRecursorIngestionService
 
         // Step 11: Build hypothesis set.
         var hypothesisSet = _behaviorInterpreter.BuildHypothesisSet(behaviorProfile);
+        var hypothesisLabels = hypothesisSet.Hypotheses
+    .Select(h => h.Label)
+    .ToList();
 
         // Step 12: Ingest hypothesis set into ADX.
         await _adxIngestion.IngestHypothesisSetAsync(AdxRowMapper.MapHypothesisSet(hypothesisSet));
@@ -98,14 +104,22 @@ public class RecursorIngestionService : IRecursorIngestionService
         if (catalog is null)
         {
             _logger.LogWarning("SimId {SimId} not found in catalog. Skipping adaptation.", session.SimId);
-            return new IngestionResult { AdaptationProduced = false };
+            return new IngestionResult
+            {
+                AdaptationProduced = false,
+                HypothesisLabels = hypothesisLabels
+            };
         }
 
         var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet);
         if (adaptation is null)
         {
             _logger.LogInformation("No adaptation produced for session {SessionId}.", session.SessionId);
-            return new IngestionResult { AdaptationProduced = false };
+            return new IngestionResult
+            {
+                AdaptationProduced = false,
+                HypothesisLabels = hypothesisLabels
+            };
         }
 
         // Step 14: Ingest adaptation decision into ADX.
@@ -119,6 +133,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         {
             AdaptationProduced = true,
             ParameterChanges = adaptation.ParameterChanges,
+            HypothesisLabels = hypothesisLabels,
             ReasoningSummary = adaptation.ReasoningSummary,
             AdaptationId = adaptation.Id
         };

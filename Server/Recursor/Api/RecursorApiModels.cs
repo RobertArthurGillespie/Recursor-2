@@ -22,6 +22,7 @@ public class BatchApiResponse
     public bool Success { get; set; }
     public bool AdaptationProduced { get; set; }
     public List<ParameterChange> ParameterChanges { get; set; } = [];
+    public List<string> HypothesisLabels { get; set; } = new();
     public string? ReasoningSummary { get; set; }
     public string? Error { get; set; }
 }

@@ -10,6 +10,12 @@ public interface IBehaviorInterpreter
 
 public class BehaviorInterpreter : IBehaviorInterpreter
 {
+    private readonly IBehaviorScoringService _behaviorScoringService;
+
+    public BehaviorInterpreter(IBehaviorScoringService behaviorScoringService)
+    {
+        _behaviorScoringService = behaviorScoringService;
+    }
     // Threshold below which a dimension is considered impaired.
     private const double ImpairmentThreshold = 0.5;
 
@@ -31,6 +37,8 @@ public class BehaviorInterpreter : IBehaviorInterpreter
             ["taskContinuity"] = Score(features.TaskContinuity, "session progress and completion")
         };
 
+        var behaviorscores = _behaviorScoringService.Score(featureWindow);
+
         return new BehaviorProfileDocument
         {
             Id = Guid.NewGuid().ToString(),
@@ -38,7 +46,8 @@ public class BehaviorInterpreter : IBehaviorInterpreter
             SessionId = featureWindow.SessionId,
             WindowIndex = featureWindow.WindowIndex,
             SourceFeatureWindowId = featureWindow.Id,
-            DimensionScores = scores
+            DimensionScores = scores,
+            BehaviorScores = behaviorscores
         };
     }
 
@@ -54,9 +63,89 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                 hypotheses.Add(new BehavioralHypothesis
                 {
                     Label = HypothesisLabel(dimension, score.Score),
-                    Dimensions = [dimension],
+                    Dimensions = new List<string> { dimension },
                     Confidence = score.Confidence,
-                    Evidence = score.Evidence
+                    Evidence = new List<string> { score.Evidence }
+                });
+            }
+        }
+
+        var scores = profile.BehaviorScores;
+
+        if (scores is not null)
+        {
+            if (scores.ConfusionScore >= 0.65)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "confusion_pattern",
+                    Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
+                    Confidence = scores.ConfusionScore,
+                    Evidence = new List<string>
+                    {
+                $"ConfusionScore={scores.ConfusionScore:0.00}",
+                "High wrong-target behavior and repeated low-quality selections"
+            }
+                });
+            }
+
+            if (scores.HesitationScore >= 0.65)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "hesitation_pattern",
+                    Dimensions = new List<string> { "paceRegulation" },
+                    Confidence = scores.HesitationScore,
+                    Evidence = new List<string>
+                    {
+                $"HesitationScore={scores.HesitationScore:0.00}",
+                "Long decision times and slow correction latency"
+            }
+                });
+            }
+
+            if (scores.ImpulsivityScore >= 0.65)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "impulsivity_pattern",
+                    Dimensions = new List<string> { "paceRegulation", "selfCorrection" },
+                    Confidence = scores.ImpulsivityScore,
+                    Evidence = new List<string>
+                    {
+                $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
+                "Rapid low-quality actions and elevated premature advancement"
+            }
+                });
+            }
+
+            if (scores.HintDependenceScore >= 0.60)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "hint_dependence_pattern",
+                    Dimensions = new List<string> { "feedbackResponsiveness" },
+                    Confidence = scores.HintDependenceScore,
+                    Evidence = new List<string>
+                    {
+                $"HintDependenceScore={scores.HintDependenceScore:0.00}",
+                "Frequent hint reliance or cue-driven success"
+            }
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(scores.PredictedState) &&
+                scores.PredictedState == "confused_and_hint_dependent")
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "compound_confusion_hint_dependence",
+                    Dimensions = new List<string> { "goalUnderstanding", "feedbackResponsiveness" },
+                    Confidence = Math.Max(scores.ConfusionScore, scores.HintDependenceScore),
+                    Evidence = new List<string>
+                    {
+                "Combined confusion and hint dependence state detected"
+            }
                 });
             }
         }
@@ -69,7 +158,7 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                 Label = "learner-overload",
                 Dimensions = hypotheses.Select(h => h.Dimensions[0]).ToList(),
                 Confidence = hypotheses.Average(h => h.Confidence),
-                Evidence = $"{hypotheses.Count} dimensions below threshold"
+                Evidence = new List<string> { $"{hypotheses.Count} dimensions below threshold" }
             });
         }
 

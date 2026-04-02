@@ -32,6 +32,7 @@ public class ProcessBatchResult
     public bool AdaptationProduced { get; init; }
     public List<ParameterChange> ParameterChanges { get; init; } = [];
     public string? ReasoningSummary { get; init; }
+    public List<string> HypothesisLabels { get; set; } = new();
     public string? Error { get; init; }
 }
 
@@ -100,6 +101,7 @@ public class RecursorSessionService : IRecursorSessionService
             Success = true,
             AdaptationProduced = result.AdaptationProduced,
             ParameterChanges = result.ParameterChanges,
+            HypothesisLabels = result.HypothesisLabels,
             ReasoningSummary = result.ReasoningSummary
         };
     }

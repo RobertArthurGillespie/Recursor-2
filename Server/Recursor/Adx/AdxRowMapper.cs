@@ -1,4 +1,5 @@
 using System.Text.Json;
+using NCATAIBlazorFrontendTest.Client.Pages.Apps.Users;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Adx;
@@ -68,6 +69,7 @@ public static class AdxRowMapper
             SourceFeatureWindowId = doc.SourceFeatureWindowId,
             InterpreterVersion = "1.0",
             DimensionScores = JsonSerializer.SerializeToElement(doc.DimensionScores, JsonOpts),
+            BehaviorScores = JsonSerializer.SerializeToElement(doc.BehaviorScores),
             CreatedAtUtc = DateTime.UtcNow
         };
     }

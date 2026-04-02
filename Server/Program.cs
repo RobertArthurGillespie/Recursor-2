@@ -101,6 +101,7 @@ builder.Services.AddScoped<IBehaviorInterpreter, BehaviorInterpreter>();
 builder.Services.AddScoped<IAdaptationPolicyService, AdaptationPolicyService>();
 builder.Services.AddScoped<IRecursorIngestionService, RecursorIngestionService>();
 builder.Services.AddScoped<IRecursorSessionService, RecursorSessionService>();
+builder.Services.AddScoped<IBehaviorScoringService, BehaviorScoringService>();
 
 // Builds a Kusto connection string for the given URI using the configured auth mode.
 static KustoConnectionStringBuilder BuildAdxCsb(string uri, AdxOptions opts) =>

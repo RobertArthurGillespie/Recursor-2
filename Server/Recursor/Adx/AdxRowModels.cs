@@ -49,7 +49,9 @@ public class BehaviorProfileRow
     public string SourceFeatureWindowId { get; set; } = "";
     public string InterpreterVersion { get; set; } = "1.0";
     public JsonElement DimensionScores { get; set; }
+    public JsonElement BehaviorScores { get; set; }
     public DateTime CreatedAtUtc { get; set; }
+   
 }
 
 public class HypothesisSetRow

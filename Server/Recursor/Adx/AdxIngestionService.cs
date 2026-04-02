@@ -76,7 +76,12 @@ public class AdxIngestionService : IAdxIngestionService
         var table = BuildBehaviorProfilesTable(row);
         var props = new KustoQueuedIngestionProperties(_database, "BehaviorProfiles")
         {
-            Format = DataSourceFormat.csv
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "BehaviorProfilesCsvMapping"
+            }
         };
 
         using var reader = table.CreateDataReader();
@@ -202,7 +207,9 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("SourceFeatureWindowId",typeof(string));
         table.Columns.Add("InterpreterVersion",   typeof(string));
         table.Columns.Add("DimensionScores",      typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("BehaviorScores", typeof(string));
         table.Columns.Add("CreatedAtUtc",         typeof(DateTime));
+        
 
         table.Rows.Add(
             row.SessionId,
@@ -210,7 +217,9 @@ public class AdxIngestionService : IAdxIngestionService
             row.SourceFeatureWindowId,
             row.InterpreterVersion,
             row.DimensionScores.GetRawText(),
+            row.BehaviorScores.GetRawText(),
             row.CreatedAtUtc
+            
         );
 
         return table;
