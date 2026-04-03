@@ -24,22 +24,23 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
             // Now derive behavioral states from them
 
             double confusionScore =
-                (0.40 * (1.0 - goal)) +
-                (0.30 * (1.0 - attention)) +
-                (0.30 * feedback);
+    (0.45 * (1.0 - goal)) +
+    (0.35 * (1.0 - attention)) +
+    (0.20 * (1.0 - feedback));
 
             double hesitationScore =
-                (0.50 * (1.0 - pace)) +
-                (0.30 * correction) +
-                (0.20 * attention);
+                (0.60 * (1.0 - pace)) +
+                (0.25 * (1.0 - goal)) +
+                (0.15 * (1.0 - correction));
 
+            // Fast pace should only look impulsive when paired with poor attention/goal/correction
             double impulsivityScore =
-                (0.50 * pace) +
-                (0.30 * (1.0 - attention)) +
-                (0.20 * (1.0 - correction));
+                (0.45 * pace * (1.0 - attention)) +
+                (0.30 * (1.0 - correction)) +
+                (0.25 * (1.0 - goal));
 
             double hintDependenceScore =
-                (0.60 * feedback) +
+                (0.60 * (1.0 - feedback)) +
                 (0.20 * confusionScore) +
                 (0.20 * (1.0 - goal));
 

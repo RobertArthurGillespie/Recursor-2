@@ -55,7 +55,6 @@ public class BehaviorInterpreter : IBehaviorInterpreter
     {
         var hypotheses = new List<BehavioralHypothesis>();
 
-        // For each impaired dimension, generate a hypothesis.
         foreach (var (dimension, score) in profile.DimensionScores)
         {
             if (score.Score < ImpairmentThreshold)
@@ -82,10 +81,10 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
                     Confidence = scores.ConfusionScore,
                     Evidence = new List<string>
-                    {
-                $"ConfusionScore={scores.ConfusionScore:0.00}",
-                "High wrong-target behavior and repeated low-quality selections"
-            }
+                {
+                    $"ConfusionScore={scores.ConfusionScore:0.00}",
+                    "High wrong-target behavior and repeated low-quality selections"
+                }
                 });
             }
 
@@ -97,10 +96,10 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "paceRegulation" },
                     Confidence = scores.HesitationScore,
                     Evidence = new List<string>
-                    {
-                $"HesitationScore={scores.HesitationScore:0.00}",
-                "Long decision times and slow correction latency"
-            }
+                {
+                    $"HesitationScore={scores.HesitationScore:0.00}",
+                    "Long decision times and slow correction latency"
+                }
                 });
             }
 
@@ -112,10 +111,10 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "paceRegulation", "selfCorrection" },
                     Confidence = scores.ImpulsivityScore,
                     Evidence = new List<string>
-                    {
-                $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
-                "Rapid low-quality actions and elevated premature advancement"
-            }
+                {
+                    $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
+                    "Rapid low-quality actions and elevated premature advancement"
+                }
                 });
             }
 
@@ -127,10 +126,10 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "feedbackResponsiveness" },
                     Confidence = scores.HintDependenceScore,
                     Evidence = new List<string>
-                    {
-                $"HintDependenceScore={scores.HintDependenceScore:0.00}",
-                "Frequent hint reliance or cue-driven success"
-            }
+                {
+                    $"HintDependenceScore={scores.HintDependenceScore:0.00}",
+                    "Frequent hint reliance or cue-driven success"
+                }
                 });
             }
 
@@ -143,22 +142,69 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "goalUnderstanding", "feedbackResponsiveness" },
                     Confidence = Math.Max(scores.ConfusionScore, scores.HintDependenceScore),
                     Evidence = new List<string>
-                    {
-                "Combined confusion and hint dependence state detected"
+                {
+                    "Combined confusion and hint dependence state detected"
+                }
+                });
             }
+
+            var impairedDimensionCount = profile.DimensionScores.Count(kvp => kvp.Value.Score < ImpairmentThreshold);
+
+            bool hasGoal = profile.DimensionScores.TryGetValue("goalUnderstanding", out var goalScore);
+            bool hasAttention = profile.DimensionScores.TryGetValue("attentionDetection", out var attentionScore);
+            bool hasSelfCorrection = profile.DimensionScores.TryGetValue("selfCorrection", out var selfCorrectionScore);
+
+            bool recoveryDetected =
+                hasGoal &&
+                hasAttention &&
+                hasSelfCorrection &&
+                goalScore.Score >= 0.65 &&
+                attentionScore.Score >= 0.65 &&
+                selfCorrectionScore.Score >= 0.60 &&
+                scores.ConfusionScore < 0.45 &&
+                scores.ImpulsivityScore < 0.45 &&
+                impairedDimensionCount <= 1;
+
+            if (recoveryDetected)
+            {
+                double recoveryConfidence = Math.Min(
+                    1.0,
+                    (goalScore.Score + attentionScore.Score + selfCorrectionScore.Score) / 3.0
+                );
+
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "recovery_pattern",
+                    Dimensions = new List<string> { "goalUnderstanding", "attentionDetection", "selfCorrection" },
+                    Confidence = recoveryConfidence,
+                    Evidence = new List<string>
+                {
+                    $"goalUnderstanding={goalScore.Score:0.00}",
+                    $"attentionDetection={attentionScore.Score:0.00}",
+                    $"selfCorrection={selfCorrectionScore.Score:0.00}",
+                    $"ConfusionScore={scores.ConfusionScore:0.00}",
+                    $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
+                    "Recent performance suggests stabilizing behavior and reduced support need"
+                }
                 });
             }
         }
 
-        // If 2 or more dimensions are impaired, add a compound hypothesis.
-        if (hypotheses.Count >= 2)
+        var overloadSourceHypotheses = hypotheses
+            .Where(h => h.Label != "recovery_pattern")
+            .ToList();
+
+        if (overloadSourceHypotheses.Count >= 2)
         {
             hypotheses.Add(new BehavioralHypothesis
             {
                 Label = "learner-overload",
-                Dimensions = hypotheses.Select(h => h.Dimensions[0]).ToList(),
-                Confidence = hypotheses.Average(h => h.Confidence),
-                Evidence = new List<string> { $"{hypotheses.Count} dimensions below threshold" }
+                Dimensions = overloadSourceHypotheses.Select(h => h.Dimensions[0]).ToList(),
+                Confidence = overloadSourceHypotheses.Average(h => h.Confidence),
+                Evidence = new List<string>
+            {
+                $"{overloadSourceHypotheses.Count} hypotheses indicate concurrent impairment"
+            }
             });
         }
 
@@ -171,7 +217,7 @@ public class BehaviorInterpreter : IBehaviorInterpreter
             SourceBehaviorProfileId = profile.Id,
             Hypotheses = hypotheses,
             InterpreterMode = "rule-based",
-            InterpreterVersion = "1.0"
+            InterpreterVersion = "1.1"
         };
     }
 

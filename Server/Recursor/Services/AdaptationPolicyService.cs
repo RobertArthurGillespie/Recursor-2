@@ -21,10 +21,21 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         if (hypothesisSet.Hypotheses.Count == 0)
             return null;
 
-        // Collect intervention families from ALL hypotheses, ordered by confidence.
-        // Distinct preserves first-occurrence ordering, so the highest-confidence
-        // hypothesis wins when two hypotheses map to the same family.
-        var interventionFamilies = hypothesisSet.Hypotheses
+        bool hasRecovery = hypothesisSet.Hypotheses.Any(h => h.Label == "recovery_pattern");
+
+        IEnumerable<BehavioralHypothesis> sourceHypotheses = hypothesisSet.Hypotheses;
+
+        if (hasRecovery)
+        {
+            sourceHypotheses = hypothesisSet.Hypotheses
+                .Where(h =>
+                    h.Label == "recovery_pattern" ||
+                    h.Label == "hint_dependence_pattern" ||
+                    h.Label == "hint-dependency")
+                .ToList();
+        }
+
+        var interventionFamilies = sourceHypotheses
             .OrderByDescending(h => h.Confidence)
             .SelectMany(h => GetInterventionFamilies(h.Label))
             .Distinct()
@@ -74,17 +85,28 @@ public class AdaptationPolicyService : IAdaptationPolicyService
     {
         return hypothesisLabel switch
         {
-            "attention-deficit"     => ["difficulty-reduction"],
-            "goal-confusion"        => ["difficulty-reduction", "scaffold-hints"],
+            "attention-deficit" => ["difficulty-reduction"],
+            "goal-confusion" => ["difficulty-reduction", "scaffold-hints"],
             "sequencing-difficulty" => ["difficulty-reduction", "scaffold-hints"],
-            "excessive-slowness"    => ["pace-support"],
-            "pace-irregularity"     => ["pace-support"],
-            "low-self-correction"   => ["scaffold-error-tolerance"],
-            "hint-dependency"       => ["hint-reduction"],
-            "safety-risk"           => ["difficulty-reduction", "pace-support"],
-            "task-discontinuity"    => ["distractor-reduction"],
-            "learner-overload"      => ["difficulty-reduction", "pace-support", "scaffold-hints"],
-            _                       => ["difficulty-reduction"]
+            "excessive-slowness" => ["pace-support"],
+            "pace-irregularity" => ["pace-support"],
+            "low-self-correction" => ["scaffold-error-tolerance"],
+            "hint-dependency" => ["hint-reduction"],
+            "safety-risk" => ["difficulty-reduction", "pace-support"],
+            "task-discontinuity" => ["distractor-reduction"],
+            "learner-overload" => ["difficulty-reduction", "pace-support", "scaffold-hints"],
+
+            // New higher-order labels
+            "confusion_pattern" => ["difficulty-reduction", "scaffold-hints", "distractor-reduction"],
+            "hesitation_pattern" => ["pace-support", "scaffold-hints"],
+            "impulsivity_pattern" => ["pace-support", "scaffold-error-tolerance"],
+            "hint_dependence_pattern" => ["scaffold-hints"],
+            "compound_confusion_hint_dependence" => ["difficulty-reduction", "scaffold-hints", "pace-support"],
+
+            // Recovery / rechallenge
+            "recovery_pattern" => ["difficulty-increase", "pace-increase", "hint-fade"],
+
+            _ => ["difficulty-reduction"]
         };
     }
 
@@ -96,13 +118,21 @@ public class AdaptationPolicyService : IAdaptationPolicyService
     {
         return family switch
         {
-            "difficulty-reduction"     => BuildBoundedFloatChange("difficulty",       "decrease", 0.10,  catalog),
-            "pace-support"             => BuildBoundedFloatChange("timePressure",     "decrease", 0.10,  catalog),
-            "scaffold-hints"           => BuildEnumChange(        "hintMode",         "set",      "guided",  catalog),
-            "scaffold-error-tolerance" => BuildBoundedIntChange(  "errorTolerance",   "increase", 1,     catalog),
-            "distractor-reduction"     => BuildBoundedFloatChange("distractorDensity","decrease", 0.15,  catalog),
-            "hint-reduction"           => BuildEnumChange(        "hintMode",         "set",      "minimal", catalog),
-            _                          => null
+            "difficulty-reduction" => BuildBoundedFloatChange("difficulty", "decrease", 0.10, catalog),
+            "difficulty-increase" => BuildBoundedFloatChange("difficulty", "increase", 0.05, catalog),
+
+            "pace-support" => BuildBoundedFloatChange("timePressure", "decrease", 0.10, catalog),
+            "pace-increase" => BuildBoundedFloatChange("timePressure", "increase", 0.05, catalog),
+
+            "scaffold-hints" => BuildEnumChange("hintMode", "set", "guided", catalog),
+            "hint-fade" => BuildEnumChange("hintMode", "set", "minimal", catalog),
+
+            "scaffold-error-tolerance" => BuildBoundedIntChange("errorTolerance", "increase", 1, catalog),
+            "distractor-reduction" => BuildBoundedFloatChange("distractorDensity", "decrease", 0.15, catalog),
+
+            "hint-reduction" => BuildEnumChange("hintMode", "set", "minimal", catalog),
+
+            _ => null
         };
     }
 

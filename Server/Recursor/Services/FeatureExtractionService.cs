@@ -62,12 +62,15 @@ public class FeatureExtractionService : IFeatureExtractionService
 
     private static BehavioralFeatureSet ExtractFeatures(SessionDocument session, List<RawEventRecord> events)
     {
-        int totalEvents       = events.Count;
-        int errorEvents       = events.Count(e => e.EventType == "error");
-        int hintEvents        = events.Count(e => e.EventType == "hint_request");
-        int safetyEvents      = events.Count(e => e.EventType == "safety_violation");
+        int totalEvents = events.Count;
+        int errorEvents = events.Count(e => e.EventType == "error");
+        int hintEvents = events.Count(e => e.EventType == "hint_request");
+        int safetyEvents = events.Count(e => e.EventType == "safety_violation");
         int stepCompleteEvents = events.Count(e => e.EventType == "step_complete");
-        int actionEvents      = events.Count(e => e.EventType == "action");
+        int actionEvents = events.Count(e => e.EventType == "action");
+        int correctActionEvents = events.Count(e =>
+            e.EventType == "action" &&
+            string.Equals(e.Target, "correct-object", StringComparison.OrdinalIgnoreCase));
 
         double avgScore = events
             .Where(e => e.Metrics.Score.HasValue)
@@ -81,24 +84,30 @@ public class FeatureExtractionService : IFeatureExtractionService
             .DefaultIfEmpty(1000)
             .Average();
 
-        double errorRate      = totalEvents > 0 ? (double)errorEvents       / totalEvents : 0.0;
-        double hintRate       = totalEvents > 0 ? (double)hintEvents        / totalEvents : 0.0;
-        double safetyRate     = totalEvents > 0 ? (double)safetyEvents      / totalEvents : 0.0;
+        double errorRate = totalEvents > 0 ? (double)errorEvents / totalEvents : 0.0;
+        double hintRate = totalEvents > 0 ? (double)hintEvents / totalEvents : 0.0;
+        double safetyRate = totalEvents > 0 ? (double)safetyEvents / totalEvents : 0.0;
         double completionRate = totalEvents > 0 ? (double)stepCompleteEvents / totalEvents : 0.0;
+        double correctActionRate = actionEvents > 0 ? (double)correctActionEvents / actionEvents : 0.5;
 
         // Normalize duration: 0 ms → 1.0 (fast), ≥ 5000 ms → 0.0 (slow).
         double paceScore = Math.Max(0.0, 1.0 - (avgDurationMs / 5000.0));
 
+        double sequencingScore =
+            stepCompleteEvents > 0
+                ? Clamp(completionRate + correctActionRate * 0.4)
+                : Clamp(0.5 + correctActionRate * 0.4);
+
         return new BehavioralFeatureSet
         {
-            AttentionDetection    = Clamp(1.0 - errorRate * 2),
-            GoalUnderstanding     = Clamp(avgScore),
-            ProcedureSequencing   = Clamp(completionRate + (actionEvents > 0 ? 0.3 : 0.0)),
-            PaceRegulation        = Clamp(paceScore),
-            SelfCorrection        = Clamp(errorRate > 0 ? (1.0 - errorRate) * 0.8 : 0.7),
+            AttentionDetection = Clamp(1.0 - errorRate * 2),
+            GoalUnderstanding = Clamp(avgScore),
+            ProcedureSequencing = sequencingScore,
+            PaceRegulation = Clamp(paceScore),
+            SelfCorrection = Clamp(errorRate > 0 ? (1.0 - errorRate) * 0.8 : 0.7),
             FeedbackResponsiveness = Clamp(1.0 - hintRate * 3),
-            SafetyCompliance      = Clamp(1.0 - safetyRate * 5),
-            TaskContinuity        = Clamp(session.EventCount > 0 ? 0.6 + completionRate * 0.4 : 0.5)
+            SafetyCompliance = Clamp(1.0 - safetyRate * 5),
+            TaskContinuity = Clamp(session.EventCount > 0 ? 0.6 + completionRate * 0.4 : 0.5)
         };
     }
 
