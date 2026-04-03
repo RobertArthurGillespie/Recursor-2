@@ -49,7 +49,8 @@ public class RecursorController : ControllerBase
             AdaptationProduced = result.AdaptationProduced,
             ParameterChanges = result.ParameterChanges,
             HypothesisLabels = result.HypothesisLabels,
-            ReasoningSummary = result.ReasoningSummary
+            ReasoningSummary = result.ReasoningSummary,
+            Explanation = result.Explanation
         });
     }
 

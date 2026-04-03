@@ -1,4 +1,5 @@
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
+using NCATAIBlazorFrontendTest.Shared;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Api;
 
@@ -22,7 +23,8 @@ public class BatchApiResponse
     public bool Success { get; set; }
     public bool AdaptationProduced { get; set; }
     public List<ParameterChange> ParameterChanges { get; set; } = [];
-    public List<string> HypothesisLabels { get; set; } = new();
+    public List<string> HypothesisLabels { get; set; } = [];
     public string? ReasoningSummary { get; set; }
+    public GptExplanationResult? Explanation { get; set; }
     public string? Error { get; set; }
 }

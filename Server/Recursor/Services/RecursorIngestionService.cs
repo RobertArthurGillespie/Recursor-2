@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
+using NCATAIBlazorFrontendTest.Shared;
 using System.Linq;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
@@ -19,8 +20,8 @@ public class IngestionResult
     public List<ParameterChange> ParameterChanges { get; init; } = [];
     public string? ReasoningSummary { get; init; }
     public string? AdaptationId { get; init; }
-
-    public List<string> HypothesisLabels { get; init; } = new ();
+    public List<string> HypothesisLabels { get; init; } = new();
+    public GptExplanationResult? Explanation { get; init; }
 }
 
 public class RecursorIngestionService : IRecursorIngestionService
@@ -31,21 +32,24 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IAdaptationPolicyService _adaptationPolicy;
     private readonly ISessionRepository _sessionRepository;
     private readonly ISimCatalogRepository _simCatalog;
+    private readonly IExplanationGenerationService _explanationService;
     private readonly ILogger<RecursorIngestionService> _logger;
 
     public RecursorIngestionService(
-        IAdxIngestionService adxIngestion,
-        IFeatureExtractionService featureExtraction,
-        IBehaviorInterpreter behaviorInterpreter,
-        IAdaptationPolicyService adaptationPolicy,
-        ISessionRepository sessionRepository,
-        ISimCatalogRepository simCatalog,
-        ILogger<RecursorIngestionService> logger)
+    IAdxIngestionService adxIngestion,
+    IFeatureExtractionService featureExtraction,
+    IBehaviorInterpreter behaviorInterpreter,
+    IAdaptationPolicyService adaptationPolicy,
+    IExplanationGenerationService explanationService,
+    ISessionRepository sessionRepository,
+    ISimCatalogRepository simCatalog,
+    ILogger<RecursorIngestionService> logger)
     {
         _adxIngestion = adxIngestion;
         _featureExtraction = featureExtraction;
         _behaviorInterpreter = behaviorInterpreter;
         _adaptationPolicy = adaptationPolicy;
+        _explanationService = explanationService;
         _sessionRepository = sessionRepository;
         _simCatalog = simCatalog;
         _logger = logger;
@@ -115,10 +119,17 @@ public class RecursorIngestionService : IRecursorIngestionService
         if (adaptation is null)
         {
             _logger.LogInformation("No adaptation produced for session {SessionId}.", session.SessionId);
+            var explanationNoAdaptation = await _explanationService.GenerateExplanationAsync(
+    session,
+    behaviorProfile,
+    hypothesisSet,
+    null);
+
             return new IngestionResult
             {
                 AdaptationProduced = false,
-                HypothesisLabels = hypothesisLabels
+                HypothesisLabels = hypothesisLabels,
+                Explanation = explanationNoAdaptation
             };
         }
 
@@ -146,6 +157,12 @@ public class RecursorIngestionService : IRecursorIngestionService
             adaptation.ReasoningSummary,
             session.CurrentDifficultyProfile.TryGetValue("hintMode", out var hintMode) ? hintMode : "(none)");
 
+        var explanation = await _explanationService.GenerateExplanationAsync(
+    session,
+    behaviorProfile,
+    hypothesisSet,
+    adaptation);
+
         // Step 15: Return bounded parameter changes.
         return new IngestionResult
         {
@@ -153,7 +170,8 @@ public class RecursorIngestionService : IRecursorIngestionService
             ParameterChanges = adaptation.ParameterChanges,
             HypothesisLabels = hypothesisLabels,
             ReasoningSummary = adaptation.ReasoningSummary,
-            AdaptationId = adaptation.Id
+            AdaptationId = adaptation.Id,
+            Explanation = explanation
         };
     }
 }

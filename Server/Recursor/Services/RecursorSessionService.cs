@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
+using NCATAIBlazorFrontendTest.Shared;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
@@ -33,6 +34,7 @@ public class ProcessBatchResult
     public List<ParameterChange> ParameterChanges { get; init; } = [];
     public string? ReasoningSummary { get; init; }
     public List<string> HypothesisLabels { get; set; } = new();
+    public GptExplanationResult? Explanation { get; init; }
     public string? Error { get; init; }
 }
 
@@ -102,7 +104,8 @@ public class RecursorSessionService : IRecursorSessionService
             AdaptationProduced = result.AdaptationProduced,
             ParameterChanges = result.ParameterChanges,
             HypothesisLabels = result.HypothesisLabels,
-            ReasoningSummary = result.ReasoningSummary
+            ReasoningSummary = result.ReasoningSummary,
+            Explanation = result.Explanation
         };
     }
 

@@ -2496,11 +2496,6 @@ C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Clien
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\xt8b5lk56c-tptq2av103.gz
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\qhcyc0zblk-lfu7j35m59.gz
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\qa1qfps9l1-oyz0vx2fzb.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\0gpzvimwfr-7o3fkeppro.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\v88vaap3a2-mal2ub0uwy.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\ka8mhffdbw-ak44ua3dh7.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\8glc2t5u1m-woavgifi3x.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\1ouikicgtj-cdvweai5wi.gz
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\staticwebassets.build.endpoints.json
@@ -2516,3 +2511,8 @@ C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Clien
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\refint\NCATAIBlazorFrontendTest.Client.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\NCATAIBlazorFrontendTest.Client.pdb
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\ref\NCATAIBlazorFrontendTest.Client.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\0gpzvimwfr-zn7b1hpbm8.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\v88vaap3a2-idy6v5l874.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\ka8mhffdbw-aks6kit1pr.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\8glc2t5u1m-h0bwci4rrm.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Debug\net8.0\compressed\1ouikicgtj-pe9jigxdiq.gz
