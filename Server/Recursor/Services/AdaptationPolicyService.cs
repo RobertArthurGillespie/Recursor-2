@@ -4,7 +4,6 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
 public interface IAdaptationPolicyService
 {
-    // Returns an AdaptationDecisionDocument if any policy fires, or null if nothing applies.
     AdaptationDecisionDocument? ApplyPolicy(
         SessionDocument session,
         SimCatalogDocument catalog,
@@ -14,9 +13,9 @@ public interface IAdaptationPolicyService
 public class AdaptationPolicyService : IAdaptationPolicyService
 {
     public AdaptationDecisionDocument? ApplyPolicy(
-        SessionDocument session,
-        SimCatalogDocument catalog,
-        HypothesisSetDocument hypothesisSet)
+    SessionDocument session,
+    SimCatalogDocument catalog,
+    HypothesisSetDocument hypothesisSet)
     {
         if (hypothesisSet.Hypotheses.Count == 0)
             return null;
@@ -35,14 +34,22 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 .ToList();
         }
 
+        string? currentHintMode = GetCurrentHintMode(session);
+
         var interventionFamilies = sourceHypotheses
             .OrderByDescending(h => h.Confidence)
             .SelectMany(h => GetInterventionFamilies(h.Label))
             .Distinct()
             .ToList();
 
-        // Build one bounded parameter change per family.
-        // If two families target the same parameter, the first (highest-confidence) wins.
+        if (hasRecovery && string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+        {
+            interventionFamilies = interventionFamilies
+                .Select(f => f == "hint-fade" ? "hint-remove" : f)
+                .Distinct()
+                .ToList();
+        }
+
         var changes = new List<ParameterChange>();
         var usedParameters = new HashSet<string>();
 
@@ -77,10 +84,6 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         };
     }
 
-    // ── Hypothesis → intervention family mapping ──────────────────────────────
-    // Each hypothesis label maps to one or more intervention families.
-    // Multiple families per hypothesis allow compound responses.
-
     private static IEnumerable<string> GetInterventionFamilies(string hypothesisLabel)
     {
         return hypothesisLabel switch
@@ -96,23 +99,17 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             "task-discontinuity" => ["distractor-reduction"],
             "learner-overload" => ["difficulty-reduction", "pace-support", "scaffold-hints"],
 
-            // New higher-order labels
             "confusion_pattern" => ["difficulty-reduction", "scaffold-hints", "distractor-reduction"],
             "hesitation_pattern" => ["pace-support", "scaffold-hints"],
             "impulsivity_pattern" => ["pace-support", "scaffold-error-tolerance"],
             "hint_dependence_pattern" => ["scaffold-hints"],
             "compound_confusion_hint_dependence" => ["difficulty-reduction", "scaffold-hints", "pace-support"],
 
-            // Recovery / rechallenge
             "recovery_pattern" => ["difficulty-increase", "pace-increase", "hint-fade"],
 
             _ => ["difficulty-reduction"]
         };
     }
-
-    // ── Intervention family → parameter change ────────────────────────────────
-    // Each family targets one named parameter in the sim catalog.
-    // Returns null if the parameter is not present in this sim's catalog.
 
     private static ParameterChange? BuildFamilyChange(string family, SimCatalogDocument catalog)
     {
@@ -126,6 +123,7 @@ public class AdaptationPolicyService : IAdaptationPolicyService
 
             "scaffold-hints" => BuildEnumChange("hintMode", "set", "guided", catalog),
             "hint-fade" => BuildEnumChange("hintMode", "set", "minimal", catalog),
+            "hint-remove" => BuildEnumChange("hintMode", "set", "off", catalog),
 
             "scaffold-error-tolerance" => BuildBoundedIntChange("errorTolerance", "increase", 1, catalog),
             "distractor-reduction" => BuildBoundedFloatChange("distractorDensity", "decrease", 0.15, catalog),
@@ -135,8 +133,6 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             _ => null
         };
     }
-
-    // ── Bounded change builders ───────────────────────────────────────────────
 
     private static ParameterChange? BuildBoundedFloatChange(
         string paramName, string operation, double delta, SimCatalogDocument catalog)
@@ -172,5 +168,19 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         if (!def.AllowedValues.Contains(value)) return null;
 
         return new ParameterChange { Parameter = paramName, Operation = operation, Value = value };
+    }
+
+    private static string? GetCurrentHintMode(SessionDocument session)
+    {
+        if (session.CurrentDifficultyProfile is null)
+            return null;
+
+        if (session.CurrentDifficultyProfile.TryGetValue("hintMode", out var value) &&
+            !string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+
+        return null;
     }
 }

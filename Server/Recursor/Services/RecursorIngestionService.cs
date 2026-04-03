@@ -124,9 +124,27 @@ public class RecursorIngestionService : IRecursorIngestionService
 
         // Step 14: Ingest adaptation decision into ADX.
         await _adxIngestion.IngestAdaptationDecisionAsync(AdxRowMapper.MapAdaptationDecision(adaptation));
+
+        // Persist the applied adaptive state onto the session so future policy
+        // decisions can see the current effective hint mode / difficulty profile.
+        foreach (var change in adaptation.ParameterChanges)
+        {
+            if (change.Value is not null)
+            {
+                session.CurrentDifficultyProfile[change.Parameter] = change.Value.ToString() ?? "";
+            }
+        }
+
         session.LatestAdaptationId = adaptation.Id;
+        session.LastSeenAtUtc = DateTime.UtcNow;
+
         _sessionRepository.Update(session);
-        _logger.LogInformation("Adaptation produced for session {SessionId}: {Summary}.", session.SessionId, adaptation.ReasoningSummary);
+
+        _logger.LogInformation(
+            "Adaptation produced for session {SessionId}: {Summary}. CurrentDifficultyProfile hintMode={HintMode}",
+            session.SessionId,
+            adaptation.ReasoningSummary,
+            session.CurrentDifficultyProfile.TryGetValue("hintMode", out var hintMode) ? hintMode : "(none)");
 
         // Step 15: Return bounded parameter changes.
         return new IngestionResult
