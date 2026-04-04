@@ -25,6 +25,9 @@ public class SessionDocument
     public string? LatestHypothesisSetId { get; set; }
     public string? LatestAdaptationId { get; set; }
     public SessionSummary Summary { get; set; } = new();
+    public List<TrajectorySnapshot> RecentSnapshots { get; set; } = new();
+    public int ConsecutiveStableMasteryWindows { get; set; }
+    public int ConsecutiveRelapseWindows { get; set; }
 }
 
 public class SessionSummary

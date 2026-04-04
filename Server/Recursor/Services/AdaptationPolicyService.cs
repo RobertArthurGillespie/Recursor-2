@@ -20,11 +20,36 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         if (hypothesisSet.Hypotheses.Count == 0)
             return null;
 
+        bool hasStableMastery = hypothesisSet.Hypotheses.Any(h => h.Label == "stable_mastery_pattern");
+        bool hasRelapse = hypothesisSet.Hypotheses.Any(h => h.Label == "relapse_pattern");
         bool hasRecovery = hypothesisSet.Hypotheses.Any(h => h.Label == "recovery_pattern");
 
         IEnumerable<BehavioralHypothesis> sourceHypotheses = hypothesisSet.Hypotheses;
 
-        if (hasRecovery)
+        if (hasStableMastery)
+        {
+            sourceHypotheses = hypothesisSet.Hypotheses
+                .Where(h =>
+                    h.Label == "stable_mastery_pattern" ||
+                    h.Label == "recovery_pattern" ||
+                    h.Label == "improving_pattern")
+                .ToList();
+        }
+        else if (hasRelapse)
+        {
+            sourceHypotheses = hypothesisSet.Hypotheses
+                .Where(h =>
+                    h.Label == "relapse_pattern" ||
+                    h.Label == "worsening_pattern" ||
+                    h.Label == "learner-overload" ||
+                    h.Label == "confusion_pattern" ||
+                    h.Label == "attention-deficit" ||
+                    h.Label == "goal-confusion" ||
+                    h.Label == "hint_dependence_pattern" ||
+                    h.Label == "hint-dependency")
+                .ToList();
+        }
+        else if (hasRecovery)
         {
             sourceHypotheses = hypothesisSet.Hypotheses
                 .Where(h =>
@@ -42,7 +67,54 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             .Distinct()
             .ToList();
 
-        if (hasRecovery && string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+        // Staged hint-mode state machine — replaces all hint-related families with
+        // exactly the one transition appropriate for the current hint mode.
+        var hintFamilies = new HashSet<string>
+        {
+            "scaffold-hints", "hint-fade", "hint-remove", "hint-reduction", "hint-restore-minimal"
+        };
+
+        if (hasStableMastery)
+        {
+            interventionFamilies = interventionFamilies.Where(f => !hintFamilies.Contains(f)).ToList();
+
+            if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase))
+            {
+                interventionFamilies.Add("hint-fade");       // guided → minimal
+            }
+            else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+            {
+                // Require 2 consecutive stable-mastery windows before removing hints entirely.
+                // This prevents a single good batch from jumping straight from minimal → off.
+                if (session.ConsecutiveStableMasteryWindows >= 2)
+                    interventionFamilies.Add("hint-remove"); // minimal → off (confirmed stable)
+                // else: stay in minimal this window; check again next window
+            }
+            // off → no hint family added
+        }
+        else if (hasRelapse)
+        {
+            interventionFamilies = interventionFamilies.Where(f => !hintFamilies.Contains(f)).ToList();
+
+            if (string.Equals(currentHintMode, "off", StringComparison.OrdinalIgnoreCase))
+            {
+                interventionFamilies.Add("hint-restore-minimal");   // off → minimal
+            }
+            else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+            {
+                // Require 2 consecutive relapse windows before escalating minimal → guided.
+                // This prevents a single bad batch from immediately re-introducing full guidance.
+                if (session.ConsecutiveRelapseWindows >= 2)
+                    interventionFamilies.Add("scaffold-hints");      // minimal → guided (confirmed relapse)
+                else
+                    interventionFamilies.Add("hint-restore-minimal"); // stay in minimal this window
+            }
+            else
+            {
+                interventionFamilies.Add("scaffold-hints");          // guided → guided
+            }
+        }
+        else if (hasRecovery && string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
         {
             interventionFamilies = interventionFamilies
                 .Select(f => f == "hint-fade" ? "hint-remove" : f)
@@ -107,6 +179,11 @@ public class AdaptationPolicyService : IAdaptationPolicyService
 
             "recovery_pattern" => ["difficulty-increase", "pace-increase", "hint-fade"],
 
+            "stable_mastery_pattern" => ["difficulty-increase", "pace-increase", "hint-remove"],
+            "relapse_pattern" => ["difficulty-reduction", "pace-support", "scaffold-hints"],
+            "improving_pattern" => ["difficulty-increase", "pace-increase", "hint-fade"],
+            "worsening_pattern" => ["difficulty-reduction", "pace-support", "scaffold-hints"],
+
             _ => ["difficulty-reduction"]
         };
     }
@@ -129,6 +206,7 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             "distractor-reduction" => BuildBoundedFloatChange("distractorDensity", "decrease", 0.15, catalog),
 
             "hint-reduction" => BuildEnumChange("hintMode", "set", "minimal", catalog),
+            "hint-restore-minimal" => BuildEnumChange("hintMode", "set", "minimal", catalog),
 
             _ => null
         };

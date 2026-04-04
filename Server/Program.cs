@@ -100,6 +100,7 @@ builder.Services.AddScoped<IFeatureExtractionService, FeatureExtractionService>(
 builder.Services.AddScoped<IBehaviorInterpreter, BehaviorInterpreter>();
 builder.Services.AddScoped<IAdaptationPolicyService, AdaptationPolicyService>();
 builder.Services.AddScoped<IRecursorIngestionService, RecursorIngestionService>();
+builder.Services.AddScoped<ITrajectoryAnalysisService, TrajectoryAnalysisService>();
 builder.Services.AddScoped<IRecursorSessionService, RecursorSessionService>();
 builder.Services.AddScoped<IBehaviorScoringService, BehaviorScoringService>();
 builder.Services.AddScoped<IExplanationGenerationService, AzureOpenAiExplanationService>();

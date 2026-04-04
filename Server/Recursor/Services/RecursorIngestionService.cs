@@ -33,6 +33,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly ISessionRepository _sessionRepository;
     private readonly ISimCatalogRepository _simCatalog;
     private readonly IExplanationGenerationService _explanationService;
+    private readonly ITrajectoryAnalysisService _trajectoryAnalysis;
     private readonly ILogger<RecursorIngestionService> _logger;
 
     public RecursorIngestionService(
@@ -43,6 +44,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     IExplanationGenerationService explanationService,
     ISessionRepository sessionRepository,
     ISimCatalogRepository simCatalog,
+    ITrajectoryAnalysisService trajectoryAnalysis,
     ILogger<RecursorIngestionService> logger)
     {
         _adxIngestion = adxIngestion;
@@ -52,6 +54,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _explanationService = explanationService;
         _sessionRepository = sessionRepository;
         _simCatalog = simCatalog;
+        _trajectoryAnalysis = trajectoryAnalysis;
         _logger = logger;
     }
 
@@ -87,6 +90,33 @@ public class RecursorIngestionService : IRecursorIngestionService
         // Step 9: Build behavior profile.
         var behaviorProfile = _behaviorInterpreter.BuildBehaviorProfile(featureWindow);
 
+        // Trajectory analysis reads history before the current snapshot is added.
+        var trajectoryResult = _trajectoryAnalysis.Analyze(session, behaviorProfile);
+
+        // Append snapshot for this window and trim to the most recent 5.
+        var snapshot = new TrajectorySnapshot
+        {
+            WindowIndex = behaviorProfile.WindowIndex,
+            AttentionDetection = behaviorProfile.DimensionScores.TryGetValue("attentionDetection", out var snAttn) ? snAttn.Score : 0.0,
+            GoalUnderstanding = behaviorProfile.DimensionScores.TryGetValue("goalUnderstanding", out var snGoal) ? snGoal.Score : 0.0,
+            ProcedureSequencing = behaviorProfile.DimensionScores.TryGetValue("procedureSequencing", out var snProc) ? snProc.Score : 0.0,
+            SelfCorrection = behaviorProfile.DimensionScores.TryGetValue("selfCorrection", out var snSelf) ? snSelf.Score : 0.0,
+            FeedbackResponsiveness = behaviorProfile.DimensionScores.TryGetValue("feedbackResponsiveness", out var snFb) ? snFb.Score : 0.0,
+            ConfusionScore = behaviorProfile.BehaviorScores?.ConfusionScore ?? 0.0,
+            HesitationScore = behaviorProfile.BehaviorScores?.HesitationScore ?? 0.0,
+            ImpulsivityScore = behaviorProfile.BehaviorScores?.ImpulsivityScore ?? 0.0,
+            HintDependenceScore = behaviorProfile.BehaviorScores?.HintDependenceScore ?? 0.0,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        session.RecentSnapshots.Add(snapshot);
+        if (session.RecentSnapshots.Count > 5)
+        {
+            session.RecentSnapshots = session.RecentSnapshots
+                .Skip(session.RecentSnapshots.Count - 5)
+                .ToList();
+        }
+        _sessionRepository.Update(session);
+
         // Step 10: Ingest behavior profile into ADX.
         await _adxIngestion.IngestBehaviorProfileAsync(AdxRowMapper.MapBehaviorProfile(behaviorProfile));
         session.LatestBehaviorProfileId = behaviorProfile.Id;
@@ -94,9 +124,96 @@ public class RecursorIngestionService : IRecursorIngestionService
 
         // Step 11: Build hypothesis set.
         var hypothesisSet = _behaviorInterpreter.BuildHypothesisSet(behaviorProfile);
+
+        // Append trajectory hypotheses after the base hypothesis set is built.
+        if (trajectoryResult.HasEnoughHistory && trajectoryResult.TrajectoryLabels.Count > 0)
+        {
+            foreach (var label in trajectoryResult.TrajectoryLabels)
+            {
+                BehavioralHypothesis? trajectoryHypothesis = label switch
+                {
+                    "stable_mastery_pattern" => new BehavioralHypothesis
+                    {
+                        Label = "stable_mastery_pattern",
+                        Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
+                        Confidence = 0.80,
+                        Evidence = new List<string>
+                        {
+                            $"GoalTrend={trajectoryResult.GoalTrend:0.00}",
+                            $"AttentionTrend={trajectoryResult.AttentionTrend:0.00}",
+                            $"ConfusionTrend={trajectoryResult.ConfusionTrend:0.00}",
+                            $"HintDependenceTrend={trajectoryResult.HintDependenceTrend:0.00}"
+                        }
+                    },
+                    "relapse_pattern" => new BehavioralHypothesis
+                    {
+                        Label = "relapse_pattern",
+                        Dimensions = new List<string> { "goalUnderstanding", "attentionDetection", "feedbackResponsiveness" },
+                        Confidence = 0.80,
+                        Evidence = new List<string>
+                        {
+                            $"GoalTrend={trajectoryResult.GoalTrend:0.00}",
+                            $"AttentionTrend={trajectoryResult.AttentionTrend:0.00}",
+                            $"ConfusionTrend={trajectoryResult.ConfusionTrend:0.00}",
+                            $"HintDependenceTrend={trajectoryResult.HintDependenceTrend:0.00}"
+                        }
+                    },
+                    "improving_pattern" => new BehavioralHypothesis
+                    {
+                        Label = "improving_pattern",
+                        Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
+                        Confidence = 0.70,
+                        Evidence = new List<string>
+                        {
+                            $"GoalTrend={trajectoryResult.GoalTrend:0.00}",
+                            $"AttentionTrend={trajectoryResult.AttentionTrend:0.00}",
+                            $"ConfusionTrend={trajectoryResult.ConfusionTrend:0.00}"
+                        }
+                    },
+                    "worsening_pattern" => new BehavioralHypothesis
+                    {
+                        Label = "worsening_pattern",
+                        Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
+                        Confidence = 0.70,
+                        Evidence = new List<string>
+                        {
+                            $"GoalTrend={trajectoryResult.GoalTrend:0.00}",
+                            $"AttentionTrend={trajectoryResult.AttentionTrend:0.00}",
+                            $"ConfusionTrend={trajectoryResult.ConfusionTrend:0.00}"
+                        }
+                    },
+                    _ => null
+                };
+
+                if (trajectoryHypothesis is not null)
+                    hypothesisSet.Hypotheses.Add(trajectoryHypothesis);
+            }
+        }
+
         var hypothesisLabels = hypothesisSet.Hypotheses
-    .Select(h => h.Label)
-    .ToList();
+            .Select(h => h.Label)
+            .ToList();
+
+        // Update consecutive trajectory counters for hysteresis in the adaptation policy.
+        bool hypothesisHasStableMastery = hypothesisLabels.Contains("stable_mastery_pattern");
+        bool hypothesisHasRelapse = hypothesisLabels.Contains("relapse_pattern");
+
+        if (hypothesisHasStableMastery)
+        {
+            session.ConsecutiveStableMasteryWindows += 1;
+            session.ConsecutiveRelapseWindows = 0;
+        }
+        else if (hypothesisHasRelapse)
+        {
+            session.ConsecutiveRelapseWindows += 1;
+            session.ConsecutiveStableMasteryWindows = 0;
+        }
+        else
+        {
+            session.ConsecutiveStableMasteryWindows = 0;
+            session.ConsecutiveRelapseWindows = 0;
+        }
+        _sessionRepository.Update(session);
 
         // Step 12: Ingest hypothesis set into ADX.
         await _adxIngestion.IngestHypothesisSetAsync(AdxRowMapper.MapHypothesisSet(hypothesisSet));

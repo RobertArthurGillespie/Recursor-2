@@ -46,6 +46,18 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
 
                 ChatClient client = openAIClient.GetChatClient("gpt-5.4-mini");
 
+                // Collect trajectory labels present in this window for GPT context.
+                var trajectoryLabels = hypothesisSet.Hypotheses
+                    .Where(h =>
+                        h.Label == "stable_mastery_pattern" ||
+                        h.Label == "relapse_pattern" ||
+                        h.Label == "improving_pattern" ||
+                        h.Label == "worsening_pattern")
+                    .Select(h => h.Label)
+                    .ToList();
+
+                session.CurrentDifficultyProfile.TryGetValue("hintMode", out var currentHintMode);
+
                 var payload = new
                 {
                     session = new
@@ -53,7 +65,11 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
                         session.SessionId,
                         session.SimId,
                         session.ScenarioId,
-                        session.BatchCount
+                        session.BatchCount,
+                        currentHintMode,
+                        currentDifficultyProfile = session.CurrentDifficultyProfile,
+                        consecutiveStableMasteryWindows = session.ConsecutiveStableMasteryWindows,
+                        consecutiveRelapseWindows = session.ConsecutiveRelapseWindows
                     },
                     dimensionScores = behaviorProfile.DimensionScores.ToDictionary(
                         kvp => kvp.Key,
@@ -64,6 +80,7 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
                             kvp.Value.Evidence
                         }),
                     behaviorScores = behaviorProfile.BehaviorScores,
+                    trajectoryLabels,
                     hypotheses = hypothesisSet.Hypotheses.Select(h => new
                     {
                         h.Label,
@@ -91,8 +108,15 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
                 string systemPrompt = """
 You are an explanation layer for an adaptive training engine.
 
-You do not decide the adaptation.
-You only explain what the system already inferred and why support changed.
+You do not decide the adaptation. You only explain what the system already inferred and why support changed.
+
+The input payload contains:
+- session: current session state, hint mode, difficulty profile, and consecutive trajectory window counters
+- dimensionScores: per-dimension behavioral scores for the current window
+- behaviorScores: confusion, hesitation, impulsivity, and hint-dependence scores
+- trajectoryLabels: trend labels detected across recent windows (may be empty)
+- hypotheses: behavioral hypotheses generated for this window
+- adaptation: parameter changes applied (or null if no change was made)
 
 Return valid JSON only with exactly these fields:
 - learnerStateSummary
@@ -100,12 +124,26 @@ Return valid JSON only with exactly these fields:
 - coachMessage
 - confidenceNote
 
-Rules:
-- Be concise and grounded in the supplied data.
-- Do not invent behaviors not present in the input.
-- If adaptation is null, explain that no support change was applied.
-- Do not include markdown fences.
+Rules for each field:
+- learnerStateSummary: summarize the learner's current performance and recent trend in one or two sentences. Distinguish between current window performance and multi-window trajectory.
+- whySupportChanged: explain why support was changed, held, or left unchanged. If a transition was gradual, explain that the system requires repeated evidence before escalating or removing support.
+- coachMessage: a brief, encouraging message addressed to the learner. Ground it in the actual state and trend. Do not invent behaviors.
+- confidenceNote: a short note on how confident the system is based on the evidence provided.
+
+Trajectory guidance:
+- If trajectoryLabels contains "stable_mastery_pattern": explain that support reduction reflects sustained high performance across multiple recent windows, not just this one.
+- If trajectoryLabels contains "relapse_pattern": explain that support restoration reflects a detected decline after prior improvement, and that the system is responding carefully.
+- If trajectoryLabels contains "improving_pattern": acknowledge positive momentum across recent windows.
+- If trajectoryLabels contains "worsening_pattern": acknowledge declining trend and that additional support is being considered.
+- If consecutiveStableMasteryWindows is 1 and hint mode did not change toward off: explain that the system observed one stable window but is waiting for a second before reducing hints further.
+- If consecutiveRelapseWindows is 1 and hint mode did not change toward guided: explain that the system observed one difficult window but is waiting for a second before adding more guidance.
+
+Additional rules:
+- Do not invent behaviors not present in the supplied data.
 - Do not mention being an AI model.
+- Do not use markdown.
+- Keep each field concise and readable.
+- If adaptation is null, explain that no support change was applied this window.
 """;
 
                 ChatMessage[] messages = new ChatMessage[]
@@ -129,6 +167,12 @@ Rules:
                     _logger.LogWarning("GPT explanation returned null after deserialization. Raw: {Raw}", raw);
                     return null;
                 }
+
+                // Ensure no field is null even if GPT omitted it.
+                explanation.LearnerStateSummary ??= "";
+                explanation.WhySupportChanged ??= "";
+                explanation.CoachMessage ??= "";
+                explanation.ConfidenceNote ??= "";
 
                 return explanation;
             }
