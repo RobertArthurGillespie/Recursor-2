@@ -78,6 +78,65 @@ public class SimCatalogRepository : ISimCatalogRepository
                         Max  = 1.0
                     }
                 ]
+            },
+            ["sim-sequence-training-v1"] = new SimCatalogDocument
+            {
+                Id = "sim-sequence-training-v1",
+                DocumentType = "SimCatalog",
+                SimId = "sim-sequence-training-v1",
+
+                SupportedDimensions =
+        [
+            "attentionDetection",
+            "goalUnderstanding",
+            "procedureSequencing",
+            "paceRegulation",
+            "selfCorrection",
+            "feedbackResponsiveness",
+            "safetyCompliance",
+            "taskContinuity"
+        ],
+
+                EventTypes =
+        [
+            "action",
+            "error",
+            "hint_request",
+            "task_complete",
+            "step_error",
+            "step_complete"
+        ],
+
+                AdaptiveParameters =
+        [
+            new AdaptiveParameterDefinition
+            {
+                Name = "difficulty",
+                Type = "float",
+                Min  = 0.0,
+                Max  = 1.0
+            },
+            new AdaptiveParameterDefinition
+            {
+                Name = "hintMode",
+                Type = "enum",
+                AllowedValues = ["off", "minimal", "guided"]
+            },
+            new AdaptiveParameterDefinition
+            {
+                Name = "timePressure",
+                Type = "float",
+                Min  = 0.0,
+                Max  = 1.0
+            },
+            new AdaptiveParameterDefinition
+            {
+                Name = "errorTolerance",
+                Type = "int",
+                Min  = 0,
+                Max  = 5
+            }
+        ]
             }
         };
     }

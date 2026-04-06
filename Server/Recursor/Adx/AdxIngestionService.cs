@@ -14,6 +14,7 @@ public interface IAdxIngestionService
     Task IngestBehaviorProfileAsync(BehaviorProfileRow row);
     Task IngestHypothesisSetAsync(HypothesisSetRow row);
     Task IngestAdaptationDecisionAsync(AdaptationDecisionRow row);
+    Task IngestBehaviorStateTrainingRowAsync(BehaviorStateTrainingRow row);
 }
 
 public class AdxIngestionService : IAdxIngestionService
@@ -110,6 +111,25 @@ public class AdxIngestionService : IAdxIngestionService
         var props = new KustoQueuedIngestionProperties(_database, "AdaptationDecisions")
         {
             Format = DataSourceFormat.csv
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    public async Task IngestBehaviorStateTrainingRowAsync(BehaviorStateTrainingRow row)
+    {
+        if (!CheckClient("BehaviorStateTrainingRows")) return;
+
+        var table = BuildBehaviorStateTrainingRowsTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "BehaviorStateTrainingRows")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "BehaviorStateTrainingRowsCsvMapping"
+            }
         };
 
         using var reader = table.CreateDataReader();
@@ -273,6 +293,114 @@ public class AdxIngestionService : IAdxIngestionService
      row.ExpiresAfterWindow,
      row.CreatedAtUtc
  );
+
+        return table;
+    }
+
+    private static DataTable BuildBehaviorStateTrainingRowsTable(BehaviorStateTrainingRow row)
+    {
+        var table = new DataTable("BehaviorStateTrainingRows");
+
+        // Identity / metadata
+        table.Columns.Add("SessionId",                        typeof(string));
+        table.Columns.Add("SimId",                            typeof(string));
+        table.Columns.Add("ScenarioId",                       typeof(string));
+        table.Columns.Add("WindowIndex",                      typeof(int));
+        table.Columns.Add("TaskType",                         typeof(string));
+        table.Columns.Add("CreatedAtUtc",                     typeof(DateTime));
+
+        // Dimension scores
+        table.Columns.Add("AttentionDetection",               typeof(double));
+        table.Columns.Add("GoalUnderstanding",                typeof(double));
+        table.Columns.Add("ProcedureSequencing",              typeof(double));
+        table.Columns.Add("PaceRegulation",                   typeof(double));
+        table.Columns.Add("SelfCorrection",                   typeof(double));
+        table.Columns.Add("FeedbackResponsiveness",           typeof(double));
+        table.Columns.Add("SafetyCompliance",                 typeof(double));
+        table.Columns.Add("TaskContinuity",                   typeof(double));
+
+        // Higher-order behavior scores
+        table.Columns.Add("ConfusionScore",                   typeof(double));
+        table.Columns.Add("HesitationScore",                  typeof(double));
+        table.Columns.Add("ImpulsivityScore",                 typeof(double));
+        table.Columns.Add("HintDependenceScore",              typeof(double));
+
+        // Trajectory
+        table.Columns.Add("GoalTrend",                        typeof(double));
+        table.Columns.Add("AttentionTrend",                   typeof(double));
+        table.Columns.Add("ConfusionTrend",                   typeof(double));
+        table.Columns.Add("HintDependenceTrend",              typeof(double));
+
+        // Adaptive state
+        table.Columns.Add("CurrentHintMode",                  typeof(string));
+        table.Columns.Add("CurrentDifficulty",                typeof(double));
+        table.Columns.Add("CurrentTimePressure",              typeof(double));
+        table.Columns.Add("CurrentErrorTolerance",            typeof(double));
+
+        // Counters
+        table.Columns.Add("ConsecutiveStableMasteryWindows",  typeof(int));
+        table.Columns.Add("ConsecutiveRelapseWindows",        typeof(int));
+
+        // Window summary
+        table.Columns.Add("EventCountInWindow",               typeof(int));
+        table.Columns.Add("ErrorCountInWindow",               typeof(int));
+        table.Columns.Add("HintCountInWindow",                typeof(int));
+        table.Columns.Add("StepCompleteCountInWindow",        typeof(int));
+
+        // Weak labels
+        table.Columns.Add("LabelConfusion",                   typeof(int));
+        table.Columns.Add("LabelHintDependence",              typeof(int));
+        table.Columns.Add("LabelStableMastery",               typeof(int));
+
+        // Shadow prediction
+        table.Columns.Add("PredConfusionProbability",         typeof(double));
+        table.Columns.Add("PredHintDependenceProbability",    typeof(double));
+        table.Columns.Add("PredStableMasteryProbability",     typeof(double));
+        table.Columns.Add("ModelVersion",                     typeof(string));
+        table.Columns.Add("InferenceMode",                    typeof(string));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.SimId,
+            row.ScenarioId,
+            row.WindowIndex,
+            row.TaskType,
+            row.CreatedAtUtc,
+            row.AttentionDetection,
+            row.GoalUnderstanding,
+            row.ProcedureSequencing,
+            row.PaceRegulation,
+            row.SelfCorrection,
+            row.FeedbackResponsiveness,
+            row.SafetyCompliance,
+            row.TaskContinuity,
+            row.ConfusionScore,
+            row.HesitationScore,
+            row.ImpulsivityScore,
+            row.HintDependenceScore,
+            row.GoalTrend,
+            row.AttentionTrend,
+            row.ConfusionTrend,
+            row.HintDependenceTrend,
+            row.CurrentHintMode,
+            row.CurrentDifficulty,
+            row.CurrentTimePressure,
+            row.CurrentErrorTolerance,
+            row.ConsecutiveStableMasteryWindows,
+            row.ConsecutiveRelapseWindows,
+            row.EventCountInWindow,
+            row.ErrorCountInWindow,
+            row.HintCountInWindow,
+            row.StepCompleteCountInWindow,
+            row.LabelConfusion,
+            row.LabelHintDependence,
+            row.LabelStableMastery,
+            row.PredConfusionProbability,
+            row.PredHintDependenceProbability,
+            row.PredStableMasteryProbability,
+            row.ModelVersion,
+            row.InferenceMode
+        );
 
         return table;
     }

@@ -1,6 +1,7 @@
 using System.Text.Json;
-using NCATAIBlazorFrontendTest.Client.Pages.Apps.Users;
+//using NCATAIBlazorFrontendTest.Client.Pages.Apps.Users;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
+using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 
@@ -101,6 +102,75 @@ public static class AdxRowMapper
             ReasoningSummary = doc.ReasoningSummary,
             ExpiresAfterWindow = doc.ExpiresAfterWindow,
             CreatedAtUtc = DateTime.UtcNow
+        };
+    }
+
+    public static BehaviorStateTrainingRow MapBehaviorStateTrainingRow(
+        BehaviorStateFeatureVector featureVector,
+        HypothesisSetDocument hypothesisSet,
+        BehaviorStatePrediction? prediction)
+    {
+        var labels = hypothesisSet.Hypotheses.Select(h => h.Label).ToHashSet();
+
+        return new BehaviorStateTrainingRow
+        {
+            // Identity / metadata
+            SessionId = featureVector.SessionId,
+            SimId = featureVector.SimId,
+            ScenarioId = featureVector.ScenarioId,
+            WindowIndex = featureVector.WindowIndex,
+            TaskType = featureVector.TaskType,
+            CreatedAtUtc = DateTime.UtcNow,
+
+            // Dimension scores
+            AttentionDetection = featureVector.AttentionDetection,
+            GoalUnderstanding = featureVector.GoalUnderstanding,
+            ProcedureSequencing = featureVector.ProcedureSequencing,
+            PaceRegulation = featureVector.PaceRegulation,
+            SelfCorrection = featureVector.SelfCorrection,
+            FeedbackResponsiveness = featureVector.FeedbackResponsiveness,
+            SafetyCompliance = featureVector.SafetyCompliance,
+            TaskContinuity = featureVector.TaskContinuity,
+
+            // Higher-order behavior scores
+            ConfusionScore = featureVector.ConfusionScore,
+            HesitationScore = featureVector.HesitationScore,
+            ImpulsivityScore = featureVector.ImpulsivityScore,
+            HintDependenceScore = featureVector.HintDependenceScore,
+
+            // Trajectory
+            GoalTrend = featureVector.GoalTrend,
+            AttentionTrend = featureVector.AttentionTrend,
+            ConfusionTrend = featureVector.ConfusionTrend,
+            HintDependenceTrend = featureVector.HintDependenceTrend,
+
+            // Adaptive state
+            CurrentHintMode = featureVector.CurrentHintMode,
+            CurrentDifficulty = featureVector.CurrentDifficulty,
+            CurrentTimePressure = featureVector.CurrentTimePressure,
+            CurrentErrorTolerance = featureVector.CurrentErrorTolerance,
+
+            // Counters
+            ConsecutiveStableMasteryWindows = featureVector.ConsecutiveStableMasteryWindows,
+            ConsecutiveRelapseWindows = featureVector.ConsecutiveRelapseWindows,
+
+            // Window summary
+            EventCountInWindow = featureVector.EventCountInWindow,
+            ErrorCountInWindow = featureVector.ErrorCountInWindow,
+            HintCountInWindow = featureVector.HintCountInWindow,
+            StepCompleteCountInWindow = featureVector.StepCompleteCountInWindow,
+
+            // Weak labels
+            LabelConfusion = (labels.Contains("confusion_pattern") || labels.Contains("goal-confusion")) ? 1 : 0,
+            LabelHintDependence = (labels.Contains("hint_dependence_pattern") || labels.Contains("hint-dependency")) ? 1 : 0,
+            LabelStableMastery = labels.Contains("stable_mastery_pattern") ? 1 : 0,
+
+            // Shadow prediction
+            PredConfusionProbability = prediction?.ConfusionProbability ?? 0.0,
+            PredHintDependenceProbability = prediction?.HintDependenceProbability ?? 0.0,
+            PredStableMasteryProbability = prediction?.StableMasteryProbability ?? 0.0,
+            ModelVersion = prediction?.ModelVersion ?? "",
+            InferenceMode = prediction?.InferenceMode ?? "shadow",
         };
     }
 

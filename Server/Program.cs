@@ -104,6 +104,8 @@ builder.Services.AddScoped<ITrajectoryAnalysisService, TrajectoryAnalysisService
 builder.Services.AddScoped<IRecursorSessionService, RecursorSessionService>();
 builder.Services.AddScoped<IBehaviorScoringService, BehaviorScoringService>();
 builder.Services.AddScoped<IExplanationGenerationService, AzureOpenAiExplanationService>();
+builder.Services.AddScoped<IBehaviorStateFeatureVectorBuilder, BehaviorStateFeatureVectorBuilder>();
+builder.Services.AddScoped<IBehaviorStatePredictionService, ShadowBehaviorStatePredictionService>();
 
 // Builds a Kusto connection string for the given URI using the configured auth mode.
 static KustoConnectionStringBuilder BuildAdxCsb(string uri, AdxOptions opts) =>

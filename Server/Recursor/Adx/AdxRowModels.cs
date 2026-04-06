@@ -77,3 +77,64 @@ public class AdaptationDecisionRow
     public int ExpiresAfterWindow { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 }
+
+public class BehaviorStateTrainingRow
+{
+    // Identity / metadata
+    public string SessionId { get; set; } = "";
+    public string SimId { get; set; } = "";
+    public string ScenarioId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public string TaskType { get; set; } = "";
+    public DateTime CreatedAtUtc { get; set; }
+
+    // Feature columns — dimension scores
+    public double AttentionDetection { get; set; }
+    public double GoalUnderstanding { get; set; }
+    public double ProcedureSequencing { get; set; }
+    public double PaceRegulation { get; set; }
+    public double SelfCorrection { get; set; }
+    public double FeedbackResponsiveness { get; set; }
+    public double SafetyCompliance { get; set; }
+    public double TaskContinuity { get; set; }
+
+    // Feature columns — higher-order behavior scores
+    public double ConfusionScore { get; set; }
+    public double HesitationScore { get; set; }
+    public double ImpulsivityScore { get; set; }
+    public double HintDependenceScore { get; set; }
+
+    // Feature columns — trajectory
+    public double GoalTrend { get; set; }
+    public double AttentionTrend { get; set; }
+    public double ConfusionTrend { get; set; }
+    public double HintDependenceTrend { get; set; }
+
+    // Feature columns — adaptive state
+    public string CurrentHintMode { get; set; } = "";
+    public double CurrentDifficulty { get; set; }
+    public double CurrentTimePressure { get; set; }
+    public double CurrentErrorTolerance { get; set; }
+
+    // Feature columns — counters
+    public int ConsecutiveStableMasteryWindows { get; set; }
+    public int ConsecutiveRelapseWindows { get; set; }
+
+    // Feature columns — window summary
+    public int EventCountInWindow { get; set; }
+    public int ErrorCountInWindow { get; set; }
+    public int HintCountInWindow { get; set; }
+    public int StepCompleteCountInWindow { get; set; }
+
+    // Weak-label columns
+    public int LabelConfusion { get; set; }
+    public int LabelHintDependence { get; set; }
+    public int LabelStableMastery { get; set; }
+
+    // Shadow prediction columns
+    public double PredConfusionProbability { get; set; }
+    public double PredHintDependenceProbability { get; set; }
+    public double PredStableMasteryProbability { get; set; }
+    public string ModelVersion { get; set; } = "";
+    public string InferenceMode { get; set; } = "shadow";
+}

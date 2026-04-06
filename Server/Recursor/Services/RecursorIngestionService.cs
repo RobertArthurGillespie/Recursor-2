@@ -34,6 +34,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly ISimCatalogRepository _simCatalog;
     private readonly IExplanationGenerationService _explanationService;
     private readonly ITrajectoryAnalysisService _trajectoryAnalysis;
+    private readonly IBehaviorStateFeatureVectorBuilder _featureVectorBuilder;
+    private readonly IBehaviorStatePredictionService _behaviorStatePredictionService;
     private readonly ILogger<RecursorIngestionService> _logger;
 
     public RecursorIngestionService(
@@ -45,6 +47,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     ISessionRepository sessionRepository,
     ISimCatalogRepository simCatalog,
     ITrajectoryAnalysisService trajectoryAnalysis,
+    IBehaviorStateFeatureVectorBuilder featureVectorBuilder,
+    IBehaviorStatePredictionService behaviorStatePredictionService,
     ILogger<RecursorIngestionService> logger)
     {
         _adxIngestion = adxIngestion;
@@ -55,6 +59,8 @@ public class RecursorIngestionService : IRecursorIngestionService
         _sessionRepository = sessionRepository;
         _simCatalog = simCatalog;
         _trajectoryAnalysis = trajectoryAnalysis;
+        _featureVectorBuilder = featureVectorBuilder;
+        _behaviorStatePredictionService = behaviorStatePredictionService;
         _logger = logger;
     }
 
@@ -214,6 +220,39 @@ public class RecursorIngestionService : IRecursorIngestionService
             session.ConsecutiveRelapseWindows = 0;
         }
         _sessionRepository.Update(session);
+
+        // Shadow ML prediction — additive only, never blocks or changes adaptation.
+        BehaviorStateFeatureVector? featureVector = null;
+        BehaviorStatePrediction? shadowPrediction = null;
+        try
+        {
+            featureVector = _featureVectorBuilder.Build(session, batch, behaviorProfile, trajectoryResult);
+            shadowPrediction = await _behaviorStatePredictionService.PredictAsync(featureVector);
+            if (shadowPrediction is not null)
+            {
+                _logger.LogInformation(
+                    "Shadow ML prediction generated. SessionId={SessionId} WindowIndex={WindowIndex} ModelVersion={ModelVersion} InferenceMode={InferenceMode}",
+                    session.SessionId, featureVector.WindowIndex, shadowPrediction.ModelVersion, shadowPrediction.InferenceMode);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Shadow ML prediction failed for session {SessionId}. Continuing pipeline.", session.SessionId);
+        }
+
+        // Training-row ingestion — additive only, never blocks or changes adaptation.
+        if (featureVector is not null)
+        {
+            try
+            {
+                var trainingRow = AdxRowMapper.MapBehaviorStateTrainingRow(featureVector, hypothesisSet, shadowPrediction);
+                await _adxIngestion.IngestBehaviorStateTrainingRowAsync(trainingRow);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Training row ingestion failed for session {SessionId}. Continuing pipeline.", session.SessionId);
+            }
+        }
 
         // Step 12: Ingest hypothesis set into ADX.
         await _adxIngestion.IngestHypothesisSetAsync(AdxRowMapper.MapHypothesisSet(hypothesisSet));
