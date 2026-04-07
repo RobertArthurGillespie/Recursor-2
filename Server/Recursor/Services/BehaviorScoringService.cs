@@ -21,28 +21,30 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
             double goal = Clamp01(features.GoalUnderstanding);
             double correction = Clamp01(features.SelfCorrection);
 
-            // Now derive behavioral states from them
-
+            // Core state scores
             double confusionScore =
-    (0.45 * (1.0 - goal)) +
-    (0.35 * (1.0 - attention)) +
-    (0.20 * (1.0 - feedback));
+                (0.45 * (1.0 - goal)) +
+                (0.35 * (1.0 - attention)) +
+                (0.20 * (1.0 - feedback));
 
             double hesitationScore =
                 (0.60 * (1.0 - pace)) +
                 (0.25 * (1.0 - goal)) +
                 (0.15 * (1.0 - correction));
 
-            // Fast pace should only look impulsive when paired with poor attention/goal/correction
+            // Fast pace only looks impulsive when paired with weak attention / understanding / correction
             double impulsivityScore =
                 (0.45 * pace * (1.0 - attention)) +
                 (0.30 * (1.0 - correction)) +
                 (0.25 * (1.0 - goal));
 
+            // Hint dependence should rise when feedback / hint engagement is high,
+            // but should still depend on incomplete independent performance.
             double hintDependenceScore =
-                (0.60 * (1.0 - feedback)) +
-                (0.20 * confusionScore) +
-                (0.20 * (1.0 - goal));
+                (0.18 * feedback) +
+                (0.32 * confusionScore) +
+                (0.28 * (1.0 - goal)) +
+                (0.22 * (1.0 - correction));
 
             // Clamp
             confusionScore = Clamp01(confusionScore);
@@ -61,13 +63,16 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
         }
 
         private static string PredictState(
-            double confusionScore,
-            double hesitationScore,
-            double impulsivityScore,
-            double hintDependenceScore)
+    double confusionScore,
+    double hesitationScore,
+    double impulsivityScore,
+    double hintDependenceScore)
         {
-            if (confusionScore >= 0.65 && hintDependenceScore >= 0.60)
+            if (hintDependenceScore >= 0.68 && confusionScore >= 0.50)
                 return "confused_and_hint_dependent";
+
+            if (hintDependenceScore >= 0.75)
+                return "hint_dependent";
 
             if (impulsivityScore >= 0.65)
                 return "impulsive";

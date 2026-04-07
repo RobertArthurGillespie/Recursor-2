@@ -118,23 +118,33 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                 });
             }
 
-            if (scores.HintDependenceScore >= 0.60)
+            bool hintDependenceDetected =
+    scores.HintDependenceScore >= 0.50 &&
+    (
+        profile.DimensionScores.TryGetValue("feedbackResponsiveness", out var feedbackScore) &&
+        feedbackScore.Score >= 0.55 ||
+        scores.PredictedState == "confused_and_hint_dependent" ||
+        scores.PredictedState == "hint_dependent"
+    );
+
+            if (hintDependenceDetected)
             {
                 hypotheses.Add(new BehavioralHypothesis
                 {
                     Label = "hint_dependence_pattern",
-                    Dimensions = new List<string> { "feedbackResponsiveness" },
-                    Confidence = scores.HintDependenceScore,
+                    Dimensions = new List<string> { "feedbackResponsiveness", "goalUnderstanding" },
+                    Confidence = Math.Max(scores.HintDependenceScore, 0.50),
                     Evidence = new List<string>
-                {
-                    $"HintDependenceScore={scores.HintDependenceScore:0.00}",
-                    "Frequent hint reliance or cue-driven success"
-                }
+        {
+            $"HintDependenceScore={scores.HintDependenceScore:0.00}",
+            $"PredictedState={scores.PredictedState}",
+            "Elevated hint engagement with incomplete independent performance"
+        }
                 });
             }
 
             if (!string.IsNullOrWhiteSpace(scores.PredictedState) &&
-                scores.PredictedState == "confused_and_hint_dependent")
+    (scores.PredictedState == "confused_and_hint_dependent"))
             {
                 hypotheses.Add(new BehavioralHypothesis
                 {
@@ -142,9 +152,11 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "goalUnderstanding", "feedbackResponsiveness" },
                     Confidence = Math.Max(scores.ConfusionScore, scores.HintDependenceScore),
                     Evidence = new List<string>
-                {
-                    "Combined confusion and hint dependence state detected"
-                }
+        {
+            $"ConfusionScore={scores.ConfusionScore:0.00}",
+            $"HintDependenceScore={scores.HintDependenceScore:0.00}",
+            "Combined confusion and hint dependence state detected"
+        }
                 });
             }
 
