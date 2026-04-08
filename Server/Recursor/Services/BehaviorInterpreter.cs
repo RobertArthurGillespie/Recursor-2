@@ -73,98 +73,12 @@ public class BehaviorInterpreter : IBehaviorInterpreter
 
         if (scores is not null)
         {
-            if (scores.ConfusionScore >= 0.65)
-            {
-                hypotheses.Add(new BehavioralHypothesis
-                {
-                    Label = "confusion_pattern",
-                    Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
-                    Confidence = scores.ConfusionScore,
-                    Evidence = new List<string>
-                {
-                    $"ConfusionScore={scores.ConfusionScore:0.00}",
-                    "High wrong-target behavior and repeated low-quality selections"
-                }
-                });
-            }
-
-            if (scores.HesitationScore >= 0.65)
-            {
-                hypotheses.Add(new BehavioralHypothesis
-                {
-                    Label = "hesitation_pattern",
-                    Dimensions = new List<string> { "paceRegulation" },
-                    Confidence = scores.HesitationScore,
-                    Evidence = new List<string>
-                {
-                    $"HesitationScore={scores.HesitationScore:0.00}",
-                    "Long decision times and slow correction latency"
-                }
-                });
-            }
-
-            if (scores.ImpulsivityScore >= 0.65)
-            {
-                hypotheses.Add(new BehavioralHypothesis
-                {
-                    Label = "impulsivity_pattern",
-                    Dimensions = new List<string> { "paceRegulation", "selfCorrection" },
-                    Confidence = scores.ImpulsivityScore,
-                    Evidence = new List<string>
-                {
-                    $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
-                    "Rapid low-quality actions and elevated premature advancement"
-                }
-                });
-            }
-
-            bool hintDependenceDetected =
-    scores.HintDependenceScore >= 0.50 &&
-    (
-        profile.DimensionScores.TryGetValue("feedbackResponsiveness", out var feedbackScore) &&
-        feedbackScore.Score >= 0.55 ||
-        scores.PredictedState == "confused_and_hint_dependent" ||
-        scores.PredictedState == "hint_dependent"
-    );
-
-            if (hintDependenceDetected)
-            {
-                hypotheses.Add(new BehavioralHypothesis
-                {
-                    Label = "hint_dependence_pattern",
-                    Dimensions = new List<string> { "feedbackResponsiveness", "goalUnderstanding" },
-                    Confidence = Math.Max(scores.HintDependenceScore, 0.50),
-                    Evidence = new List<string>
-        {
-            $"HintDependenceScore={scores.HintDependenceScore:0.00}",
-            $"PredictedState={scores.PredictedState}",
-            "Elevated hint engagement with incomplete independent performance"
-        }
-                });
-            }
-
-            if (!string.IsNullOrWhiteSpace(scores.PredictedState) &&
-    (scores.PredictedState == "confused_and_hint_dependent"))
-            {
-                hypotheses.Add(new BehavioralHypothesis
-                {
-                    Label = "compound_confusion_hint_dependence",
-                    Dimensions = new List<string> { "goalUnderstanding", "feedbackResponsiveness" },
-                    Confidence = Math.Max(scores.ConfusionScore, scores.HintDependenceScore),
-                    Evidence = new List<string>
-        {
-            $"ConfusionScore={scores.ConfusionScore:0.00}",
-            $"HintDependenceScore={scores.HintDependenceScore:0.00}",
-            "Combined confusion and hint dependence state detected"
-        }
-                });
-            }
-
-            var impairedDimensionCount = profile.DimensionScores.Count(kvp => kvp.Value.Score < ImpairmentThreshold);
-
             bool hasGoal = profile.DimensionScores.TryGetValue("goalUnderstanding", out var goalScore);
             bool hasAttention = profile.DimensionScores.TryGetValue("attentionDetection", out var attentionScore);
             bool hasSelfCorrection = profile.DimensionScores.TryGetValue("selfCorrection", out var selfCorrectionScore);
+            bool hasFeedback = profile.DimensionScores.TryGetValue("feedbackResponsiveness", out var feedbackScore);
+
+            var impairedDimensionCount = profile.DimensionScores.Count(kvp => kvp.Value.Score < ImpairmentThreshold);
 
             bool recoveryDetected =
                 hasGoal &&
@@ -176,6 +90,105 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                 scores.ConfusionScore < 0.45 &&
                 scores.ImpulsivityScore < 0.45 &&
                 impairedDimensionCount <= 1;
+
+            bool strongIndependentPerformance =
+                hasGoal &&
+                hasAttention &&
+                hasSelfCorrection &&
+                goalScore.Score >= 0.75 &&
+                attentionScore.Score >= 0.75 &&
+                selfCorrectionScore.Score >= 0.70 &&
+                scores.ConfusionScore < 0.40 &&
+                scores.ImpulsivityScore < 0.40;
+
+            if (scores.ConfusionScore >= 0.65)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "confusion_pattern",
+                    Dimensions = new List<string> { "goalUnderstanding", "attentionDetection" },
+                    Confidence = scores.ConfusionScore,
+                    Evidence = new List<string>
+            {
+                $"ConfusionScore={scores.ConfusionScore:0.00}",
+                "High wrong-target behavior and repeated low-quality selections"
+            }
+                });
+            }
+
+            if (scores.HesitationScore >= 0.65)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "hesitation_pattern",
+                    Dimensions = new List<string> { "paceRegulation" },
+                    Confidence = scores.HesitationScore,
+                    Evidence = new List<string>
+            {
+                $"HesitationScore={scores.HesitationScore:0.00}",
+                "Long decision times and slow correction latency"
+            }
+                });
+            }
+
+            if (scores.ImpulsivityScore >= 0.65)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "impulsivity_pattern",
+                    Dimensions = new List<string> { "paceRegulation", "selfCorrection" },
+                    Confidence = scores.ImpulsivityScore,
+                    Evidence = new List<string>
+            {
+                $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
+                "Rapid low-quality actions and elevated premature advancement"
+            }
+                });
+            }
+
+            bool hintDependenceDetected =
+                !recoveryDetected &&
+                !strongIndependentPerformance &&
+                scores.HintDependenceScore >= 0.52 &&
+                hasFeedback &&
+                feedbackScore.Score >= 0.55 &&
+                (
+                    scores.PredictedState == "confused_and_hint_dependent" ||
+                    scores.PredictedState == "hint_dependent" ||
+                    scores.ConfusionScore >= 0.48
+                );
+
+            if (hintDependenceDetected)
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "hint_dependence_pattern",
+                    Dimensions = new List<string> { "feedbackResponsiveness", "goalUnderstanding" },
+                    Confidence = scores.HintDependenceScore,
+                    Evidence = new List<string>
+            {
+                $"HintDependenceScore={scores.HintDependenceScore:0.00}",
+                $"PredictedState={scores.PredictedState}",
+                "Elevated hint engagement with incomplete independent performance"
+            }
+                });
+            }
+
+            if (scores.PredictedState == "confused_and_hint_dependent")
+            {
+                hypotheses.Add(new BehavioralHypothesis
+                {
+                    Label = "compound_confusion_hint_dependence",
+                    Dimensions = new List<string> { "goalUnderstanding", "feedbackResponsiveness" },
+                    Confidence = Math.Max(scores.ConfusionScore, scores.HintDependenceScore),
+                    Evidence = new List<string>
+            {
+                $"ConfusionScore={scores.ConfusionScore:0.00}",
+                $"HintDependenceScore={scores.HintDependenceScore:0.00}",
+                "Combined confusion and hint dependence state detected"
+            }
+                });
+            }
 
             if (recoveryDetected)
             {
@@ -190,14 +203,14 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     Dimensions = new List<string> { "goalUnderstanding", "attentionDetection", "selfCorrection" },
                     Confidence = recoveryConfidence,
                     Evidence = new List<string>
-                {
-                    $"goalUnderstanding={goalScore.Score:0.00}",
-                    $"attentionDetection={attentionScore.Score:0.00}",
-                    $"selfCorrection={selfCorrectionScore.Score:0.00}",
-                    $"ConfusionScore={scores.ConfusionScore:0.00}",
-                    $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
-                    "Recent performance suggests stabilizing behavior and reduced support need"
-                }
+            {
+                $"goalUnderstanding={goalScore.Score:0.00}",
+                $"attentionDetection={attentionScore.Score:0.00}",
+                $"selfCorrection={selfCorrectionScore.Score:0.00}",
+                $"ConfusionScore={scores.ConfusionScore:0.00}",
+                $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
+                "Recent performance suggests stabilizing behavior and reduced support need"
+            }
                 });
             }
         }
