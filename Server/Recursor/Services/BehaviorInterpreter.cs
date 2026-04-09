@@ -77,10 +77,13 @@ public class BehaviorInterpreter : IBehaviorInterpreter
             bool hasAttention = profile.DimensionScores.TryGetValue("attentionDetection", out var attentionScore);
             bool hasSelfCorrection = profile.DimensionScores.TryGetValue("selfCorrection", out var selfCorrectionScore);
             bool hasFeedback = profile.DimensionScores.TryGetValue("feedbackResponsiveness", out var feedbackScore);
+            bool hasProcedure = profile.DimensionScores.TryGetValue("procedureSequencing", out var procedureScore);
+            bool hasPace = profile.DimensionScores.TryGetValue("paceRegulation", out var paceScore);
+            bool hasSafety = profile.DimensionScores.TryGetValue("safetyCompliance", out var safetyScore);
 
             var impairedDimensionCount = profile.DimensionScores.Count(kvp => kvp.Value.Score < ImpairmentThreshold);
 
-            bool recoveryDetected =
+            bool strictRecoveryDetected =
                 hasGoal &&
                 hasAttention &&
                 hasSelfCorrection &&
@@ -91,7 +94,41 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                 scores.ImpulsivityScore < 0.45 &&
                 impairedDimensionCount <= 1;
 
-            bool strongIndependentPerformance =
+            bool sequenceFriendlyRecoveryDetected =
+                hasGoal &&
+                hasAttention &&
+                hasSelfCorrection &&
+                hasProcedure &&
+                goalScore.Score >= 0.55 &&
+                procedureScore.Score >= 0.50 &&
+                attentionScore.Score >= 0.75 &&
+                selfCorrectionScore.Score >= 0.55 &&
+                scores.ConfusionScore < 0.42 &&
+                scores.ImpulsivityScore < 0.42 &&
+                impairedDimensionCount <= 2;
+
+            bool maintenanceRecoveryDetected =
+                hasGoal &&
+                hasAttention &&
+                hasSelfCorrection &&
+                hasProcedure &&
+                hasFeedback &&
+                hasPace &&
+                hasSafety &&
+                goalScore.Score >= 0.50 &&
+                procedureScore.Score >= 0.50 &&
+                attentionScore.Score >= 0.75 &&
+                feedbackScore.Score >= 0.75 &&
+                paceScore.Score >= 0.70 &&
+                safetyScore.Score >= 0.85 &&
+                selfCorrectionScore.Score >= 0.45 &&
+                scores.ConfusionScore < 0.45 &&
+                scores.ImpulsivityScore < 0.45 &&
+                impairedDimensionCount <= 2;
+
+            bool recoveryDetected = strictRecoveryDetected || sequenceFriendlyRecoveryDetected || maintenanceRecoveryDetected;
+
+            bool strictStrongIndependentPerformance =
                 hasGoal &&
                 hasAttention &&
                 hasSelfCorrection &&
@@ -100,6 +137,21 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                 selfCorrectionScore.Score >= 0.70 &&
                 scores.ConfusionScore < 0.40 &&
                 scores.ImpulsivityScore < 0.40;
+
+            bool sequenceFriendlyStrongIndependentPerformance =
+                hasGoal &&
+                hasAttention &&
+                hasSelfCorrection &&
+                hasProcedure &&
+                goalScore.Score >= 0.60 &&
+                procedureScore.Score >= 0.55 &&
+                attentionScore.Score >= 0.80 &&
+                selfCorrectionScore.Score >= 0.60 &&
+                scores.ConfusionScore < 0.38 &&
+                scores.ImpulsivityScore < 0.40 &&
+                impairedDimensionCount <= 2;
+
+            bool strongIndependentPerformance = strictStrongIndependentPerformance || sequenceFriendlyStrongIndependentPerformance;
 
             if (scores.ConfusionScore >= 0.65)
             {
@@ -197,20 +249,29 @@ public class BehaviorInterpreter : IBehaviorInterpreter
                     (goalScore.Score + attentionScore.Score + selfCorrectionScore.Score) / 3.0
                 );
 
+                var recoveryEvidence = new List<string>
+                {
+                    $"goalUnderstanding={goalScore.Score:0.00}",
+                    $"attentionDetection={attentionScore.Score:0.00}",
+                    $"selfCorrection={selfCorrectionScore.Score:0.00}",
+                };
+                if (hasProcedure)
+                    recoveryEvidence.Add($"procedureSequencing={procedureScore.Score:0.00}");
+                recoveryEvidence.Add($"ConfusionScore={scores.ConfusionScore:0.00}");
+                recoveryEvidence.Add($"ImpulsivityScore={scores.ImpulsivityScore:0.00}");
+                recoveryEvidence.Add(
+                    sequenceFriendlyRecoveryDetected && !strictRecoveryDetected
+                        ? "Sequence-friendly recovery rule fired"
+                        : maintenanceRecoveryDetected && !strictRecoveryDetected && !sequenceFriendlyRecoveryDetected
+                            ? "Maintenance recovery rule fired"
+                            : "Recent performance suggests stabilizing behavior and reduced support need");
+
                 hypotheses.Add(new BehavioralHypothesis
                 {
                     Label = "recovery_pattern",
                     Dimensions = new List<string> { "goalUnderstanding", "attentionDetection", "selfCorrection" },
                     Confidence = recoveryConfidence,
-                    Evidence = new List<string>
-            {
-                $"goalUnderstanding={goalScore.Score:0.00}",
-                $"attentionDetection={attentionScore.Score:0.00}",
-                $"selfCorrection={selfCorrectionScore.Score:0.00}",
-                $"ConfusionScore={scores.ConfusionScore:0.00}",
-                $"ImpulsivityScore={scores.ImpulsivityScore:0.00}",
-                "Recent performance suggests stabilizing behavior and reduced support need"
-            }
+                    Evidence = recoveryEvidence
                 });
             }
         }

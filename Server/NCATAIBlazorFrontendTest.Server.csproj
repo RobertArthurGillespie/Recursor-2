@@ -22,6 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Recursor\TrainingModels\hint_dependence_v1.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" Version="1.0.0-beta.5" />
     <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageReference Include="Azure.Search.Documents" Version="11.6.1" />
@@ -51,6 +58,9 @@
     <!-- Recursor Engine: Azure Data Explorer -->
     <PackageReference Include="Microsoft.Azure.Kusto.Data" Version="12.3.2" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="12.3.2" />
+
+    <!-- Recursor Engine: ML.NET shadow prediction -->
+    <PackageReference Include="Microsoft.ML" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>

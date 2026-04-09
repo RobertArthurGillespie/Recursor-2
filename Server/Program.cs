@@ -22,6 +22,7 @@ using Kusto.Ingest;
 using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
+using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 using Kusto.Data.Net.Client;
 
@@ -105,8 +106,28 @@ builder.Services.AddScoped<IRecursorSessionService, RecursorSessionService>();
 builder.Services.AddScoped<IBehaviorScoringService, BehaviorScoringService>();
 builder.Services.AddScoped<IExplanationGenerationService, AzureOpenAiExplanationService>();
 builder.Services.AddScoped<IBehaviorStateFeatureVectorBuilder, BehaviorStateFeatureVectorBuilder>();
-builder.Services.AddScoped<IBehaviorStatePredictionService, ShadowBehaviorStatePredictionService>();
+// Recursor ML prediction: use real ML.NET service if model file is configured and present;
+// otherwise fall back to the no-op shadow service so the app starts without a trained model.
+var hintDependenceModelPath = builder.Configuration["Recursor:Models:HintDependenceModelPath"] ?? "";
+if (!string.IsNullOrWhiteSpace(hintDependenceModelPath) && File.Exists(hintDependenceModelPath))
+{
+    builder.Services.AddSingleton<IBehaviorStatePredictionService>(
+        _ => new MlNetBehaviorStatePredictionService(hintDependenceModelPath));
+}
+else
+{
+    builder.Services.AddScoped<IBehaviorStatePredictionService, ShadowBehaviorStatePredictionService>();
+}
+var configuredPath = builder.Configuration["Recursor:Models:HintDependenceModelPath"];
 
+string? resolvedModelPath = null;
+
+if (!string.IsNullOrWhiteSpace(configuredPath))
+{
+    resolvedModelPath = Path.IsPathRooted(configuredPath)
+        ? configuredPath
+        : Path.Combine(builder.Environment.ContentRootPath, configuredPath);
+}
 // Builds a Kusto connection string for the given URI using the configured auth mode.
 static KustoConnectionStringBuilder BuildAdxCsb(string uri, AdxOptions opts) =>
     opts.AuthMode switch
@@ -207,5 +228,5 @@ builder.Services.AddSingleton<ChatCompletionsClient>(sp =>
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-
+//NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel();
 app.Run();

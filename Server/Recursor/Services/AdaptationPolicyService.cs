@@ -23,10 +23,11 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         bool hasStableMastery = hypothesisSet.Hypotheses.Any(h => h.Label == "stable_mastery_pattern");
         bool hasRelapse = hypothesisSet.Hypotheses.Any(h => h.Label == "relapse_pattern");
         bool hasRecovery = hypothesisSet.Hypotheses.Any(h => h.Label == "recovery_pattern");
+        bool hasImproving = hypothesisSet.Hypotheses.Any(h => h.Label == "improving_pattern");
 
         IEnumerable<BehavioralHypothesis> sourceHypotheses = hypothesisSet.Hypotheses;
 
-        if (hasStableMastery)
+        if (hasStableMastery || hasImproving)
         {
             sourceHypotheses = hypothesisSet.Hypotheses
                 .Where(h =>
@@ -72,8 +73,6 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         {
             "scaffold-hints", "hint-fade", "hint-remove", "hint-reduction", "hint-restore-minimal"
         };
-
-        bool hasImproving = hypothesisSet.Hypotheses.Any(h => h.Label == "improving_pattern");
 
         if (hasStableMastery || hasImproving)
         {
