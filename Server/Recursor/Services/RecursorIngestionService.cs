@@ -221,7 +221,9 @@ public class RecursorIngestionService : IRecursorIngestionService
         }
         _sessionRepository.Update(session);
 
-        // Shadow ML prediction — additive only, never blocks or changes adaptation.
+        // Shadow ML prediction — shadow output feeds the ML guardrail in AdaptationPolicyService.
+        // It may veto hint-reduction families when hint dependence probability is high (>= 0.85).
+        // It does not create new adaptations or affect difficulty / pace.
         BehaviorStateFeatureVector? featureVector = null;
         BehaviorStatePrediction? shadowPrediction = null;
         try
@@ -271,7 +273,7 @@ public class RecursorIngestionService : IRecursorIngestionService
             };
         }
 
-        var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet);
+        var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet, shadowPrediction);
         if (adaptation is null)
         {
             _logger.LogInformation("No adaptation produced for session {SessionId}.", session.SessionId);

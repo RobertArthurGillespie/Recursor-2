@@ -7,7 +7,8 @@ public interface IAdaptationPolicyService
     AdaptationDecisionDocument? ApplyPolicy(
         SessionDocument session,
         SimCatalogDocument catalog,
-        HypothesisSetDocument hypothesisSet);
+        HypothesisSetDocument hypothesisSet,
+        BehaviorStatePrediction? shadowPrediction = null);
 }
 
 public class AdaptationPolicyService : IAdaptationPolicyService
@@ -15,7 +16,8 @@ public class AdaptationPolicyService : IAdaptationPolicyService
     public AdaptationDecisionDocument? ApplyPolicy(
     SessionDocument session,
     SimCatalogDocument catalog,
-    HypothesisSetDocument hypothesisSet)
+    HypothesisSetDocument hypothesisSet,
+    BehaviorStatePrediction? shadowPrediction = null)
     {
         if (hypothesisSet.Hypotheses.Count == 0)
             return null;
@@ -124,6 +126,19 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             // off -> no hint family added
         }
 
+        // ML guardrail: if shadow prediction indicates strong hint dependence,
+        // veto any hint-reduction family that the rule engine just selected.
+        // ML may only block support removal — it cannot create or increase support.
+        string? mlVetoNote = null;
+        if (shadowPrediction is not null && shadowPrediction.HintDependenceProbability >= 0.85)
+        {
+            bool blocked = interventionFamilies.Remove("hint-fade")
+                         | interventionFamilies.Remove("hint-remove");
+
+            if (blocked)
+                mlVetoNote = $"hint reduction blocked by ML assist (HintDependenceProbability={shadowPrediction.HintDependenceProbability:0.00})";
+        }
+
         var changes = new List<ParameterChange>();
         var usedParameters = new HashSet<string>();
 
@@ -140,6 +155,9 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         var reasoning = changes
             .Select(c => $"{c.Parameter} {c.Operation} {c.Value}")
             .ToList();
+
+        if (mlVetoNote is not null)
+            reasoning.Add(mlVetoNote);
 
         var decisionIndex = session.LatestAdaptationId is null ? 0
             : (int.TryParse(session.LatestAdaptationId.Split('-').Last(), out var idx) ? idx + 1 : 0);
