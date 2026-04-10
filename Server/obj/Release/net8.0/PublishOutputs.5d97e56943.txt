@@ -4,6 +4,8 @@ C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Serve
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\ffmpeg\ffmpeg.exe
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\ffmpeg\ffprobe.exe
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Recursor\TrainingModels\hint_dependence_v1.zip
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Recursor\TrainingModels\stable_mastery_v1.zip
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Recursor\TrainingModels\confusion_v1.zip
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\BlazorDebugProxy\BrowserDebugHost.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\BlazorDebugProxy\BrowserDebugHost.runtimeconfig.json
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\BlazorDebugProxy\BrowserDebugProxy.dll
