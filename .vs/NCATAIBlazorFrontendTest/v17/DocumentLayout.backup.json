@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\adaptationpolicyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\adaptationpolicyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\recursoringestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\recursoringestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\models\\mlmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\models\\mlmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\adaptationpolicyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\adaptationpolicyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\adx\\adxmodelevaluationqueryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -451,7 +451,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -467,18 +467,17 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
               "ViewState": "AgIAAFEAAAAAAAAAAAAswGYAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T18:51:53.084Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-10T18:51:53.084Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "RecursorIngestionService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "RelativeToolTip": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
-              "ViewState": "AgIAACIBAAAAAAAAAAAAwC0BAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAIAAAAAAAAAAAAAAwC0BAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-02T15:44:13.205Z",
               "EditorCaption": ""
@@ -497,20 +496,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "AdaptationPolicyService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "RelativeToolTip": "Server\\Recursor\\Services\\AdaptationPolicyService.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAABMAAAASAAAAAAAAAA==",
+              "ViewState": "AgIAAPIAAAAAAAAAAAAqwB0BAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-02T22:27:36.251Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MlModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\MlModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\MlModels.cs",
@@ -518,8 +517,7 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\MlModels.cs",
               "ViewState": "AgIAAB0AAAAAAAAAAAAuwDoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T21:01:23.612Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-09T21:01:23.612Z"
             },
             {
               "$type": "Document",
@@ -567,8 +565,7 @@
               "RelativeToolTip": "Server\\Program.cs",
               "ViewState": "AgIAANoAAAAAAAAAAAAowPAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-12T04:12:07.098Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T04:12:07.098Z"
             },
             {
               "$type": "Document",
@@ -736,8 +733,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
               "ViewState": "AgIAACkBAAAAAAAAAAAQwFABAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:43:56.27Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:43:56.27Z"
             },
             {
               "$type": "Document",
@@ -797,8 +793,7 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\InterpretationModels.cs",
               "ViewState": "AgIAABMAAAAAAAAAAAA2wCkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:55:43.467Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:55:43.467Z"
             },
             {
               "$type": "Document",
@@ -834,8 +829,7 @@
               "RelativeToolTip": "Server\\Controllers\\ChatController.cs",
               "ViewState": "AgIAAHoAAAAAAAAAAAAgwIsAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-29T21:25:34.116Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-29T21:25:34.116Z"
             },
             {
               "$type": "Document",
@@ -847,8 +841,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
               "ViewState": "AgIAAJEAAAAAAAAAAAAgwJUAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T16:48:32.849Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-03T16:48:32.849Z"
             },
             {
               "$type": "Document",
@@ -1004,8 +997,7 @@
               "RelativeToolTip": "Server\\Controllers\\AuthController.cs",
               "ViewState": "AgIAADwAAAAAAAAAAAAYwBIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-22T02:01:33.192Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-22T02:01:33.192Z"
             },
             {
               "$type": "Document",
@@ -1317,8 +1309,7 @@
               "RelativeToolTip": "Server\\Controllers\\TestingController.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAADwv+cBAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T17:53:48.455Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-26T17:53:48.455Z"
             },
             {
               "$type": "Document",

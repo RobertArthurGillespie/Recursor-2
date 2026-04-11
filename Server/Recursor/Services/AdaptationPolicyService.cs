@@ -132,8 +132,10 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         string? mlVetoNote = null;
         if (shadowPrediction is not null && shadowPrediction.HintDependenceProbability >= 0.85)
         {
-            bool blocked = interventionFamilies.Remove("hint-fade")
-                         | interventionFamilies.Remove("hint-remove");
+            bool blocked = false;
+            blocked |= interventionFamilies.Remove("hint-fade");
+            blocked |= interventionFamilies.Remove("hint-remove");
+            blocked |= interventionFamilies.Remove("hint-reduction");
 
             if (blocked)
                 mlVetoNote = $"hint reduction blocked by ML assist (HintDependenceProbability={shadowPrediction.HintDependenceProbability:0.00})";
