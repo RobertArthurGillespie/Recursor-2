@@ -11,13 +11,22 @@ public static class RecursorMlTrainingRunner
     /// Trains the hint-dependence model using a local CSV export.
     /// DEV-ONLY: paths below are placeholders; adjust before use.
     /// </summary>
-    public static void TrainHintDependenceModel()
+    public static void TrainHintDependenceModel_Baseline()
     {
         // TODO (dev-only): update these paths before running locally.
-        const string csvPath         = @"C:\Users\Rober\source\repos\RecursorData\training\behavior_state_training_v4.csv";
-        const string modelOutputPath = @"C:\Users\Rober\source\repos\RecursorData\models\hint_dependence_v1.zip";
+        const string csvPath         = @"C:\Users\Rober\source\repos\RecursorAutoEncoder\artifacts\run1\Autoencoder_set.csv";
+        const string modelOutputPath = @"C:\Users\Rober\source\repos\RecursorAutoEncoder\models\hint_dependence_baseline_v2.zip";
 
-        HintDependenceModelTrainer.Train(csvPath, modelOutputPath);
+        HintDependenceModelTrainer_Baseline.Train(csvPath, modelOutputPath);
+    }
+
+    public static void TrainHintDependenceModel_WithEmbeddings()
+    {
+        // TODO (dev-only): update these paths before running locally.
+        const string csvPath = @"C:\Users\Rober\source\repos\RecursorAutoEncoder\artifacts\run1\behavior_state_with_embeddings.csv";
+        const string modelOutputPath = @"C:\Users\Rober\source\repos\RecursorAutoEncoder\models\hint_dependence_with_embeddings_v2.zip";
+
+        HintDependenceModelTrainer_Baseline.Train(csvPath, modelOutputPath);
     }
 
     /// <summary>

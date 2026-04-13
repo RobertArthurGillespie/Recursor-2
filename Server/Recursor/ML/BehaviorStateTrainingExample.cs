@@ -112,4 +112,21 @@ public class BehaviorStateTrainingExample
 
     [LoadColumn(34)]
     public bool LabelStableMastery { get; set; }
+
+    [LoadColumn(35)] public float Embedding01 { get; set; }
+    [LoadColumn(36)] public float Embedding02 { get; set; }
+    [LoadColumn(37)] public float Embedding03 { get; set; }
+    [LoadColumn(38)] public float Embedding04 { get; set; }
+    [LoadColumn(39)] public float Embedding05 { get; set; }
+    [LoadColumn(40)] public float Embedding06 { get; set; }
+    [LoadColumn(41)] public float Embedding07 { get; set; }
+    [LoadColumn(42)] public float Embedding08 { get; set; }
+    [LoadColumn(43)] public float Embedding09 { get; set; }
+    [LoadColumn(44)] public float Embedding10 { get; set; }
+    [LoadColumn(45)] public float Embedding11 { get; set; }
+    [LoadColumn(46)] public float Embedding12 { get; set; }
+    [LoadColumn(47)] public float Embedding13 { get; set; }
+    [LoadColumn(48)] public float Embedding14 { get; set; }
+    [LoadColumn(49)] public float Embedding15 { get; set; }
+    [LoadColumn(50)] public float Embedding16 { get; set; }
 }

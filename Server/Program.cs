@@ -246,5 +246,6 @@ builder.Services.AddSingleton<ChatCompletionsClient>(sp =>
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-//NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainStableMasteryModel();
+//NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel_Baseline();
+//NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel_WithEmbeddings();
 app.Run();

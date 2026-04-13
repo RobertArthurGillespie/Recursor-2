@@ -52,6 +52,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.RecursorEvaluationController",
+    "Method": "EvaluateShadowModel",
+    "RelativePath": "api/recursor/evaluation/shadow",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "NCATAIBlazorFrontendTest.Shared.ModelEvaluationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "NCATAIBlazorFrontendTest.Shared.ModelEvaluationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "NCATAIBlazorFrontendTest.Server.Controllers.RecursorController",
     "Method": "SubmitBatch",
     "RelativePath": "api/recursor/events/batch",
