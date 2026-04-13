@@ -270,6 +270,10 @@
               "target": "Package",
               "version": "[3.0.1, )"
             },
+            "Microsoft.ML.FastTree": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
             "NAudio": {
               "target": "Package",
               "version": "[2.2.1, )"

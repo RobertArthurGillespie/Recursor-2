@@ -97,13 +97,78 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
             var rawData = mlContext.Data.LoadFromTextFile<BehaviorStateTrainingExample_NextWindow>(
                 path: csvPath,
                 options: loaderOptions);
-
             var rows = mlContext.Data
-                .CreateEnumerable<BehaviorStateTrainingExample_NextWindow>(rawData, reuseRowObject: false)
-                .Where(r => !string.IsNullOrWhiteSpace(r.SessionId))
-                .ToList();
+              .CreateEnumerable<BehaviorStateTrainingExample_NextWindow>(rawData, reuseRowObject: false)
+              .Where(r => !string.IsNullOrWhiteSpace(r.SessionId))
+              .ToList();
 
             Log($"[HintDependenceNextWindowTrainer_WithEmbeddings] Parsed rows: {rows.Count}");
+
+            if (rows.Count == 0)
+                throw new InvalidOperationException("No rows were parsed from the CSV.");
+
+            //
+            // 🔥 NEW: Detect bad rows (NaN features)
+            //
+
+            var badRows = rows.Where(r =>
+                float.IsNaN(r.AttentionDetection) ||
+                float.IsNaN(r.GoalUnderstanding) ||
+                float.IsNaN(r.ProcedureSequencing) ||
+                float.IsNaN(r.PaceRegulation) ||
+                float.IsNaN(r.SelfCorrection) ||
+                float.IsNaN(r.FeedbackResponsiveness) ||
+                float.IsNaN(r.SafetyCompliance) ||
+                float.IsNaN(r.TaskContinuity) ||
+                float.IsNaN(r.ConfusionScore) ||
+                float.IsNaN(r.HesitationScore) ||
+                float.IsNaN(r.ImpulsivityScore) ||
+                float.IsNaN(r.GoalTrend) ||
+                float.IsNaN(r.AttentionTrend) ||
+                float.IsNaN(r.ConfusionTrend) ||
+                float.IsNaN(r.CurrentDifficulty) ||
+                float.IsNaN(r.CurrentTimePressure) ||
+                float.IsNaN(r.CurrentErrorTolerance) ||
+                float.IsNaN(r.ConsecutiveStableMasteryWindows) ||
+                float.IsNaN(r.ConsecutiveRelapseWindows) ||
+                float.IsNaN(r.EventCountInWindow) ||
+                float.IsNaN(r.ErrorCountInWindow) ||
+                float.IsNaN(r.StepCompleteCountInWindow)
+            ).ToList();
+
+            Log($"[HintDependenceNextWindowTrainer_WithEmbeddings] Rows with NaN features: {badRows.Count}");
+
+            //
+            // 🔥 Filter them out BEFORE training
+            //
+            rows = rows.Where(r =>
+                !float.IsNaN(r.AttentionDetection) &&
+                !float.IsNaN(r.GoalUnderstanding) &&
+                !float.IsNaN(r.ProcedureSequencing) &&
+                !float.IsNaN(r.PaceRegulation) &&
+                !float.IsNaN(r.SelfCorrection) &&
+                !float.IsNaN(r.FeedbackResponsiveness) &&
+                !float.IsNaN(r.SafetyCompliance) &&
+                !float.IsNaN(r.TaskContinuity) &&
+                !float.IsNaN(r.ConfusionScore) &&
+                !float.IsNaN(r.HesitationScore) &&
+                !float.IsNaN(r.ImpulsivityScore) &&
+                !float.IsNaN(r.GoalTrend) &&
+                !float.IsNaN(r.AttentionTrend) &&
+                !float.IsNaN(r.ConfusionTrend) &&
+                !float.IsNaN(r.CurrentDifficulty) &&
+                !float.IsNaN(r.CurrentTimePressure) &&
+                !float.IsNaN(r.CurrentErrorTolerance) &&
+                !float.IsNaN(r.ConsecutiveStableMasteryWindows) &&
+                !float.IsNaN(r.ConsecutiveRelapseWindows) &&
+                !float.IsNaN(r.EventCountInWindow) &&
+                !float.IsNaN(r.ErrorCountInWindow) &&
+                !float.IsNaN(r.StepCompleteCountInWindow)
+            ).ToList();
+
+            Log($"[HintDependenceNextWindowTrainer_WithEmbeddings] Rows AFTER NaN filter: {rows.Count}");
+
+
 
             if (rows.Count == 0)
                 throw new InvalidOperationException("No rows were parsed from the CSV.");
@@ -185,10 +250,9 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
                 .Append(mlContext.Transforms.Concatenate(
                     "Features",
                     allFeatureColumns))
-                .Append(mlContext.Transforms.NormalizeMinMax("Features"))
-                .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(
-                    labelColumnName: nameof(BehaviorStateTrainingExample_NextWindow.LabelHintDependenceNext),
-                    featureColumnName: "Features"));
+                .Append(mlContext.BinaryClassification.Trainers.FastTree(
+    labelColumnName: nameof(BehaviorStateTrainingExample_NextWindow.LabelHintDependenceNext),
+    featureColumnName: "Features"));
 
             var model = pipeline.Fit(trainData);
 

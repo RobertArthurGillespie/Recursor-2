@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "8nfBZAjU5rY=",
+  "dgSpecHash": "4HsiAmzvvek=",
   "success": true,
   "projectFilePath": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
   "expectedPackageFiles": [
@@ -107,6 +107,7 @@
     "C:\\Users\\Rober\\.nuget\\packages\\microsoft.ml\\3.0.1\\microsoft.ml.3.0.1.nupkg.sha512",
     "C:\\Users\\Rober\\.nuget\\packages\\microsoft.ml.cpumath\\3.0.1\\microsoft.ml.cpumath.3.0.1.nupkg.sha512",
     "C:\\Users\\Rober\\.nuget\\packages\\microsoft.ml.dataview\\3.0.1\\microsoft.ml.dataview.3.0.1.nupkg.sha512",
+    "C:\\Users\\Rober\\.nuget\\packages\\microsoft.ml.fasttree\\3.0.1\\microsoft.ml.fasttree.3.0.1.nupkg.sha512",
     "C:\\Users\\Rober\\.nuget\\packages\\microsoft.net.http.headers\\2.1.1\\microsoft.net.http.headers.2.1.1.nupkg.sha512",
     "C:\\Users\\Rober\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.1\\microsoft.netcore.platforms.1.1.1.nupkg.sha512",
     "C:\\Users\\Rober\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",

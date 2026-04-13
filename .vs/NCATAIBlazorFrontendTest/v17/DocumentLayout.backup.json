@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\hintdependencenextwindowtrainer_baseline.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\ml\\hintdependencenextwindowtrainer_baseline.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\behaviorstatetrainingexample_nextwindow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\ml\\behaviorstatetrainingexample_nextwindow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\hintdependencenextwindowtrainer_withembeddings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\ml\\hintdependencenextwindowtrainer_withembeddings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\hintdependencenextwindowtrainer_baseline.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\ml\\hintdependencenextwindowtrainer_baseline.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\behaviorstatetrainingexample_nextwindow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\ml\\behaviorstatetrainingexample_nextwindow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\hintdependencemodeltrainer_withembeddings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -479,7 +479,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -487,28 +487,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "HintDependenceNextWindowTrainer_Baseline.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_Baseline.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_Baseline.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_Baseline.cs",
               "RelativeToolTip": "Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_Baseline.cs",
-              "ViewState": "AgIAAJcAAAAAAAAAAAAMwKkAAAAyAAAAAAAAAA==",
+              "ViewState": "AgIAAEABAAAAAAAAAAAUwGABAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-13T15:52:58.263Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "BehaviorStateTrainingExample_NextWindow.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
-              "RelativeToolTip": "Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
-              "ViewState": "AgIAADQAAAAAAAAAAAAiwEcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-13T15:52:00.996Z",
               "EditorCaption": ""
             },
             {
@@ -532,35 +519,48 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\ML\\RecursorMlTrainingRunner.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\RecursorMlTrainingRunner.cs",
               "RelativeToolTip": "Server\\Recursor\\ML\\RecursorMlTrainingRunner.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAQwB0AAAA9AAAAAAAAAA==",
+              "ViewState": "AgIAABMAAAAAAAAAAAAzwB0AAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-09T13:06:08.93Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Program.cs",
               "RelativeDocumentMoniker": "Server\\Program.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Program.cs",
               "RelativeToolTip": "Server\\Program.cs",
-              "ViewState": "AgIAAOEAAAAAAAAAAAAcwPsAAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAAOoAAAAAAAAAAAAcwPsAAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-12T04:12:07.098Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "HintDependenceNextWindowTrainer_WithEmbeddings.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_WithEmbeddings.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_WithEmbeddings.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_WithEmbeddings.cs",
               "RelativeToolTip": "Server\\Recursor\\ML\\HintDependenceNextWindowTrainer_WithEmbeddings.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADIBAABCAAAAAAAAAA==",
+              "ViewState": "AgIAAJsAAAAAAAAAAAAMwKgAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-13T15:54:06.069Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "BehaviorStateTrainingExample_NextWindow.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
+              "RelativeToolTip": "Server\\Recursor\\ML\\BehaviorStateTrainingExample_NextWindow.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAA4wEcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T15:52:00.996Z",
               "EditorCaption": ""
             },
             {
@@ -571,7 +571,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\ML\\NextWindowPredictionRow.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\NextWindowPredictionRow.cs",
               "RelativeToolTip": "Server\\Recursor\\ML\\NextWindowPredictionRow.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAAwBMAAAAuAAAAAAAAAA==",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAxwBMAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-13T18:07:17.971Z",
               "EditorCaption": ""
@@ -610,7 +610,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\ML\\BehaviorStateTrainingExample.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\ML\\BehaviorStateTrainingExample.cs",
               "RelativeToolTip": "Server\\Recursor\\ML\\BehaviorStateTrainingExample.cs",
-              "ViewState": "AgIAAHUAAAAAAAAAAAA1wIIAAAA7AAAAAAAAAA==",
+              "ViewState": "AgIAAHYAAAAAAAAAAAAzwIIAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-09T13:01:30.682Z",
               "EditorCaption": ""
@@ -727,7 +727,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\MlModels.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\MlModels.cs",
               "RelativeToolTip": "Server\\Recursor\\Models\\MlModels.cs",
-              "ViewState": "AgIAAB0AAAAAAAAAAAA+wDoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAB4AAAAAAAAAAAA8wDoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-09T21:01:23.612Z",
               "EditorCaption": ""
@@ -922,7 +922,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\SessionModels.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\SessionModels.cs",
               "RelativeToolTip": "Server\\Recursor\\Models\\SessionModels.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAAA5wCcAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAB0AAAAAAAAAAAA3wCcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-04T02:28:17.782Z",
               "EditorCaption": ""
@@ -935,7 +935,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\RawEventModels.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\RawEventModels.cs",
               "RelativeToolTip": "Server\\Recursor\\Models\\RawEventModels.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAA8wAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABcAAAAAAAAAAAA6wAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-02T16:51:25.017Z",
               "EditorCaption": ""
@@ -961,7 +961,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\Api\\RecursorApiModels.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Api\\RecursorApiModels.cs",
               "RelativeToolTip": "Server\\Recursor\\Api\\RecursorApiModels.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAA7wBwAAAAmAAAAAAAAAA==",
+              "ViewState": "AgIAABAAAAAAAAAAAAA5wBwAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-02T16:52:42.678Z",
               "EditorCaption": ""
@@ -1039,7 +1039,7 @@
               "RelativeDocumentMoniker": "Client\\Pages\\Pages\\AIChat.razor",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\Pages\\Pages\\AIChat.razor",
               "RelativeToolTip": "Client\\Pages\\Pages\\AIChat.razor",
-              "ViewState": "AgIAAC0AAAAAAAAAAIBJwE4AAABXAAAAAAAAAA==",
+              "ViewState": "AgIAACoAAAAAAAAAAIBZwE4AAABXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-02-24T16:56:51.472Z",
               "EditorCaption": ""
@@ -1299,7 +1299,7 @@
               "RelativeDocumentMoniker": "Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "RelativeToolTip": "Client\\NCATAIBlazorFrontendTest.Client.csproj",
-              "ViewState": "AgIAAAEAAAAAAAAAAABBwAkAAAAEAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2025-08-12T11:45:07.848Z",
               "EditorCaption": ""
@@ -1442,7 +1442,7 @@
               "RelativeDocumentMoniker": "Client\\Pages\\Widgets.razor",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\Pages\\Widgets.razor",
               "RelativeToolTip": "Client\\Pages\\Widgets.razor",
-              "ViewState": "AgIAADgAAAAAAAAAAOBvwBwAAAAiAAAAAAAAAA==",
+              "ViewState": "AgIAADUAAAAAAAAAACBzwBwAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-10-22T20:23:49.904Z",
               "EditorCaption": ""
@@ -1533,7 +1533,7 @@
               "RelativeDocumentMoniker": "Client\\Pages\\Charts\\Pie.razor",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\Pages\\Charts\\Pie.razor",
               "RelativeToolTip": "Client\\Pages\\Charts\\Pie.razor",
-              "ViewState": "AgIAAB4AAAAAAAAAACBzwBsAAABNAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAFB2wBsAAABNAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-10-22T19:28:19.633Z",
               "EditorCaption": ""
@@ -1572,7 +1572,7 @@
               "RelativeDocumentMoniker": "Client\\Shared\\Partials\\Customizer.razor",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\Shared\\Partials\\Customizer.razor",
               "RelativeToolTip": "Client\\Shared\\Partials\\Customizer.razor",
-              "ViewState": "AgIAADwAAAAAAAAAAFB2wAQAAABOAAAAAAAAAA==",
+              "ViewState": "AgIAADkAAAAAAAAAAIB5wAQAAABOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-10-22T20:24:57.79Z",
               "EditorCaption": ""
@@ -1610,7 +1610,7 @@
               "RelativeDocumentMoniker": "..\\..\\..\\..\\Downloads\\index (29).html",
               "ToolTip": "C:\\Users\\Rober\\Downloads\\index (29).html",
               "RelativeToolTip": "..\\..\\..\\..\\Downloads\\index (29).html",
-              "ViewState": "AgIAAAUAAAAAAAAAABCCwF8AAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAAAEAAAAAAAAAADCEwF8AAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-10-23T16:13:47.192Z",
               "EditorCaption": ""
@@ -1636,7 +1636,7 @@
               "RelativeDocumentMoniker": "..\\..\\UnityBuilds\\index.html",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\UnityBuilds\\index.html",
               "RelativeToolTip": "..\\..\\UnityBuilds\\index.html",
-              "ViewState": "AgIAAMIAAAAAAAAAAMB9wEAAAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAL4AAAAAAAAAAACBwEAAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-10-23T17:02:39.767Z",
               "EditorCaption": ""
@@ -1649,7 +1649,7 @@
               "RelativeDocumentMoniker": "..\\..\\..\\..\\Downloads\\index (31).html",
               "ToolTip": "C:\\Users\\Rober\\Downloads\\index (31).html",
               "RelativeToolTip": "..\\..\\..\\..\\Downloads\\index (31).html",
-              "ViewState": "AgIAAB8AAAAAAAAAANB+wIoAAAAwAAAAAAAAAA==",
+              "ViewState": "AgIAABoAAAAAAAAAABCCwIoAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-10-23T17:19:16.41Z",
               "EditorCaption": ""
@@ -1662,7 +1662,7 @@
               "RelativeDocumentMoniker": "..\\..\\..\\..\\OneDrive\\Documents\\UnityBuilds\\index.html",
               "ToolTip": "C:\\Users\\Rober\\OneDrive\\Documents\\UnityBuilds\\index.html",
               "RelativeToolTip": "..\\..\\..\\..\\OneDrive\\Documents\\UnityBuilds\\index.html",
-              "ViewState": "AgIAAB4AAAAAAAAAAFB2wJ0AAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAIB5wJ0AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-10-23T17:30:14.544Z",
               "EditorCaption": ""
@@ -1675,7 +1675,7 @@
               "RelativeDocumentMoniker": "..\\..\\Pump_App_Redux\\Pump_App_Redux_Builds\\Titration_Redux_Earth_Complete\\index.html",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Pump_App_Redux\\Pump_App_Redux_Builds\\Titration_Redux_Earth_Complete\\index.html",
               "RelativeToolTip": "..\\..\\Pump_App_Redux\\Pump_App_Redux_Builds\\Titration_Redux_Earth_Complete\\index.html",
-              "ViewState": "AgIAAGkAAAAAAAAAAFB2wAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAGYAAAAAAAAAAIB5wAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-10-23T16:11:50.55Z",
               "EditorCaption": ""
@@ -1688,7 +1688,7 @@
               "RelativeDocumentMoniker": "..\\..\\..\\..\\Downloads\\index (30).html",
               "ToolTip": "C:\\Users\\Rober\\Downloads\\index (30).html",
               "RelativeToolTip": "..\\..\\..\\..\\Downloads\\index (30).html",
-              "ViewState": "AgIAADgAAAAAAAAAAMB9wF0AAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAADQAAAAAAAAAAACBwF0AAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2025-10-23T16:23:55.168Z",
               "EditorCaption": ""
@@ -1790,7 +1790,7 @@
               "RelativeDocumentMoniker": "Client\\Pages\\Layouts\\Compact.razor",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\Pages\\Layouts\\Compact.razor",
               "RelativeToolTip": "Client\\Pages\\Layouts\\Compact.razor",
-              "ViewState": "AgIAADAAAAAAAAAAAOiXwAQAAAA3AAAAAAAAAA==",
+              "ViewState": "AgIAAC0AAAAAAAAAALSYwAQAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-07-29T13:05:36.04Z",
               "EditorCaption": ""
