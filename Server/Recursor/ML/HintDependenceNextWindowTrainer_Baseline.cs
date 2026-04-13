@@ -1,61 +1,42 @@
 ﻿using Microsoft.ML.Data;
 using Microsoft.ML;
+using System.Text;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
 {
-    public static class HintDependenceModelTrainer_WithEmbeddings
+    public class HintDependenceNextWindowTrainer_Baseline
     {
         private static readonly string[] NumericFeatureColumns =
        [
            "AttentionDetection",
-        "GoalUnderstanding",
-        "ProcedureSequencing",
-        "PaceRegulation",
-        "SelfCorrection",
-        "FeedbackResponsiveness",
-        "SafetyCompliance",
-        "TaskContinuity",
-        "ConfusionScore",
-        "HesitationScore",
-        "ImpulsivityScore",
+            "GoalUnderstanding",
+            "ProcedureSequencing",
+            "PaceRegulation",
+            "SelfCorrection",
+            "FeedbackResponsiveness",
+            "SafetyCompliance",
+            "TaskContinuity",
+            "ConfusionScore",
+            "HesitationScore",
+            "ImpulsivityScore",
 
-        // Keep these commented out for the first stricter evaluation pass.
-        // "HintDependenceScore",
-        // "HintDependenceTrend",
-        // "HintCountInWindow",
+            // Intentionally excluded for stricter next-window prediction:
+            // "HintDependenceScore",
+            // "HintDependenceTrend",
+            // "HintCountInWindow",
 
-        "GoalTrend",
-        "AttentionTrend",
-        "ConfusionTrend",
-        "CurrentDifficulty",
-        "CurrentTimePressure",
-        "CurrentErrorTolerance",
-        "ConsecutiveStableMasteryWindows",
-        "ConsecutiveRelapseWindows",
-        "EventCountInWindow",
-        "ErrorCountInWindow",
-        "StepCompleteCountInWindow",
-    ];
-
-        private static readonly string[] EmbeddingFeatureColumns =
-        [
-            "Embedding01",
-        "Embedding02",
-        "Embedding03",
-        "Embedding04",
-        "Embedding05",
-        "Embedding06",
-        "Embedding07",
-        "Embedding08",
-        "Embedding09",
-        "Embedding10",
-        "Embedding11",
-        "Embedding12",
-        "Embedding13",
-        "Embedding14",
-        "Embedding15",
-        "Embedding16",
-    ];
+            "GoalTrend",
+            "AttentionTrend",
+            "ConfusionTrend",
+            "CurrentDifficulty",
+            "CurrentTimePressure",
+            "CurrentErrorTolerance",
+            "ConsecutiveStableMasteryWindows",
+            "ConsecutiveRelapseWindows",
+            "EventCountInWindow",
+            "ErrorCountInWindow",
+            "StepCompleteCountInWindow",
+        ];
 
         public static void Train(string csvPath, string modelOutputPath)
         {
@@ -72,7 +53,15 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
             if (!string.IsNullOrWhiteSpace(outputDirectory) && !Directory.Exists(outputDirectory))
                 Directory.CreateDirectory(outputDirectory);
 
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Loading data from: {csvPath}");
+            var logPath = Path.ChangeExtension(modelOutputPath, ".debug.log");
+            File.WriteAllText(logPath, string.Empty);
+
+            void Log(string message)
+            {
+                File.AppendAllText(logPath, $"[{DateTime.Now:O}] {message}{Environment.NewLine}");
+            }
+
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Loading data from: {csvPath}");
 
             var mlContext = new MLContext(seed: 42);
 
@@ -85,29 +74,29 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
                 AllowSparse = false
             };
 
-            var rawData = mlContext.Data.LoadFromTextFile<BehaviorStateTrainingExample>(
+            var rawData = mlContext.Data.LoadFromTextFile<BehaviorStateTrainingExample_NextWindow>(
                 path: csvPath,
                 options: loaderOptions);
 
             var rows = mlContext.Data
-                .CreateEnumerable<BehaviorStateTrainingExample>(rawData, reuseRowObject: false)
+                .CreateEnumerable<BehaviorStateTrainingExample_NextWindow>(rawData, reuseRowObject: false)
                 .Where(r => !string.IsNullOrWhiteSpace(r.SessionId))
                 .ToList();
 
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Parsed rows: {rows.Count}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Parsed rows: {rows.Count}");
 
             if (rows.Count == 0)
                 throw new InvalidOperationException("No rows were parsed from the CSV.");
 
-            int trueCount = rows.Count(r => r.LabelHintDependence);
-            int falseCount = rows.Count(r => !r.LabelHintDependence);
+            int trueCount = rows.Count(r => r.LabelHintDependenceNext);
+            int falseCount = rows.Count(r => !r.LabelHintDependenceNext);
 
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] LabelHintDependence TRUE rows:  {trueCount}");
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] LabelHintDependence FALSE rows: {falseCount}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] LabelHintDependenceNext TRUE rows:  {trueCount}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] LabelHintDependenceNext FALSE rows: {falseCount}");
 
             if (trueCount == 0 || falseCount == 0)
                 throw new InvalidOperationException(
-                    $"Dataset must contain both TRUE and FALSE LabelHintDependence values. TRUE={trueCount}, FALSE={falseCount}");
+                    $"Dataset must contain both TRUE and FALSE LabelHintDependenceNext values. TRUE={trueCount}, FALSE={falseCount}");
 
             var groupedBySession = rows
                 .GroupBy(r => r.SessionId)
@@ -132,21 +121,21 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
             var trainRowsList = trainGroups.SelectMany(g => g).ToList();
             var testRowsList = testGroups.SelectMany(g => g).ToList();
 
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Train sessions: {trainGroups.Count}");
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Test sessions:  {testGroups.Count}");
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Train rows:     {trainRowsList.Count}");
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Test rows:      {testRowsList.Count}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Train sessions: {trainGroups.Count}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Test sessions:  {testGroups.Count}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Train rows:     {trainRowsList.Count}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Test rows:      {testRowsList.Count}");
 
             if (trainRowsList.Count == 0 || testRowsList.Count == 0)
                 throw new InvalidOperationException("Session-based split produced an empty train or test set.");
 
-            int trainTrue = trainRowsList.Count(r => r.LabelHintDependence);
-            int trainFalse = trainRowsList.Count(r => !r.LabelHintDependence);
-            int testTrue = testRowsList.Count(r => r.LabelHintDependence);
-            int testFalse = testRowsList.Count(r => !r.LabelHintDependence);
+            int trainTrue = trainRowsList.Count(r => r.LabelHintDependenceNext);
+            int trainFalse = trainRowsList.Count(r => !r.LabelHintDependenceNext);
+            int testTrue = testRowsList.Count(r => r.LabelHintDependenceNext);
+            int testFalse = testRowsList.Count(r => !r.LabelHintDependenceNext);
 
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Train label TRUE/FALSE: {trainTrue}/{trainFalse}");
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Test label TRUE/FALSE:  {testTrue}/{testFalse}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Train label TRUE/FALSE: {trainTrue}/{trainFalse}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Test label TRUE/FALSE:  {testTrue}/{testFalse}");
 
             if (trainTrue == 0 || trainFalse == 0)
                 throw new InvalidOperationException("Training split must contain both label classes.");
@@ -158,43 +147,47 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
             var testData = mlContext.Data.LoadFromEnumerable(testRowsList);
 
             var allFeatureColumns = NumericFeatureColumns
-                .Concat(EmbeddingFeatureColumns)
                 .Append("CurrentHintModeEncoded")
                 .Append("TaskTypeEncoded")
                 .ToArray();
 
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Feature count: {allFeatureColumns.Length}");
+            Log("[HintDependenceNextWindowTrainer_Baseline] Training...");
+
             var pipeline =
                 mlContext.Transforms.Categorical.OneHotEncoding(
                     outputColumnName: "CurrentHintModeEncoded",
-                    inputColumnName: nameof(BehaviorStateTrainingExample.CurrentHintMode))
+                    inputColumnName: nameof(BehaviorStateTrainingExample_NextWindow.CurrentHintMode))
                 .Append(mlContext.Transforms.Categorical.OneHotEncoding(
                     outputColumnName: "TaskTypeEncoded",
-                    inputColumnName: nameof(BehaviorStateTrainingExample.TaskType)))
+                    inputColumnName: nameof(BehaviorStateTrainingExample_NextWindow.TaskType)))
                 .Append(mlContext.Transforms.Concatenate(
                     "Features",
                     allFeatureColumns))
                 .Append(mlContext.Transforms.NormalizeMinMax("Features"))
                 .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(
-                    labelColumnName: nameof(BehaviorStateTrainingExample.LabelHintDependence),
+                    labelColumnName: nameof(BehaviorStateTrainingExample_NextWindow.LabelHintDependenceNext),
                     featureColumnName: "Features"));
 
-            Console.WriteLine("[HintDependenceModelTrainer_WithEmbeddings] Training...");
             var model = pipeline.Fit(trainData);
 
-            Console.WriteLine("[HintDependenceModelTrainer_WithEmbeddings] Evaluating on test set...");
+            Log("[HintDependenceNextWindowTrainer_Baseline] Evaluating on test set...");
             var predictions = model.Transform(testData);
 
             var metrics = mlContext.BinaryClassification.Evaluate(
                 predictions,
-                labelColumnName: nameof(BehaviorStateTrainingExample.LabelHintDependence));
+                labelColumnName: nameof(BehaviorStateTrainingExample_NextWindow.LabelHintDependenceNext));
 
-            Console.WriteLine($"  Accuracy:          {metrics.Accuracy:F4}");
-            Console.WriteLine($"  AUC:               {metrics.AreaUnderRocCurve:F4}");
-            Console.WriteLine($"  F1Score:           {metrics.F1Score:F4}");
-            Console.WriteLine($"  PositivePrecision: {metrics.PositivePrecision:F4}");
-            Console.WriteLine($"  PositiveRecall:    {metrics.PositiveRecall:F4}");
-            Console.WriteLine($"  NegativePrecision: {metrics.NegativePrecision:F4}");
-            Console.WriteLine($"  NegativeRecall:    {metrics.NegativeRecall:F4}");
+            var thresholdReport = BuildThresholdSweepReport(mlContext, predictions);
+            Log("[HintDependenceNextWindowTrainer_Baseline] Threshold sweep built.");
+
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Accuracy:          {metrics.Accuracy:F4}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] AUC:               {metrics.AreaUnderRocCurve:F4}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] F1Score:           {metrics.F1Score:F4}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] PositivePrecision: {metrics.PositivePrecision:F4}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] PositiveRecall:    {metrics.PositiveRecall:F4}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] NegativePrecision: {metrics.NegativePrecision:F4}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] NegativeRecall:    {metrics.NegativeRecall:F4}");
 
             var metricsReport = $@"
 Accuracy:          {metrics.Accuracy:F4}
@@ -208,29 +201,59 @@ TrainSessions:     {trainGroups.Count}
 TestSessions:      {testGroups.Count}
 TrainRows:         {trainRowsList.Count}
 TestRows:          {testRowsList.Count}
+
+{thresholdReport}
 ";
 
             var metricsPath = Path.ChangeExtension(modelOutputPath, ".metrics.txt");
             File.WriteAllText(metricsPath, metricsReport);
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Metrics saved to: {metricsPath}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Metrics saved to: {metricsPath}");
 
             mlContext.Model.Save(model, trainData.Schema, modelOutputPath);
-            Console.WriteLine($"[HintDependenceModelTrainer_WithEmbeddings] Model saved to: {modelOutputPath}");
+            Log($"[HintDependenceNextWindowTrainer_Baseline] Model saved to: {modelOutputPath}");
         }
 
-        private static string BuildThresholdSweepReport(
-    MLContext mlContext,
-    IDataView predictions)
+        private static string BuildThresholdSweepReport(MLContext mlContext, IDataView predictions)
         {
-            var rows = mlContext.Data
+            var allRows = mlContext.Data
                 .CreateEnumerable<NextWindowPredictionRow>(predictions, reuseRowObject: false)
                 .ToList();
 
-            var thresholds = new[] { 0.30f, 0.40f, 0.50f, 0.60f, 0.70f };
-            var sb = new System.Text.StringBuilder();
+            var nanCount = allRows.Count(r => float.IsNaN(r.Probability));
+
+            var rows = allRows
+                .Where(r => !float.IsNaN(r.Probability))
+                .ToList();
+
+            var thresholds = new[]
+            {
+                0.05f, 0.10f, 0.15f, 0.20f,
+                0.25f, 0.30f, 0.35f, 0.40f
+            };
+
+            var sb = new StringBuilder();
 
             sb.AppendLine("Threshold Sweep");
             sb.AppendLine("Threshold | Accuracy | Precision | Recall | F1 | TP | FP | TN | FN");
+            sb.AppendLine();
+            sb.AppendLine("Probability Distribution");
+            sb.AppendLine($"NaN Count: {nanCount}");
+
+            if (rows.Count > 0)
+            {
+                var probs = rows.Select(r => r.Probability).ToList();
+                sb.AppendLine($"Min: {probs.Min():0.0000}");
+                sb.AppendLine($"Max: {probs.Max():0.0000}");
+                sb.AppendLine($"Avg: {probs.Average():0.0000}");
+            }
+            else
+            {
+                sb.AppendLine("Min: n/a");
+                sb.AppendLine("Max: n/a");
+                sb.AppendLine("Avg: n/a");
+            }
+
+            sb.AppendLine();
 
             foreach (var threshold in thresholds)
             {

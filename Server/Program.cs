@@ -246,6 +246,16 @@ builder.Services.AddSingleton<ChatCompletionsClient>(sp =>
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-//NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel_Baseline();
+try
+{
+    NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner
+        .TrainHintDependenceNextWindow_WithEmbeddings();
+}
+catch (Exception ex)
+{
+    var failPath = Path.Combine(builder.Environment.ContentRootPath, "training_failure.log");
+    File.WriteAllText(failPath, ex.ToString());
+    throw;
+}
 //NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel_WithEmbeddings();
 app.Run();
