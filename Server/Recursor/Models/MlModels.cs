@@ -55,4 +55,10 @@ public class BehaviorStatePrediction
     public double StableMasteryProbability { get; set; }
     public string ModelVersion { get; set; } = "";
     public string InferenceMode { get; set; } = "shadow";
+
+    // Next-window hint-dependence prediction (baseline guardrail model).
+    // Null when the model is not configured or failed to load.
+    public double? HintDependenceNextProbability { get; set; }
+    public bool? HintDependenceNextPredictedLabel { get; set; }
+    public string? HintDependenceNextModelVersion { get; set; }
 }

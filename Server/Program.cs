@@ -129,10 +129,19 @@ var resolvedStableMasteryPath = ResolveModelPath(
     builder.Configuration["Recursor:Models:StableMasteryModelPath"],
     builder.Environment.ContentRootPath);
 
+var resolvedHintDependenceNextWindowPath = ResolveModelPath(
+    builder.Configuration["Recursor:Models:HintDependenceNextWindowModelPath"],
+    builder.Environment.ContentRootPath);
+
+// Bind policy options so AdaptationPolicyService can read guardrail thresholds.
+builder.Services.Configure<RecursorPoliciesOptions>(
+    builder.Configuration.GetSection("Recursor:Policies"));
+
 bool anyModelPresent =
-    (resolvedHintDependencePath is not null && File.Exists(resolvedHintDependencePath)) ||
-    (resolvedConfusionPath      is not null && File.Exists(resolvedConfusionPath))      ||
-    (resolvedStableMasteryPath  is not null && File.Exists(resolvedStableMasteryPath));
+    (resolvedHintDependencePath            is not null && File.Exists(resolvedHintDependencePath))            ||
+    (resolvedConfusionPath                 is not null && File.Exists(resolvedConfusionPath))                 ||
+    (resolvedStableMasteryPath             is not null && File.Exists(resolvedStableMasteryPath))             ||
+    (resolvedHintDependenceNextWindowPath  is not null && File.Exists(resolvedHintDependenceNextWindowPath));
 
 if (anyModelPresent)
 {
@@ -140,7 +149,8 @@ if (anyModelPresent)
         new MlNetBehaviorStatePredictionService(
             resolvedHintDependencePath,
             resolvedConfusionPath,
-            resolvedStableMasteryPath));
+            resolvedStableMasteryPath,
+            resolvedHintDependenceNextWindowPath));
 }
 else
 {
@@ -246,7 +256,7 @@ builder.Services.AddSingleton<ChatCompletionsClient>(sp =>
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-try
+/*try
 {
     NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner
         .TrainHintDependenceNextWindow_WithEmbeddings();
@@ -256,6 +266,6 @@ catch (Exception ex)
     var failPath = Path.Combine(builder.Environment.ContentRootPath, "training_failure.log");
     File.WriteAllText(failPath, ex.ToString());
     throw;
-}
+}*/
 //NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel_WithEmbeddings();
 app.Run();

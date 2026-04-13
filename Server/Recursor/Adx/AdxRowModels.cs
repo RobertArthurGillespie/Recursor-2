@@ -76,6 +76,11 @@ public class AdaptationDecisionRow
     public string ReasoningSummary { get; set; } = "";
     public int ExpiresAfterWindow { get; set; }
     public DateTime CreatedAtUtc { get; set; }
+
+    // Next-window guardrail analytics — nullable for backward compatibility with existing ADX rows.
+    public double? HintDependenceNextProbability { get; set; }
+    public bool NextHintDependenceGuardrailTriggered { get; set; }
+    public string? NextHintDependenceGuardrailLevel { get; set; }
 }
 
 public class BehaviorStateTrainingRow

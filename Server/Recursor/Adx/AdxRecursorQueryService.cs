@@ -128,7 +128,7 @@ public class AdxRecursorQueryService : IAdxRecursorQueryService
             return [];
         }
 
-        var kql = $"AdaptationDecisions | where SessionId == '{Sanitize(sessionId)}' | order by DecisionIndex desc | take {count}";
+        var kql = $"AdaptationDecisions_v2 | where SessionId == '{Sanitize(sessionId)}' | order by DecisionIndex desc | take {count}";
         using var reader = await _queryProvider.ExecuteQueryAsync(_database, kql, new ClientRequestProperties());
 
         var results = new List<AdaptationDecisionRow>();
@@ -144,7 +144,10 @@ public class AdxRecursorQueryService : IAdxRecursorQueryService
                 ParameterChanges = ParseDynamic(reader.GetString(5)),
                 ReasoningSummary = reader.GetString(6),
                 ExpiresAfterWindow = reader.GetInt32(7),
-                CreatedAtUtc = reader.GetDateTime(8)
+                CreatedAtUtc = reader.GetDateTime(8),
+                HintDependenceNextProbability = reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                NextHintDependenceGuardrailTriggered = !reader.IsDBNull(10) && reader.GetBoolean(10),
+                NextHintDependenceGuardrailLevel = reader.IsDBNull(11) ? null : reader.GetString(11)
             });
         }
 

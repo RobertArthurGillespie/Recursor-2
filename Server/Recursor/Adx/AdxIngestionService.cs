@@ -105,10 +105,10 @@ public class AdxIngestionService : IAdxIngestionService
 
     public async Task IngestAdaptationDecisionAsync(AdaptationDecisionRow row)
     {
-        if (!CheckClient("AdaptationDecisions")) return;
+        if (!CheckClient("AdaptationDecisions_v2")) return;
 
         var table = BuildAdaptationDecisionsTable(row);
-        var props = new KustoQueuedIngestionProperties(_database, "AdaptationDecisions")
+        var props = new KustoQueuedIngestionProperties(_database, "AdaptationDecisions_v2")
         {
             Format = DataSourceFormat.csv
         };
@@ -271,7 +271,7 @@ public class AdxIngestionService : IAdxIngestionService
 
     private static DataTable BuildAdaptationDecisionsTable(AdaptationDecisionRow row)
     {
-        var table = new DataTable("AdaptationDecisions");
+        var table = new DataTable("AdaptationDecisions_v2");
         table.Columns.Add("SessionId",            typeof(string));
         table.Columns.Add("DecisionIndex",        typeof(int));
         table.Columns.Add("SourceHypothesisSetId",typeof(string));
@@ -281,6 +281,9 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("ReasoningSummary",     typeof(string));
         table.Columns.Add("ExpiresAfterWindow",   typeof(int));
         table.Columns.Add("CreatedAtUtc",         typeof(DateTime));
+        table.Columns.Add("HintDependenceNextProbability", typeof(double));
+        table.Columns.Add("NextHintDependenceGuardrailTriggered", typeof(bool));
+        table.Columns.Add("NextHintDependenceGuardrailLevel", typeof(string));
 
         table.Rows.Add(
      row.SessionId,
@@ -291,7 +294,10 @@ public class AdxIngestionService : IAdxIngestionService
      row.ParameterChanges.GetRawText(),
      row.ReasoningSummary,
      row.ExpiresAfterWindow,
-     row.CreatedAtUtc
+     row.CreatedAtUtc,
+     row.HintDependenceNextProbability ?? (object)DBNull.Value,
+     row.NextHintDependenceGuardrailTriggered,
+     row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value
  );
 
         return table;

@@ -11,6 +11,11 @@ public class AdaptationDecisionDocument
     public List<ParameterChange> ParameterChanges { get; set; } = new();
     public string ReasoningSummary { get; set; } = "";
     public int ExpiresAfterWindow { get; set; } = 1;
+
+    // Next-window guardrail analytics — null when model was not loaded or did not fire.
+    public double? HintDependenceNextProbability { get; set; }
+    public bool NextHintDependenceGuardrailTriggered { get; set; }
+    public string? NextHintDependenceGuardrailLevel { get; set; }
 }
 
 public class ParameterChange

@@ -84,6 +84,7 @@ C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Serve
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Microsoft.ML.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Microsoft.ML.CpuMath.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Microsoft.ML.DataView.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Microsoft.ML.FastTree.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Microsoft.SqlServer.Server.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\Microsoft.Win32.SystemEvents.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\NAudio.dll
@@ -129,6 +130,10 @@ C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Serve
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win-arm64\native\LdaNative.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win-x64\native\LdaNative.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win-x86\native\LdaNative.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\linux-x64\native\libFastTreeNative.so
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\osx-x64\native\libFastTreeNative.dylib
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win-x64\native\FastTreeNative.dll
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win-x86\native\FastTreeNative.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\win\lib\net6.0\System.Diagnostics.PerformanceCounter.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Server\obj\Release\net8.0\PubTmp\Out\runtimes\unix\lib\net6.0\System.Drawing.Common.dll

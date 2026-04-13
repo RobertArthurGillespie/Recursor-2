@@ -101,7 +101,10 @@ public static class AdxRowMapper
             ParameterChanges = JsonSerializer.SerializeToElement(doc.ParameterChanges, JsonOpts),
             ReasoningSummary = doc.ReasoningSummary,
             ExpiresAfterWindow = doc.ExpiresAfterWindow,
-            CreatedAtUtc = DateTime.UtcNow
+            CreatedAtUtc = DateTime.UtcNow,
+            HintDependenceNextProbability = doc.HintDependenceNextProbability,
+            NextHintDependenceGuardrailTriggered = doc.NextHintDependenceGuardrailTriggered,
+            NextHintDependenceGuardrailLevel = doc.NextHintDependenceGuardrailLevel,
         };
     }
 

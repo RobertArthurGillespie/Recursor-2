@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
@@ -13,6 +15,13 @@ public interface IAdaptationPolicyService
 
 public class AdaptationPolicyService : IAdaptationPolicyService
 {
+    private readonly RecursorPoliciesOptions _policies;
+
+    public AdaptationPolicyService(IOptions<RecursorPoliciesOptions> policiesOptions)
+    {
+        _policies = policiesOptions.Value;
+    }
+
     public AdaptationDecisionDocument? ApplyPolicy(
     SessionDocument session,
     SimCatalogDocument catalog,
@@ -141,6 +150,63 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 mlVetoNote = $"hint reduction blocked by ML assist (HintDependenceProbability={shadowPrediction.HintDependenceProbability:0.00})";
         }
 
+        // Next-window guardrail: if the baseline next-window model predicts elevated hint
+        // dependence in the upcoming window, prevent or reverse hint-reduction steps now.
+        // Operates only when EnableNextWindowHintDependenceGuardrail is true and the model
+        // produced a non-null probability (i.e., the model file was loaded successfully).
+        string? nextWindowGuardrailNote = null;
+        bool nextWindowGuardrailTriggered = false;
+        string? nextWindowGuardrailLevel = null;
+
+        if (_policies.EnableNextWindowHintDependenceGuardrail
+            && shadowPrediction?.HintDependenceNextProbability is double nextProb)
+        {
+            if (nextProb >= _policies.HintDependenceNextHighThreshold)
+            {
+                // High: veto all hint-reduction families; ensure some hint support is present;
+                // softly reduce time pressure to ease cognitive load.
+                interventionFamilies.Remove("hint-fade");
+                interventionFamilies.Remove("hint-remove");
+                interventionFamilies.Remove("hint-reduction");
+
+                bool hintSupportPresent =
+                    interventionFamilies.Contains("scaffold-hints") ||
+                    interventionFamilies.Contains("hint-restore-minimal");
+
+                if (!hintSupportPresent &&
+                    !string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase))
+                {
+                    // off → minimal is a smaller step than jumping straight to guided
+                    interventionFamilies.Add(
+                        string.Equals(currentHintMode, "off", StringComparison.OrdinalIgnoreCase)
+                            ? "hint-restore-minimal"
+                            : "scaffold-hints");
+                }
+
+                if (!interventionFamilies.Contains("pace-support"))
+                    interventionFamilies.Add("pace-support");
+
+                nextWindowGuardrailTriggered = true;
+                nextWindowGuardrailLevel = "high";
+                nextWindowGuardrailNote =
+                    $"next-window hint dependence guardrail (HIGH): hint support preserved; " +
+                    $"HintDependenceNextProbability={nextProb:0.00}";
+            }
+            else if (nextProb >= _policies.HintDependenceNextModerateThreshold)
+            {
+                // Moderate: veto hint-reduction families only; do not add new support.
+                interventionFamilies.Remove("hint-fade");
+                interventionFamilies.Remove("hint-remove");
+                interventionFamilies.Remove("hint-reduction");
+
+                nextWindowGuardrailTriggered = true;
+                nextWindowGuardrailLevel = "moderate";
+                nextWindowGuardrailNote =
+                    $"next-window hint dependence guardrail (MODERATE): support held steady; " +
+                    $"HintDependenceNextProbability={nextProb:0.00}";
+            }
+        }
+
         var changes = new List<ParameterChange>();
         var usedParameters = new HashSet<string>();
 
@@ -151,7 +217,7 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 changes.Add(change);
         }
 
-        if (changes.Count == 0)
+        if (changes.Count == 0 && !nextWindowGuardrailTriggered)
             return null;
 
         var reasoning = changes
@@ -160,6 +226,9 @@ public class AdaptationPolicyService : IAdaptationPolicyService
 
         if (mlVetoNote is not null)
             reasoning.Add(mlVetoNote);
+
+        if (nextWindowGuardrailNote is not null)
+            reasoning.Add(nextWindowGuardrailNote);
 
         var decisionIndex = session.LatestAdaptationId is null ? 0
             : (int.TryParse(session.LatestAdaptationId.Split('-').Last(), out var idx) ? idx + 1 : 0);
@@ -174,7 +243,10 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             InterventionFamilies = interventionFamilies,
             ParameterChanges = changes,
             ReasoningSummary = string.Join("; ", reasoning),
-            ExpiresAfterWindow = 2
+            ExpiresAfterWindow = 2,
+            HintDependenceNextProbability = shadowPrediction?.HintDependenceNextProbability,
+            NextHintDependenceGuardrailTriggered = nextWindowGuardrailTriggered,
+            NextHintDependenceGuardrailLevel = nextWindowGuardrailLevel,
         };
     }
 
