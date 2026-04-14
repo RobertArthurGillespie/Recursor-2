@@ -19,15 +19,18 @@ public class RecursorUserAnalyticsController : ControllerBase
     private readonly IAdxRecursorQueryService _queryService;
     private readonly IAdxUserBaselineQueryService _baselineService;
     private readonly IUserRelativeSignalService _relativeSignalService;
+    private readonly IUserRelativePolicyAdvisorService _policyAdvisorService;
 
     public RecursorUserAnalyticsController(
         IAdxRecursorQueryService queryService,
         IAdxUserBaselineQueryService baselineService,
-        IUserRelativeSignalService relativeSignalService)
+        IUserRelativeSignalService relativeSignalService,
+        IUserRelativePolicyAdvisorService policyAdvisorService)
     {
         _queryService          = queryService;
         _baselineService       = baselineService;
         _relativeSignalService = relativeSignalService;
+        _policyAdvisorService  = policyAdvisorService;
     }
 
     /// <summary>
@@ -131,5 +134,35 @@ public class RecursorUserAnalyticsController : ControllerBase
             return NotFound($"No behavioral data found for user '{userId}'.");
 
         return Ok(signals);
+    }
+
+    /// <summary>
+    /// GET /api/recursor/users/{userId}/shadow-policy-decision
+    ///
+    /// Returns a PersonalizedPolicyShadowDecision comparing the user's latest
+    /// actual adaptation decision against a baseline-aware shadow recommendation
+    /// derived from their user-relative signals.
+    ///
+    /// The shadow recommendation is OBSERVATIONAL ONLY — it does not affect
+    /// the live adaptation pipeline or Unity responses.
+    ///
+    /// Useful for evaluating whether baseline-aware policy would diverge from
+    /// the current live policy before deciding to enable personalized adaptation.
+    ///
+    /// Returns 404 when no behavioral data or no actual decisions exist for the user.
+    /// Returns 503 if ADX is not configured.
+    /// </summary>
+    [HttpGet("{userId}/shadow-policy-decision")]
+    public async Task<IActionResult> GetShadowPolicyDecision(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequest("userId is required.");
+
+        var shadow = await _policyAdvisorService.GetShadowDecisionAsync(userId);
+
+        if (shadow is null)
+            return NotFound($"No behavioral data or adaptation decisions found for user '{userId}'.");
+
+        return Ok(shadow);
     }
 }

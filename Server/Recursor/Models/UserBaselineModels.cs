@@ -89,6 +89,46 @@ public class UserRelativeSignals
     public string Summary { get; set; } = "";
 }
 
+// ── Personalized Policy Shadow Decision ───────────────────────────────────────
+// A read-only comparison between the actual live adaptation decision and a
+// shadow recommendation derived from the user's own behavioral baseline.
+//
+// This model is OBSERVATIONAL ONLY — it does not affect the live adaptation
+// pipeline. It is intended for inspecting whether baseline-aware policy would
+// have behaved differently and for deciding if personalized policy is worth
+// enabling in a future phase.
+// ─────────────────────────────────────────────────────────────────────────────
+public class PersonalizedPolicyShadowDecision
+{
+    // ── Identity / context ────────────────────────────────────────────────────
+    public string UserId { get; set; } = "";
+    public string SessionId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+
+    // ── Inputs ─────────────────────────────────────────────────────────────────
+    // The actual live decision that was sent through the pipeline.
+    public string ActualDecisionSummary { get; set; } = "";
+    public List<string> ActualInterventionFamilies { get; set; } = new();
+    public List<ParameterChange> ActualParameterChanges { get; set; } = new();
+
+    // Human-readable summary of the user's current position vs. their baseline.
+    public string UserRelativeSummary { get; set; } = "";
+
+    // ── Shadow output ──────────────────────────────────────────────────────────
+    // What the baseline-aware heuristics recommend instead (not applied anywhere).
+    public string ShadowDecisionSummary { get; set; } = "";
+    public List<string> ShadowInterventionFamilies { get; set; } = new();
+    public List<ParameterChange> ShadowParameterChanges { get; set; } = new();
+
+    // ── Comparison ─────────────────────────────────────────────────────────────
+    // True when shadow and actual intervention families differ.
+    public bool DecisionDiverged { get; set; }
+
+    // Concise description of what the shadow recommendation adds or drops vs. actual.
+    public string DivergenceReason { get; set; } = "";
+}
+
 public class UserBaselineSnapshot
 {
     // ── Identity ──────────────────────────────────────────────────────────────

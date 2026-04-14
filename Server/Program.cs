@@ -99,6 +99,7 @@ builder.Services.AddSingleton<IAdxRecursorQueryService, AdxRecursorQueryService>
 builder.Services.AddSingleton<IAdxModelEvaluationQueryService, AdxModelEvaluationQueryService>();
 builder.Services.AddSingleton<IAdxUserBaselineQueryService, AdxUserBaselineQueryService>();
 builder.Services.AddSingleton<IUserRelativeSignalService, UserRelativeSignalService>();
+builder.Services.AddSingleton<IUserRelativePolicyAdvisorService, UserRelativePolicyAdvisorService>();
 
 // Recursor pipeline services (scoped — one per request).
 builder.Services.AddScoped<IFeatureExtractionService, FeatureExtractionService>();
