@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "zRh8ULPgxxfux2F21QVkwRr8bdM2Er1l7htsq4ELm7M=",
+  "Hash": "fDrY+IVuLlQuZEAsm78u4Aat0E5E+JVsrvt1XB2QfSI=",
   "Source": "NCATAIBlazorFrontendTest.Server",
   "BasePath": "_content/NCATAIBlazorFrontendTest.Server",
   "Mode": "Default",
@@ -211,8 +211,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "manifest",
-      "Fingerprint": "1lrctqz85t",
-      "Integrity": "pSuvjeMqivpx7Mf7Rm6H9Q0+q7cXrnpbDHB4P6vkiGk=",
+      "Fingerprint": "68wjyaz9d9",
+      "Integrity": "5mPwtS4zqr1dXaBeWjnfaqqBsJqEfeGBaoFb0lezaFI=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\blazor.boot.json"
@@ -1555,8 +1555,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
-      "Fingerprint": "pfbdiu88qd",
-      "Integrity": "JYUeM8Xawy0lN7u5C0SSaX09wpZjgsoo/ALjwg5o5L0=",
+      "Fingerprint": "ys46278y8s",
+      "Integrity": "LuTopKh+0ZHLIIglP7F2+vczC+V2PLlcJ3JgnH+wnSQ=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.pdb"
@@ -1576,8 +1576,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
-      "Fingerprint": "t4sqbxrezn",
-      "Integrity": "E7DG2pgLjXqcYsFADb8tREiJjCVWywP95L1Spc7hbqE=",
+      "Fingerprint": "pdllsctzbv",
+      "Integrity": "fTurkXrseusKE+gVwmFo9NN5YFlbgO/WPDUX442WJAU=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.wasm"
@@ -1597,8 +1597,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
-      "Fingerprint": "mgm2h1glqt",
-      "Integrity": "yozVxBdGi3342flTSkVi6qTDAzjzCe1i5/cKFbvd+1I=",
+      "Fingerprint": "hpcuia22hy",
+      "Integrity": "KwofC208zCSefgX94/PKjUQjl0R3HhmQnzNALsWaPeA=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.pdb"
@@ -1618,8 +1618,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
-      "Fingerprint": "8oyfuu384l",
-      "Integrity": "uFwtrEohiCn4XeI+KDbShPbIHgB6ESswhBU4/X2wTkY=",
+      "Fingerprint": "wly8chavul",
+      "Integrity": "NDFxpxsHzY1pfUt6Hg6jWEUHTvHzpndsOjJpy2enODE=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.wasm"
@@ -5321,7 +5321,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\01zhu80q6n-sybv2hxg92.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-8oyfuu384l.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-wly8chavul.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -5335,11 +5335,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "xftkoo8zqq",
-      "Integrity": "DYrSsluFyEwONPBmJXIjFcIbeYxWVdRi0Mvyo/6Mk70=",
+      "Fingerprint": "fj7pkp0on1",
+      "Integrity": "lXXyCEZLTjmlMHjQKuWKoEqaQbloiDIK0HZbYBhthEw=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-8oyfuu384l.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-wly8chavul.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0l0gml9ckc-0071rouzll.gz",
@@ -5489,7 +5489,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1otqf94gnh-izj95c2kfi.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-1lrctqz85t.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-68wjyaz9d9.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -5503,11 +5503,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "r6mbkk43c4",
-      "Integrity": "E6kQlcfsaXtz7RQPHKnlOAUsoHcmURqp3TJbkApK7aY=",
+      "Fingerprint": "hm9x9destn",
+      "Integrity": "B3T8a/lvesn332oS/cmSyoEhiHsEs4HwP72SSt3rp8o=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-1lrctqz85t.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-68wjyaz9d9.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1r97wvyazd-u9q1ri1lhd.gz",
@@ -6602,7 +6602,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\7yxelbsrys-l10pvhb7s4.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-pfbdiu88qd.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-ys46278y8s.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -6616,11 +6616,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "vhkf31xwot",
-      "Integrity": "fVNYNOmkoPyap8Ick1Wt4WX8lfTLOKUUg59SlgG2Zg0=",
+      "Fingerprint": "ghd4vylqhu",
+      "Integrity": "RDSPSCANJhZBHd461Z1U2TUJa6lXadNmgDYcICcIXFA=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-pfbdiu88qd.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-ys46278y8s.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8jxyzkyqys-kzpdt3i8c6.gz",
@@ -8156,7 +8156,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\juusd4rgnc-dfa529ngj2.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-t4sqbxrezn.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-pdllsctzbv.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -8170,11 +8170,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "ogxt1vzle1",
-      "Integrity": "qDuFHySK02IvbaE+cjFH4qCheuMxyr4i3M0kYoBMHv0=",
+      "Fingerprint": "bchpvuw910",
+      "Integrity": "CxvPo7Qb4YIEZPJ4pT1IclYsnDdlAcxELYBn7y5QSC8=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-t4sqbxrezn.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-pdllsctzbv.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ks9j7jll5s-1qemrbr3g4.gz",
@@ -9773,7 +9773,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v4i8d4elcd-btxqarc2em.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-mgm2h1glqt.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-hpcuia22hy.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -9787,11 +9787,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "5atl6tzhfb",
-      "Integrity": "fVHqJ3fYIcYlxvfJUoKLmbx9k0jJOu3h68f2MCIj2lE=",
+      "Fingerprint": "b7dooynt7t",
+      "Integrity": "1+hETvx0SLgho73Q7/+/tnVFvdSuzxnAj9/TZCllE94=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-mgm2h1glqt.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-hpcuia22hy.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\vmjsyu5b9y-nmgzcmwijs.gz",
@@ -43616,28 +43616,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"pSuvjeMqivpx7Mf7Rm6H9Q0+q7cXrnpbDHB4P6vkiGk=\""
+          "Value": "\"5mPwtS4zqr1dXaBeWjnfaqqBsJqEfeGBaoFb0lezaFI=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
+          "Value": "Tue, 14 Apr 2026 19:43:13 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-pSuvjeMqivpx7Mf7Rm6H9Q0+q7cXrnpbDHB4P6vkiGk="
+          "Value": "sha256-5mPwtS4zqr1dXaBeWjnfaqqBsJqEfeGBaoFb0lezaFI="
         }
       ]
     },
     {
       "Route": "_framework/blazor.boot.json",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-1lrctqz85t.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-68wjyaz9d9.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000094607379"
+          "Quality": "0.000094652153"
         }
       ],
       "ResponseHeaders": [
@@ -43655,15 +43655,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "10569"
+          "Value": "10564"
         },
         {
           "Name": "ETag",
-          "Value": "\"E6kQlcfsaXtz7RQPHKnlOAUsoHcmURqp3TJbkApK7aY=\""
+          "Value": "\"B3T8a/lvesn332oS/cmSyoEhiHsEs4HwP72SSt3rp8o=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:18 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -43675,19 +43675,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"pSuvjeMqivpx7Mf7Rm6H9Q0+q7cXrnpbDHB4P6vkiGk=\""
+          "Value": "W/\"5mPwtS4zqr1dXaBeWjnfaqqBsJqEfeGBaoFb0lezaFI=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-pSuvjeMqivpx7Mf7Rm6H9Q0+q7cXrnpbDHB4P6vkiGk="
+          "Value": "sha256-5mPwtS4zqr1dXaBeWjnfaqqBsJqEfeGBaoFb0lezaFI="
         }
       ]
     },
     {
       "Route": "_framework/blazor.boot.json.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-1lrctqz85t.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-68wjyaz9d9.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -43704,7 +43704,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "10569"
+          "Value": "10564"
         },
         {
           "Name": "Content-Type",
@@ -43712,11 +43712,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"E6kQlcfsaXtz7RQPHKnlOAUsoHcmURqp3TJbkApK7aY=\""
+          "Value": "\"B3T8a/lvesn332oS/cmSyoEhiHsEs4HwP72SSt3rp8o=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:18 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -43726,7 +43726,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-E6kQlcfsaXtz7RQPHKnlOAUsoHcmURqp3TJbkApK7aY="
+          "Value": "sha256-B3T8a/lvesn332oS/cmSyoEhiHsEs4HwP72SSt3rp8o="
         }
       ]
     },
@@ -52376,7 +52376,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "412340"
+          "Value": "411532"
         },
         {
           "Name": "Content-Type",
@@ -52384,23 +52384,23 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"JYUeM8Xawy0lN7u5C0SSaX09wpZjgsoo/ALjwg5o5L0=\""
+          "Value": "\"LuTopKh+0ZHLIIglP7F2+vczC+V2PLlcJ3JgnH+wnSQ=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
+          "Value": "Tue, 14 Apr 2026 19:43:12 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-JYUeM8Xawy0lN7u5C0SSaX09wpZjgsoo/ALjwg5o5L0="
+          "Value": "sha256-LuTopKh+0ZHLIIglP7F2+vczC+V2PLlcJ3JgnH+wnSQ="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.pdb",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-pfbdiu88qd.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-ys46278y8s.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -52427,11 +52427,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"fVNYNOmkoPyap8Ick1Wt4WX8lfTLOKUUg59SlgG2Zg0=\""
+          "Value": "\"RDSPSCANJhZBHd461Z1U2TUJa6lXadNmgDYcICcIXFA=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:17 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -52443,19 +52443,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"JYUeM8Xawy0lN7u5C0SSaX09wpZjgsoo/ALjwg5o5L0=\""
+          "Value": "W/\"LuTopKh+0ZHLIIglP7F2+vczC+V2PLlcJ3JgnH+wnSQ=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-JYUeM8Xawy0lN7u5C0SSaX09wpZjgsoo/ALjwg5o5L0="
+          "Value": "sha256-LuTopKh+0ZHLIIglP7F2+vczC+V2PLlcJ3JgnH+wnSQ="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.pdb.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-pfbdiu88qd.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-ys46278y8s.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52480,11 +52480,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"fVNYNOmkoPyap8Ick1Wt4WX8lfTLOKUUg59SlgG2Zg0=\""
+          "Value": "\"RDSPSCANJhZBHd461Z1U2TUJa6lXadNmgDYcICcIXFA=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:17 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -52494,7 +52494,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-fVNYNOmkoPyap8Ick1Wt4WX8lfTLOKUUg59SlgG2Zg0="
+          "Value": "sha256-RDSPSCANJhZBHd461Z1U2TUJa6lXadNmgDYcICcIXFA="
         }
       ]
     },
@@ -52521,28 +52521,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"E7DG2pgLjXqcYsFADb8tREiJjCVWywP95L1Spc7hbqE=\""
+          "Value": "\"fTurkXrseusKE+gVwmFo9NN5YFlbgO/WPDUX442WJAU=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
+          "Value": "Tue, 14 Apr 2026 19:43:12 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-E7DG2pgLjXqcYsFADb8tREiJjCVWywP95L1Spc7hbqE="
+          "Value": "sha256-fTurkXrseusKE+gVwmFo9NN5YFlbgO/WPDUX442WJAU="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.wasm",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-t4sqbxrezn.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-pdllsctzbv.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000004041808"
+          "Quality": "0.000004041710"
         }
       ],
       "ResponseHeaders": [
@@ -52560,15 +52560,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "247413"
+          "Value": "247419"
         },
         {
           "Name": "ETag",
-          "Value": "\"qDuFHySK02IvbaE+cjFH4qCheuMxyr4i3M0kYoBMHv0=\""
+          "Value": "\"CxvPo7Qb4YIEZPJ4pT1IclYsnDdlAcxELYBn7y5QSC8=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:18 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -52580,19 +52580,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"E7DG2pgLjXqcYsFADb8tREiJjCVWywP95L1Spc7hbqE=\""
+          "Value": "W/\"fTurkXrseusKE+gVwmFo9NN5YFlbgO/WPDUX442WJAU=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-E7DG2pgLjXqcYsFADb8tREiJjCVWywP95L1Spc7hbqE="
+          "Value": "sha256-fTurkXrseusKE+gVwmFo9NN5YFlbgO/WPDUX442WJAU="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.wasm.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-t4sqbxrezn.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-pdllsctzbv.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52609,7 +52609,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "247413"
+          "Value": "247419"
         },
         {
           "Name": "Content-Type",
@@ -52617,11 +52617,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"qDuFHySK02IvbaE+cjFH4qCheuMxyr4i3M0kYoBMHv0=\""
+          "Value": "\"CxvPo7Qb4YIEZPJ4pT1IclYsnDdlAcxELYBn7y5QSC8=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:18 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -52631,7 +52631,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-qDuFHySK02IvbaE+cjFH4qCheuMxyr4i3M0kYoBMHv0="
+          "Value": "sha256-CxvPo7Qb4YIEZPJ4pT1IclYsnDdlAcxELYBn7y5QSC8="
         }
       ]
     },
@@ -52650,7 +52650,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "15332"
+          "Value": "18464"
         },
         {
           "Name": "Content-Type",
@@ -52658,28 +52658,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"yozVxBdGi3342flTSkVi6qTDAzjzCe1i5/cKFbvd+1I=\""
+          "Value": "\"KwofC208zCSefgX94/PKjUQjl0R3HhmQnzNALsWaPeA=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 14 Apr 2026 19:08:06 GMT"
+          "Value": "Tue, 14 Apr 2026 19:43:07 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-yozVxBdGi3342flTSkVi6qTDAzjzCe1i5/cKFbvd+1I="
+          "Value": "sha256-KwofC208zCSefgX94/PKjUQjl0R3HhmQnzNALsWaPeA="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.pdb",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-mgm2h1glqt.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-hpcuia22hy.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000102627258"
+          "Quality": "0.000102606197"
         }
       ],
       "ResponseHeaders": [
@@ -52697,15 +52697,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "9743"
+          "Value": "9745"
         },
         {
           "Name": "ETag",
-          "Value": "\"fVHqJ3fYIcYlxvfJUoKLmbx9k0jJOu3h68f2MCIj2lE=\""
+          "Value": "\"1+hETvx0SLgho73Q7/+/tnVFvdSuzxnAj9/TZCllE94=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:12 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:06 GMT"
         },
         {
           "Name": "Vary",
@@ -52717,19 +52717,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"yozVxBdGi3342flTSkVi6qTDAzjzCe1i5/cKFbvd+1I=\""
+          "Value": "W/\"KwofC208zCSefgX94/PKjUQjl0R3HhmQnzNALsWaPeA=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-yozVxBdGi3342flTSkVi6qTDAzjzCe1i5/cKFbvd+1I="
+          "Value": "sha256-KwofC208zCSefgX94/PKjUQjl0R3HhmQnzNALsWaPeA="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.pdb.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-mgm2h1glqt.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-hpcuia22hy.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52746,7 +52746,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "9743"
+          "Value": "9745"
         },
         {
           "Name": "Content-Type",
@@ -52754,11 +52754,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"fVHqJ3fYIcYlxvfJUoKLmbx9k0jJOu3h68f2MCIj2lE=\""
+          "Value": "\"1+hETvx0SLgho73Q7/+/tnVFvdSuzxnAj9/TZCllE94=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:12 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:06 GMT"
         },
         {
           "Name": "Vary",
@@ -52768,7 +52768,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-fVHqJ3fYIcYlxvfJUoKLmbx9k0jJOu3h68f2MCIj2lE="
+          "Value": "sha256-1+hETvx0SLgho73Q7/+/tnVFvdSuzxnAj9/TZCllE94="
         }
       ]
     },
@@ -52787,7 +52787,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "10517"
+          "Value": "19221"
         },
         {
           "Name": "Content-Type",
@@ -52795,28 +52795,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"uFwtrEohiCn4XeI+KDbShPbIHgB6ESswhBU4/X2wTkY=\""
+          "Value": "\"NDFxpxsHzY1pfUt6Hg6jWEUHTvHzpndsOjJpy2enODE=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
+          "Value": "Tue, 14 Apr 2026 19:43:12 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-uFwtrEohiCn4XeI+KDbShPbIHgB6ESswhBU4/X2wTkY="
+          "Value": "sha256-NDFxpxsHzY1pfUt6Hg6jWEUHTvHzpndsOjJpy2enODE="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.wasm",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-8oyfuu384l.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-wly8chavul.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000134462821"
+          "Quality": "0.000134444743"
         }
       ],
       "ResponseHeaders": [
@@ -52834,15 +52834,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "7436"
+          "Value": "7437"
         },
         {
           "Name": "ETag",
-          "Value": "\"DYrSsluFyEwONPBmJXIjFcIbeYxWVdRi0Mvyo/6Mk70=\""
+          "Value": "\"lXXyCEZLTjmlMHjQKuWKoEqaQbloiDIK0HZbYBhthEw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:18 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -52854,19 +52854,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"uFwtrEohiCn4XeI+KDbShPbIHgB6ESswhBU4/X2wTkY=\""
+          "Value": "W/\"NDFxpxsHzY1pfUt6Hg6jWEUHTvHzpndsOjJpy2enODE=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-uFwtrEohiCn4XeI+KDbShPbIHgB6ESswhBU4/X2wTkY="
+          "Value": "sha256-NDFxpxsHzY1pfUt6Hg6jWEUHTvHzpndsOjJpy2enODE="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.wasm.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-8oyfuu384l.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-wly8chavul.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52883,7 +52883,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "7436"
+          "Value": "7437"
         },
         {
           "Name": "Content-Type",
@@ -52891,11 +52891,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"DYrSsluFyEwONPBmJXIjFcIbeYxWVdRi0Mvyo/6Mk70=\""
+          "Value": "\"lXXyCEZLTjmlMHjQKuWKoEqaQbloiDIK0HZbYBhthEw=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Fri, 03 Apr 2026 18:14:18 GMT"
+          "Value": "Tue, 14 Apr 2026 19:08:12 GMT"
         },
         {
           "Name": "Vary",
@@ -52905,7 +52905,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-DYrSsluFyEwONPBmJXIjFcIbeYxWVdRi0Mvyo/6Mk70="
+          "Value": "sha256-lXXyCEZLTjmlMHjQKuWKoEqaQbloiDIK0HZbYBhthEw="
         }
       ]
     },

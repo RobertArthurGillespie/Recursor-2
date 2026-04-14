@@ -12,6 +12,83 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Models;
 // difficulty progressions relative to the user's personal history).
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Latest Training Row (minimal projection for signal comparison) ────────────
+// Holds the columns needed to compute UserRelativeSignals from the most recent
+// BehaviorStateTrainingRow for a given user.
+// ─────────────────────────────────────────────────────────────────────────────
+public class LatestUserTrainingRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+
+    // Higher-order behavior scores
+    public double ConfusionScore { get; set; }
+    public double HintDependenceScore { get; set; }
+
+    // Dimension scores
+    public double GoalUnderstanding { get; set; }
+    public double AttentionDetection { get; set; }
+    public double ProcedureSequencing { get; set; }
+    public double SelfCorrection { get; set; }
+    public double TaskContinuity { get; set; }
+}
+
+// ── User Relative Signals ─────────────────────────────────────────────────────
+// Compares a user's most recent behavior-state window against their historical
+// baseline. Read-only diagnostic layer — does NOT affect live adaptation.
+//
+// Current values come from the latest BehaviorStateTrainingRow for the user.
+// Baseline values come from the UserBaselineSnapshot lifetime averages.
+// ─────────────────────────────────────────────────────────────────────────────
+public class UserRelativeSignals
+{
+    // ── Identity ──────────────────────────────────────────────────────────────
+    public string UserId { get; set; } = "";
+    public string SessionId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+
+    // ── Current window values ─────────────────────────────────────────────────
+    public double CurrentConfusionScore { get; set; }
+    public double CurrentHintDependenceScore { get; set; }
+    public double CurrentGoalUnderstanding { get; set; }
+    public double CurrentAttentionDetection { get; set; }
+    public double CurrentProcedureSequencing { get; set; }
+    public double CurrentSelfCorrection { get; set; }
+    public double CurrentTaskContinuity { get; set; }
+
+    // ── Baseline values (lifetime averages from UserBaselineSnapshot) ─────────
+    public double BaselineConfusionScore { get; set; }
+    public double BaselineHintDependenceScore { get; set; }
+    public double BaselineGoalUnderstanding { get; set; }
+    public double BaselineAttentionDetection { get; set; }
+    public double BaselineProcedureSequencing { get; set; }
+    public double BaselineSelfCorrection { get; set; }
+    public double BaselineTaskContinuity { get; set; }
+
+    // ── Deltas (current minus baseline) ──────────────────────────────────────
+    // Positive = above baseline, negative = below baseline.
+    public double ConfusionDelta { get; set; }
+    public double HintDependenceDelta { get; set; }
+    public double GoalUnderstandingDelta { get; set; }
+    public double AttentionDelta { get; set; }
+    public double ProcedureSequencingDelta { get; set; }
+    public double SelfCorrectionDelta { get; set; }
+    public double TaskContinuityDelta { get; set; }
+
+    // ── Simple relative flags ─────────────────────────────────────────────────
+    // Thresholds: ±0.10 to avoid noise from small fluctuations.
+    public bool IsAboveBaselineConfusion { get; set; }
+    public bool IsAboveBaselineHintDependence { get; set; }
+    public bool IsBelowBaselineGoalUnderstanding { get; set; }
+    public bool IsBelowBaselineAttention { get; set; }
+
+    // ── Human-readable summary ────────────────────────────────────────────────
+    public string Summary { get; set; } = "";
+}
+
 public class UserBaselineSnapshot
 {
     // ── Identity ──────────────────────────────────────────────────────────────

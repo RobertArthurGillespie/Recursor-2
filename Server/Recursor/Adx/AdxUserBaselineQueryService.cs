@@ -26,6 +26,13 @@ public interface IAdxUserBaselineQueryService
     /// Returns <c>null</c> when no rows exist for the user, or when ADX is not configured.
     /// </summary>
     Task<UserBaselineSnapshot?> GetUserBaselineAsync(string userId, int recentWindowCount = 10);
+
+    /// <summary>
+    /// Returns the most recent BehaviorStateTrainingRow for the given user,
+    /// projected to the columns needed for user-relative signal computation.
+    /// Returns <c>null</c> when no rows exist, or when ADX is not configured.
+    /// </summary>
+    Task<LatestUserTrainingRow?> GetLatestTrainingRowByUserAsync(string userId);
 }
 
 public class AdxUserBaselineQueryService : IAdxUserBaselineQueryService
@@ -179,6 +186,52 @@ public class AdxUserBaselineQueryService : IAdxUserBaselineQueryService
             RecentAvgGoalUnderstanding = recentGoal,
             RecentAvgAttentionDetection = recentAttention
         };
+    }
+
+    public async Task<LatestUserTrainingRow?> GetLatestTrainingRowByUserAsync(string userId)
+    {
+        if (_queryProvider is null)
+        {
+            _logger.LogWarning("ADX query provider not configured — skipping latest training row query.");
+            return null;
+        }
+
+        var sanitized = Sanitize(userId);
+
+        var kql = $@"BehaviorStateTrainingRows
+| where UserId == '{sanitized}'
+| top 1 by CreatedAtUtc desc
+| project SessionId, UserId, WindowIndex, CreatedAtUtc,
+          ConfusionScore, HintDependenceScore,
+          GoalUnderstanding, AttentionDetection, ProcedureSequencing, SelfCorrection, TaskContinuity";
+
+        try
+        {
+            using var r = await _queryProvider.ExecuteQueryAsync(_database, kql, new ClientRequestProperties());
+
+            if (!r.Read())
+                return null;
+
+            return new LatestUserTrainingRow
+            {
+                SessionId           = r.GetString(0),
+                UserId              = r.GetString(1),
+                WindowIndex         = r.GetInt32(2),
+                CreatedAtUtc        = r.GetDateTime(3),
+                ConfusionScore      = ReadDoubleSafe(r, 4),
+                HintDependenceScore = ReadDoubleSafe(r, 5),
+                GoalUnderstanding   = ReadDoubleSafe(r, 6),
+                AttentionDetection  = ReadDoubleSafe(r, 7),
+                ProcedureSequencing = ReadDoubleSafe(r, 8),
+                SelfCorrection      = ReadDoubleSafe(r, 9),
+                TaskContinuity      = ReadDoubleSafe(r, 10)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "ADX latest training row query failed for userId '{UserId}'.", userId);
+            return null;
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

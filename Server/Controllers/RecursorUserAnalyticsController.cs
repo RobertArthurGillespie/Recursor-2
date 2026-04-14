@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
+using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
 namespace NCATAIBlazorFrontendTest.Server.Controllers;
 
@@ -17,13 +18,16 @@ public class RecursorUserAnalyticsController : ControllerBase
 {
     private readonly IAdxRecursorQueryService _queryService;
     private readonly IAdxUserBaselineQueryService _baselineService;
+    private readonly IUserRelativeSignalService _relativeSignalService;
 
     public RecursorUserAnalyticsController(
         IAdxRecursorQueryService queryService,
-        IAdxUserBaselineQueryService baselineService)
+        IAdxUserBaselineQueryService baselineService,
+        IUserRelativeSignalService relativeSignalService)
     {
-        _queryService    = queryService;
-        _baselineService = baselineService;
+        _queryService          = queryService;
+        _baselineService       = baselineService;
+        _relativeSignalService = relativeSignalService;
     }
 
     /// <summary>
@@ -100,5 +104,32 @@ public class RecursorUserAnalyticsController : ControllerBase
             return NotFound($"No behavioral data found for user '{userId}'.");
 
         return Ok(snapshot);
+    }
+
+    /// <summary>
+    /// GET /api/recursor/users/{userId}/relative-signals
+    ///
+    /// Returns a UserRelativeSignals snapshot comparing the user's most recent
+    /// behavior-state window against their lifetime baseline averages.
+    ///
+    /// Includes current values, baseline values, deltas, and simple flags
+    /// for confusion, hint dependence, goal understanding, and attention.
+    ///
+    /// Read-only — does not affect the live adaptation pipeline.
+    /// Returns 404 when no data exists for the user.
+    /// Returns 503 if ADX is not configured (null result from service).
+    /// </summary>
+    [HttpGet("{userId}/relative-signals")]
+    public async Task<IActionResult> GetUserRelativeSignals(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequest("userId is required.");
+
+        var signals = await _relativeSignalService.GetUserRelativeSignalsAsync(userId);
+
+        if (signals is null)
+            return NotFound($"No behavioral data found for user '{userId}'.");
+
+        return Ok(signals);
     }
 }
