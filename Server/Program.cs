@@ -97,6 +97,7 @@ if (!string.IsNullOrEmpty(adxOpts.ClusterUri))
 builder.Services.AddSingleton<IAdxIngestionService, AdxIngestionService>();
 builder.Services.AddSingleton<IAdxRecursorQueryService, AdxRecursorQueryService>();
 builder.Services.AddSingleton<IAdxModelEvaluationQueryService, AdxModelEvaluationQueryService>();
+builder.Services.AddSingleton<IAdxUserBaselineQueryService, AdxUserBaselineQueryService>();
 
 // Recursor pipeline services (scoped — one per request).
 builder.Services.AddScoped<IFeatureExtractionService, FeatureExtractionService>();

@@ -16,10 +16,14 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers;
 public class RecursorUserAnalyticsController : ControllerBase
 {
     private readonly IAdxRecursorQueryService _queryService;
+    private readonly IAdxUserBaselineQueryService _baselineService;
 
-    public RecursorUserAnalyticsController(IAdxRecursorQueryService queryService)
+    public RecursorUserAnalyticsController(
+        IAdxRecursorQueryService queryService,
+        IAdxUserBaselineQueryService baselineService)
     {
-        _queryService = queryService;
+        _queryService    = queryService;
+        _baselineService = baselineService;
     }
 
     /// <summary>
@@ -64,5 +68,37 @@ public class RecursorUserAnalyticsController : ControllerBase
 
         var count = await _queryService.GetTrainingRowCountByUserAsync(userId);
         return Ok(new { UserId = userId, TrainingRowCount = count });
+    }
+
+    /// <summary>
+    /// GET /api/recursor/users/{userId}/baseline?recentWindowCount=10
+    ///
+    /// Returns a compact longitudinal behavioral snapshot for the given user,
+    /// computed from BehaviorStateTrainingRows across all of their sessions.
+    ///
+    /// Includes lifetime averages for key dimension and behavior scores,
+    /// weak-label rates (confusion, hint-dependence, stable mastery),
+    /// and recent-window averages over the latest <c>recentWindowCount</c> windows.
+    ///
+    /// Returns 404 when no data exists for the user.
+    /// Returns 503 if ADX is not configured (null result from service).
+    /// </summary>
+    [HttpGet("{userId}/baseline")]
+    public async Task<IActionResult> GetUserBaseline(
+        string userId,
+        [FromQuery] int recentWindowCount = 10)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequest("userId is required.");
+
+        if (recentWindowCount < 1 || recentWindowCount > 500)
+            return BadRequest("recentWindowCount must be between 1 and 500.");
+
+        var snapshot = await _baselineService.GetUserBaselineAsync(userId, recentWindowCount);
+
+        if (snapshot is null)
+            return NotFound($"No behavioral data found for user '{userId}'.");
+
+        return Ok(snapshot);
     }
 }
