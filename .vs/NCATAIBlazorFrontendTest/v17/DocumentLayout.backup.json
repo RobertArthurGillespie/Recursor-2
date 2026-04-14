@@ -493,7 +493,7 @@
               "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxIngestionService.cs",
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
-              "ViewState": "AgIAADsAAAAAAAAAAAAUwEsAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAADsAAAAAAAAAAAAUwEYAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-01T17:00:54.104Z",
               "EditorCaption": ""
@@ -508,8 +508,7 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
               "ViewState": "AgIAAPYAAAAAAAAAAAAswBQBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T21:27:46.027Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-09T21:27:46.027Z"
             },
             {
               "$type": "Document",
@@ -521,8 +520,7 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
               "ViewState": "AgIAALIAAAAAAAAAAAAwwNEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T14:34:07.941Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T14:34:07.941Z"
             },
             {
               "$type": "Document",
@@ -534,8 +532,7 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowModels.cs",
               "ViewState": "AgIAAIIAAAAAAAAAAAAiwJYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T16:22:24.884Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T16:22:24.884Z"
             },
             {
               "$type": "Document",
@@ -547,8 +544,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:43:56.27Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:43:56.27Z"
             },
             {
               "$type": "Document",
@@ -560,8 +556,7 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\InterpretationModels.cs",
               "ViewState": "AgIAAAwAAAAAAAAAAAA9wBcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:55:43.467Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:55:43.467Z"
             },
             {
               "$type": "Document",
@@ -573,8 +568,7 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
               "ViewState": "AgIAABgBAAAAAAAAAAAowDUBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T18:51:53.084Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-10T18:51:53.084Z"
             },
             {
               "$type": "Document",
@@ -586,8 +580,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:44:13.205Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:44:13.205Z"
             },
             {
               "$type": "Document",
@@ -599,8 +592,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\FeatureExtractionService.cs",
               "ViewState": "AgIAACYAAAAAAAAAAAAswCwAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T04:13:01.534Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-03T04:13:01.534Z"
             },
             {
               "$type": "Document",
@@ -612,8 +604,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\RecursorSessionService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T16:54:41.523Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T16:54:41.523Z"
             },
             {
               "$type": "Document",
@@ -625,8 +616,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
               "ViewState": "AgIAADEAAAAAAAAAAAAAwFcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T21:02:52.732Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-09T21:02:52.732Z"
             },
             {
               "$type": "Document",
@@ -638,8 +628,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\TrajectoryAnalysisService.cs",
               "ViewState": "AgIAAEsAAAAAAAAAAAAAAAsAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-04T02:26:17.014Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-04T02:26:17.014Z"
             },
             {
               "$type": "Document",
@@ -651,8 +640,7 @@
               "RelativeToolTip": "Shared\\ChatResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-12T03:26:51.078Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T03:26:51.078Z"
             },
             {
               "$type": "Document",
@@ -664,8 +652,7 @@
               "RelativeToolTip": "Server\\appsettings.json",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABoAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-12T15:13:19.251Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T15:13:19.251Z"
             },
             {
               "$type": "Document",
@@ -677,8 +664,7 @@
               "RelativeToolTip": "Server\\Program.cs",
               "ViewState": "AgIAAI4AAAAAAAAAAADwv6AAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-12T04:12:07.098Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T04:12:07.098Z"
             },
             {
               "$type": "Document",
@@ -1014,8 +1000,7 @@
               "RelativeToolTip": "Server\\Controllers\\ChatController.cs",
               "ViewState": "AgIAAHoAAAAAAAAAAAAgwIsAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-29T21:25:34.116Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-29T21:25:34.116Z"
             },
             {
               "$type": "Document",
@@ -1027,8 +1012,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
               "ViewState": "AgIAAJEAAAAAAAAAAAAgwJUAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T16:48:32.849Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-03T16:48:32.849Z"
             },
             {
               "$type": "Document",
@@ -1124,8 +1108,7 @@
               "RelativeToolTip": "Server\\Controllers\\AuthController.cs",
               "ViewState": "AgIAADwAAAAAAAAAAAAYwBIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-22T02:01:33.192Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-22T02:01:33.192Z"
             },
             {
               "$type": "Document",
@@ -1437,8 +1420,7 @@
               "RelativeToolTip": "Server\\Controllers\\TestingController.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAADwv+cBAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T17:53:48.455Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-26T17:53:48.455Z"
             },
             {
               "$type": "Document",
