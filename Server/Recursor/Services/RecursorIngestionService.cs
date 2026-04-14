@@ -233,8 +233,11 @@ public class RecursorIngestionService : IRecursorIngestionService
             if (shadowPrediction is not null)
             {
                 _logger.LogInformation(
-                    "Shadow ML prediction generated. SessionId={SessionId} WindowIndex={WindowIndex} ModelVersion={ModelVersion} InferenceMode={InferenceMode}",
-                    session.SessionId, featureVector.WindowIndex, shadowPrediction.ModelVersion, shadowPrediction.InferenceMode);
+                    " \"Shadow ML prediction generated. SessionId={SessionId} WindowIndex={WindowIndex} \" +\n    \"ModelVersion={ModelVersion} InferenceMode={InferenceMode} \" +\n    \"HintDependenceProbability={HintDependenceProbability} \" +\n    \"HintDependenceNextProbability={HintDependenceNextProbability} \" +\n    \"HintDependenceNextPredictedLabel={HintDependenceNextPredictedLabel} \" +\n    \"HintDependenceNextModelVersion={HintDependenceNextModelVersion}\"",
+                    session.SessionId, featureVector.WindowIndex, shadowPrediction.ModelVersion, shadowPrediction.InferenceMode, shadowPrediction?.HintDependenceProbability,
+    shadowPrediction?.HintDependenceNextProbability,
+    shadowPrediction?.HintDependenceNextPredictedLabel,
+    shadowPrediction?.HintDependenceNextModelVersion);
             }
         }
         catch (Exception ex)

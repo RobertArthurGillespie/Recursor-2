@@ -7,6 +7,7 @@ public class BehaviorProfileDocument
     public string Id { get; set; } = "";
     public string DocumentType { get; set; } = "BehaviorProfile";
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string SourceFeatureWindowId { get; set; } = "";
     public BehaviorScores? BehaviorScores { get; set; }
@@ -25,6 +26,7 @@ public class HypothesisSetDocument
     public string Id { get; set; } = "";
     public string DocumentType { get; set; } = "HypothesisSet";
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string SourceBehaviorProfileId { get; set; } = "";
     public List<BehavioralHypothesis> Hypotheses { get; set; } = new();

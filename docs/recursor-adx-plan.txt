@@ -38,6 +38,7 @@ Columns:
 ### FeatureWindows
 Columns:
 - SessionId: string
+- UserId: string
 - WindowIndex: int
 - WindowType: string
 - WindowStartSequence: long
@@ -52,15 +53,18 @@ Columns:
 ### BehaviorProfiles
 Columns:
 - SessionId: string
+- UserId: string
 - WindowIndex: int
 - SourceFeatureWindowId: string
 - InterpreterVersion: string
 - DimensionScores: dynamic
+- BehaviorScores: dynamic
 - CreatedAtUtc: datetime
 
 ### HypothesisSets
 Columns:
 - SessionId: string
+- UserId: string
 - WindowIndex: int
 - SourceBehaviorProfileId: string
 - InterpreterMode: string
@@ -68,17 +72,67 @@ Columns:
 - Hypotheses: dynamic
 - CreatedAtUtc: datetime
 
-### AdaptationDecisions
+### AdaptationDecisions_v2
+Note: the live table is AdaptationDecisions_v2 (not AdaptationDecisions).
 Columns:
 - SessionId: string
+- UserId: string
 - DecisionIndex: int
 - SourceHypothesisSetId: string
 - PolicyVersion: string
 - InterventionFamilies: dynamic
 - ParameterChanges: dynamic
-- ReasoningSummary: dynamic
+- ReasoningSummary: string
 - ExpiresAfterWindow: int
 - CreatedAtUtc: datetime
+- HintDependenceNextProbability: real (nullable)
+- NextHintDependenceGuardrailTriggered: bool
+- NextHintDependenceGuardrailLevel: string (nullable)
+
+### BehaviorStateTrainingRows
+One row per feature window. Used for shadow ML model training and evaluation.
+Columns:
+- SessionId: string
+- UserId: string
+- SimId: string
+- ScenarioId: string
+- WindowIndex: int
+- TaskType: string
+- CreatedAtUtc: datetime
+- AttentionDetection: real
+- GoalUnderstanding: real
+- ProcedureSequencing: real
+- PaceRegulation: real
+- SelfCorrection: real
+- FeedbackResponsiveness: real
+- SafetyCompliance: real
+- TaskContinuity: real
+- ConfusionScore: real
+- HesitationScore: real
+- ImpulsivityScore: real
+- HintDependenceScore: real
+- GoalTrend: real
+- AttentionTrend: real
+- ConfusionTrend: real
+- HintDependenceTrend: real
+- CurrentHintMode: string
+- CurrentDifficulty: real
+- CurrentTimePressure: real
+- CurrentErrorTolerance: real
+- ConsecutiveStableMasteryWindows: int
+- ConsecutiveRelapseWindows: int
+- EventCountInWindow: int
+- ErrorCountInWindow: int
+- HintCountInWindow: int
+- StepCompleteCountInWindow: int
+- LabelConfusion: int
+- LabelHintDependence: int
+- LabelStableMastery: int
+- PredConfusionProbability: real
+- PredHintDependenceProbability: real
+- PredStableMasteryProbability: real
+- ModelVersion: string
+- InferenceMode: string
 
 ## ADX-facing services
 
@@ -97,6 +151,7 @@ Implement row DTOs for ADX persistence/query mapping:
 - `BehaviorProfileRow`
 - `HypothesisSetRow`
 - `AdaptationDecisionRow`
+- `BehaviorStateTrainingRow`
 
 ## Mapper
 

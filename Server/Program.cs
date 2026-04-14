@@ -25,6 +25,7 @@ using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 using Kusto.Data.Net.Client;
+using Microsoft.Extensions.Logging;
 
 
 
@@ -133,6 +134,8 @@ var resolvedHintDependenceNextWindowPath = ResolveModelPath(
     builder.Configuration["Recursor:Models:HintDependenceNextWindowModelPath"],
     builder.Environment.ContentRootPath);
 
+
+
 // Bind policy options so AdaptationPolicyService can read guardrail thresholds.
 builder.Services.Configure<RecursorPoliciesOptions>(
     builder.Configuration.GetSection("Recursor:Policies"));
@@ -145,12 +148,25 @@ bool anyModelPresent =
 
 if (anyModelPresent)
 {
-    builder.Services.AddSingleton<IBehaviorStatePredictionService>(_ =>
-        new MlNetBehaviorStatePredictionService(
-            resolvedHintDependencePath,
-            resolvedConfusionPath,
-            resolvedStableMasteryPath,
-            resolvedHintDependenceNextWindowPath));
+    builder.Services.AddSingleton<IBehaviorStatePredictionService>(sp =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        var logger = sp.GetRequiredService<ILogger<MlNetBehaviorStatePredictionService>>();
+
+        var hintDependencePath = config["Recursor:Models:HintDependenceModelPath"];
+        var confusionPath = config["Recursor:Models:ConfusionModelPath"];
+        var stableMasteryPath = config["Recursor:Models:StableMasteryModelPath"];
+        var nextWindowPath = config["Recursor:Models:HintDependenceNextWindowModelPath"];
+
+        return new MlNetBehaviorStatePredictionService(
+            logger,
+            hintDependencePath,
+            confusionPath,
+            stableMasteryPath,
+            nextWindowPath,
+            "mlnet-multi-v1"
+            );
+    });
 }
 else
 {

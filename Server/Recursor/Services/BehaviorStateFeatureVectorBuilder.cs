@@ -27,6 +27,7 @@ public class BehaviorStateFeatureVectorBuilder : IBehaviorStateFeatureVectorBuil
         {
             // Identity / context
             SessionId = session.SessionId,
+            UserId = session.UserId,
             SimId = session.SimId,
             ScenarioId = session.ScenarioId,
             WindowIndex = behaviorProfile.WindowIndex,

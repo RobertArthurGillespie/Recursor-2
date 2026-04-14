@@ -48,6 +48,7 @@ public static class AdxRowMapper
         return new FeatureWindowRow
         {
             SessionId = doc.SessionId,
+            UserId = doc.UserId,
             WindowIndex = doc.WindowIndex,
             WindowType = doc.WindowType,
             WindowStartSequence = doc.WindowStartSequence,
@@ -66,6 +67,7 @@ public static class AdxRowMapper
         return new BehaviorProfileRow
         {
             SessionId = doc.SessionId,
+            UserId = doc.UserId,
             WindowIndex = doc.WindowIndex,
             SourceFeatureWindowId = doc.SourceFeatureWindowId,
             InterpreterVersion = "1.0",
@@ -80,6 +82,7 @@ public static class AdxRowMapper
         return new HypothesisSetRow
         {
             SessionId = doc.SessionId,
+            UserId = doc.UserId,
             WindowIndex = doc.WindowIndex,
             SourceBehaviorProfileId = doc.SourceBehaviorProfileId,
             InterpreterMode = doc.InterpreterMode,
@@ -94,6 +97,7 @@ public static class AdxRowMapper
         return new AdaptationDecisionRow
         {
             SessionId = doc.SessionId,
+            UserId = doc.UserId,
             DecisionIndex = doc.DecisionIndex,
             SourceHypothesisSetId = doc.SourceHypothesisSetId,
             PolicyVersion = "1.0",
@@ -119,6 +123,7 @@ public static class AdxRowMapper
         {
             // Identity / metadata
             SessionId = featureVector.SessionId,
+            UserId = featureVector.UserId,
             SimId = featureVector.SimId,
             ScenarioId = featureVector.ScenarioId,
             WindowIndex = featureVector.WindowIndex,
@@ -188,6 +193,7 @@ public static class AdxRowMapper
             Id = "",    // not persisted in ADX — debug use only
             DocumentType = "FeatureWindow",
             SessionId = row.SessionId,
+            UserId = row.UserId,
             WindowIndex = row.WindowIndex,
             WindowType = row.WindowType,
             WindowStartSequence = row.WindowStartSequence,

@@ -30,6 +30,7 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
     private readonly ITransformer? _confusionModel;
     private readonly ITransformer? _stableMasteryModel;
     private readonly ITransformer? _hintDependenceNextWindowModel;
+    private readonly ILogger<MlNetBehaviorStatePredictionService> _logger;
     private readonly string _modelVersion;
     private bool _disposed;
 
@@ -45,12 +46,15 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
     /// </param>
     /// <param name="modelVersion">Version tag included in every prediction result.</param>
     public MlNetBehaviorStatePredictionService(
+        ILogger<MlNetBehaviorStatePredictionService> logger,
         string? hintDependenceModelPath,
         string? confusionModelPath                  = null,
         string? stableMasteryModelPath              = null,
         string? hintDependenceNextWindowModelPath   = null,
-        string  modelVersion                        = "mlnet-multi-v1")
+        string  modelVersion                        = "mlnet-multi-v1"
+        )
     {
+        _logger = logger;
         _modelVersion                  = modelVersion;
         _mlContext                     = new MLContext();
         _hintDependenceModel           = TryLoadModel(hintDependenceModelPath,           "HintDependence");
@@ -87,10 +91,22 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
                 prediction.HintDependenceNextProbability   = nextOutput.Value.probability;
                 prediction.HintDependenceNextPredictedLabel = nextOutput.Value.predictedLabel;
                 prediction.HintDependenceNextModelVersion  = _modelVersion + "-next-baseline";
+                Console.WriteLine(
+          $"[MlNetBehaviorStatePredictionService] Next-window prediction success: " +
+          $"Probability={nextOutput.Value.probability:0.000}, PredictedLabel={nextOutput.Value.predictedLabel}");
+            }
+            else
+            {
+                Console.WriteLine(
+            "[MlNetBehaviorStatePredictionService] Next-window prediction returned null.");
             }
         }
+        else {
+            Console.WriteLine(
+           "[MlNetBehaviorStatePredictionService] Next-window prediction skipped because model is null.");
+        }
 
-        return Task.FromResult<BehaviorStatePrediction?>(prediction);
+            return Task.FromResult<BehaviorStatePrediction?>(prediction);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -105,14 +121,14 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            Console.WriteLine(
+            _logger.LogWarning(
                 $"[MlNetBehaviorStatePredictionService] {modelName} model path not configured — skipping.");
             return null;
         }
 
         if (!File.Exists(path))
         {
-            Console.WriteLine(
+            _logger.LogWarning(
                 $"[MlNetBehaviorStatePredictionService] {modelName} model file not found at '{path}' — skipping.");
             return null;
         }
@@ -120,17 +136,19 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         try
         {
             var model = _mlContext.Model.Load(path, out _);
-            Console.WriteLine(
+           _logger.LogInformation(
                 $"[MlNetBehaviorStatePredictionService] {modelName} model loaded from '{path}'.");
             return model;
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
+            _logger.LogWarning(
                 $"[MlNetBehaviorStatePredictionService] ERROR loading {modelName} model from '{path}': " +
                 $"{ex.GetType().Name} — {ex.Message}. Prediction for this model will return 0.0.");
             return null;
         }
+
+
     }
 
     /// <summary>
@@ -156,7 +174,7 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
+            _logger.LogWarning(
                 $"[MlNetBehaviorStatePredictionService] ERROR during {modelName} prediction: " +
                 $"{ex.GetType().Name} — {ex.Message}. Returning 0.0 for this model.");
             return 0.0f;
@@ -184,7 +202,7 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
+            _logger.LogWarning(
                 $"[MlNetBehaviorStatePredictionService] ERROR during HintDependenceNextWindow prediction: " +
                 $"{ex.GetType().Name} — {ex.Message}. Returning null for next-window fields.");
             return null;

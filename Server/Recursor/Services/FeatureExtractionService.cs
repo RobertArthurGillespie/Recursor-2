@@ -46,6 +46,7 @@ public class FeatureExtractionService : IFeatureExtractionService
         {
             Id = Guid.NewGuid().ToString(),
             SessionId = session.SessionId,
+            UserId = session.UserId,
             WindowIndex = session.BatchCount,
             WindowType = stageTrigger  ? "stage-completion" :
                          safetyTrigger ? "safety-trigger"   :

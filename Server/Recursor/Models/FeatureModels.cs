@@ -5,6 +5,7 @@ public class FeatureWindowDocument
     public string Id { get; set; } = "";
     public string DocumentType { get; set; } = "FeatureWindow";
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string WindowType { get; set; } = "batch";
     public long WindowStartSequence { get; set; }

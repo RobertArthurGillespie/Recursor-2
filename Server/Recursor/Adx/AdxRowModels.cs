@@ -30,6 +30,7 @@ public class RawEventRow
 public class FeatureWindowRow
 {
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string WindowType { get; set; } = "";
     public long WindowStartSequence { get; set; }
@@ -45,6 +46,7 @@ public class FeatureWindowRow
 public class BehaviorProfileRow
 {
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string SourceFeatureWindowId { get; set; } = "";
     public string InterpreterVersion { get; set; } = "1.0";
@@ -57,6 +59,7 @@ public class BehaviorProfileRow
 public class HypothesisSetRow
 {
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int WindowIndex { get; set; }
     public string SourceBehaviorProfileId { get; set; } = "";
     public string InterpreterMode { get; set; } = "";
@@ -68,6 +71,7 @@ public class HypothesisSetRow
 public class AdaptationDecisionRow
 {
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int DecisionIndex { get; set; }
     public string SourceHypothesisSetId { get; set; } = "";
     public string PolicyVersion { get; set; } = "1.0";
@@ -87,6 +91,7 @@ public class BehaviorStateTrainingRow
 {
     // Identity / metadata
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public string SimId { get; set; } = "";
     public string ScenarioId { get; set; } = "";
     public int WindowIndex { get; set; }

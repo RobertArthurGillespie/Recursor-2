@@ -157,7 +157,9 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         string? nextWindowGuardrailNote = null;
         bool nextWindowGuardrailTriggered = false;
         string? nextWindowGuardrailLevel = null;
-
+        Console.WriteLine(
+    $"[AdaptationPolicyService] HintDependenceNextProbability = " +
+    $"{shadowPrediction?.HintDependenceNextProbability?.ToString() ?? "null"}");
         if (_policies.EnableNextWindowHintDependenceGuardrail
             && shadowPrediction?.HintDependenceNextProbability is double nextProb)
         {
@@ -238,6 +240,7 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             Id = Guid.NewGuid().ToString(),
             DocumentType = "AdaptationDecision",
             SessionId = session.SessionId,
+            UserId = session.UserId,
             DecisionIndex = decisionIndex,
             SourceHypothesisSetId = hypothesisSet.Id,
             InterventionFamilies = interventionFamilies,

@@ -5,6 +5,7 @@ public class AdaptationDecisionDocument
     public string Id { get; set; } = "";
     public string DocumentType { get; set; } = "AdaptationDecision";
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public int DecisionIndex { get; set; }
     public string SourceHypothesisSetId { get; set; } = "";
     public List<string> InterventionFamilies { get; set; } = new();

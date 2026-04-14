@@ -4,6 +4,7 @@ public class BehaviorStateFeatureVector
 {
     // Identity / context
     public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
     public string SimId { get; set; } = "";
     public string ScenarioId { get; set; } = "";
     public int WindowIndex { get; set; }

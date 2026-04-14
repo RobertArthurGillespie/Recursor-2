@@ -63,7 +63,12 @@ public class AdxIngestionService : IAdxIngestionService
         var table = BuildFeatureWindowsTable(row);
         var props = new KustoQueuedIngestionProperties(_database, "FeatureWindows")
         {
-            Format = DataSourceFormat.csv
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "FeatureWindowsCsvMapping"
+            }
         };
 
         using var reader = table.CreateDataReader();
@@ -96,7 +101,12 @@ public class AdxIngestionService : IAdxIngestionService
         var table = BuildHypothesisSetsTable(row);
         var props = new KustoQueuedIngestionProperties(_database, "HypothesisSets")
         {
-            Format = DataSourceFormat.csv
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "HypothesisSetsCsvMapping"
+            }
         };
 
         using var reader = table.CreateDataReader();
@@ -110,7 +120,12 @@ public class AdxIngestionService : IAdxIngestionService
         var table = BuildAdaptationDecisionsTable(row);
         var props = new KustoQueuedIngestionProperties(_database, "AdaptationDecisions_v2")
         {
-            Format = DataSourceFormat.csv
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "AdaptationDecisionsV2CsvMapping"
+            }
         };
 
         using var reader = table.CreateDataReader();
@@ -190,20 +205,22 @@ public class AdxIngestionService : IAdxIngestionService
     private static DataTable BuildFeatureWindowsTable(FeatureWindowRow row)
     {
         var table = new DataTable("FeatureWindows");
-        table.Columns.Add("SessionId",              typeof(string));
-        table.Columns.Add("WindowIndex",            typeof(int));
-        table.Columns.Add("WindowType",             typeof(string));
-        table.Columns.Add("WindowStartSequence",    typeof(long));
-        table.Columns.Add("WindowEndSequence",      typeof(long));
-        table.Columns.Add("WindowStartUtc",         typeof(DateTime));
-        table.Columns.Add("WindowEndUtc",           typeof(DateTime));
-        table.Columns.Add("SimId",                  typeof(string));
-        table.Columns.Add("ScenarioId",             typeof(string));
-        table.Columns.Add("FeatureExtractorVersion",typeof(string));
-        table.Columns.Add("Features",               typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("SessionId",               typeof(string));
+        table.Columns.Add("UserId",                  typeof(string));
+        table.Columns.Add("WindowIndex",             typeof(int));
+        table.Columns.Add("WindowType",              typeof(string));
+        table.Columns.Add("WindowStartSequence",     typeof(long));
+        table.Columns.Add("WindowEndSequence",       typeof(long));
+        table.Columns.Add("WindowStartUtc",          typeof(DateTime));
+        table.Columns.Add("WindowEndUtc",            typeof(DateTime));
+        table.Columns.Add("SimId",                   typeof(string));
+        table.Columns.Add("ScenarioId",              typeof(string));
+        table.Columns.Add("FeatureExtractorVersion", typeof(string));
+        table.Columns.Add("Features",                typeof(string)); // dynamic column — JSON string
 
         table.Rows.Add(
             row.SessionId,
+            row.UserId,
             row.WindowIndex,
             row.WindowType,
             row.WindowStartSequence,
@@ -222,24 +239,24 @@ public class AdxIngestionService : IAdxIngestionService
     private static DataTable BuildBehaviorProfilesTable(BehaviorProfileRow row)
     {
         var table = new DataTable("BehaviorProfiles");
-        table.Columns.Add("SessionId",            typeof(string));
-        table.Columns.Add("WindowIndex",          typeof(int));
-        table.Columns.Add("SourceFeatureWindowId",typeof(string));
-        table.Columns.Add("InterpreterVersion",   typeof(string));
-        table.Columns.Add("DimensionScores",      typeof(string)); // dynamic column — JSON string
-        table.Columns.Add("BehaviorScores", typeof(string));
-        table.Columns.Add("CreatedAtUtc",         typeof(DateTime));
-        
+        table.Columns.Add("SessionId",             typeof(string));
+        table.Columns.Add("UserId",                typeof(string));
+        table.Columns.Add("WindowIndex",           typeof(int));
+        table.Columns.Add("SourceFeatureWindowId", typeof(string));
+        table.Columns.Add("InterpreterVersion",    typeof(string));
+        table.Columns.Add("DimensionScores",       typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("BehaviorScores",        typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("CreatedAtUtc",          typeof(DateTime));
 
         table.Rows.Add(
             row.SessionId,
+            row.UserId,
             row.WindowIndex,
             row.SourceFeatureWindowId,
             row.InterpreterVersion,
             row.DimensionScores.GetRawText(),
             row.BehaviorScores.GetRawText(),
             row.CreatedAtUtc
-            
         );
 
         return table;
@@ -248,16 +265,18 @@ public class AdxIngestionService : IAdxIngestionService
     private static DataTable BuildHypothesisSetsTable(HypothesisSetRow row)
     {
         var table = new DataTable("HypothesisSets");
-        table.Columns.Add("SessionId",            typeof(string));
-        table.Columns.Add("WindowIndex",          typeof(int));
+        table.Columns.Add("SessionId",               typeof(string));
+        table.Columns.Add("UserId",                  typeof(string));
+        table.Columns.Add("WindowIndex",             typeof(int));
         table.Columns.Add("SourceBehaviorProfileId", typeof(string));
-        table.Columns.Add("InterpreterMode",      typeof(string));
-        table.Columns.Add("InterpreterVersion",   typeof(string));
-        table.Columns.Add("Hypotheses",           typeof(string)); // dynamic column — JSON string
-        table.Columns.Add("CreatedAtUtc",         typeof(DateTime));
+        table.Columns.Add("InterpreterMode",         typeof(string));
+        table.Columns.Add("InterpreterVersion",      typeof(string));
+        table.Columns.Add("Hypotheses",              typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("CreatedAtUtc",            typeof(DateTime));
 
         table.Rows.Add(
             row.SessionId,
+            row.UserId,
             row.WindowIndex,
             row.SourceBehaviorProfileId,
             row.InterpreterMode,
@@ -272,33 +291,35 @@ public class AdxIngestionService : IAdxIngestionService
     private static DataTable BuildAdaptationDecisionsTable(AdaptationDecisionRow row)
     {
         var table = new DataTable("AdaptationDecisions_v2");
-        table.Columns.Add("SessionId",            typeof(string));
-        table.Columns.Add("DecisionIndex",        typeof(int));
-        table.Columns.Add("SourceHypothesisSetId",typeof(string));
-        table.Columns.Add("PolicyVersion",        typeof(string));
-        table.Columns.Add("InterventionFamilies", typeof(string)); // dynamic column — JSON string
-        table.Columns.Add("ParameterChanges",     typeof(string)); // dynamic column — JSON string
-        table.Columns.Add("ReasoningSummary",     typeof(string));
-        table.Columns.Add("ExpiresAfterWindow",   typeof(int));
-        table.Columns.Add("CreatedAtUtc",         typeof(DateTime));
-        table.Columns.Add("HintDependenceNextProbability", typeof(double));
+        table.Columns.Add("SessionId",                            typeof(string));
+        table.Columns.Add("UserId",                               typeof(string));
+        table.Columns.Add("DecisionIndex",                        typeof(int));
+        table.Columns.Add("SourceHypothesisSetId",                typeof(string));
+        table.Columns.Add("PolicyVersion",                        typeof(string));
+        table.Columns.Add("InterventionFamilies",                 typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("ParameterChanges",                     typeof(string)); // dynamic column — JSON string
+        table.Columns.Add("ReasoningSummary",                     typeof(string));
+        table.Columns.Add("ExpiresAfterWindow",                   typeof(int));
+        table.Columns.Add("CreatedAtUtc",                         typeof(DateTime));
+        table.Columns.Add("HintDependenceNextProbability",        typeof(double));
         table.Columns.Add("NextHintDependenceGuardrailTriggered", typeof(bool));
-        table.Columns.Add("NextHintDependenceGuardrailLevel", typeof(string));
+        table.Columns.Add("NextHintDependenceGuardrailLevel",     typeof(string));
 
         table.Rows.Add(
-     row.SessionId,
-     row.DecisionIndex,
-     row.SourceHypothesisSetId,
-     row.PolicyVersion,
-     row.InterventionFamilies.GetRawText(),
-     row.ParameterChanges.GetRawText(),
-     row.ReasoningSummary,
-     row.ExpiresAfterWindow,
-     row.CreatedAtUtc,
-     row.HintDependenceNextProbability ?? (object)DBNull.Value,
-     row.NextHintDependenceGuardrailTriggered,
-     row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value
- );
+            row.SessionId,
+            row.UserId,
+            row.DecisionIndex,
+            row.SourceHypothesisSetId,
+            row.PolicyVersion,
+            row.InterventionFamilies.GetRawText(),
+            row.ParameterChanges.GetRawText(),
+            row.ReasoningSummary,
+            row.ExpiresAfterWindow,
+            row.CreatedAtUtc,
+            row.HintDependenceNextProbability ?? (object)DBNull.Value,
+            row.NextHintDependenceGuardrailTriggered,
+            row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value
+        );
 
         return table;
     }
@@ -309,6 +330,7 @@ public class AdxIngestionService : IAdxIngestionService
 
         // Identity / metadata
         table.Columns.Add("SessionId",                        typeof(string));
+        table.Columns.Add("UserId",                           typeof(string));
         table.Columns.Add("SimId",                            typeof(string));
         table.Columns.Add("ScenarioId",                       typeof(string));
         table.Columns.Add("WindowIndex",                      typeof(int));
@@ -367,6 +389,7 @@ public class AdxIngestionService : IAdxIngestionService
 
         table.Rows.Add(
             row.SessionId,
+            row.UserId,
             row.SimId,
             row.ScenarioId,
             row.WindowIndex,
