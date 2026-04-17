@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "mqQLct3KqogSvphtDycOKIrrd4IJyQeFWe59o6SgBBQ=",
+  "Hash": "IZlnUIvzmWtZtmxLfwFOc7YRPEq8zyZI/hU/ZfP3kvU=",
   "Source": "NCATAIBlazorFrontendTest.Server",
   "BasePath": "_content/NCATAIBlazorFrontendTest.Server",
   "Mode": "Default",
@@ -42193,7 +42193,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 16 Apr 2026 15:15:54 GMT"
+          "Value": "Fri, 17 Apr 2026 17:57:55 GMT"
         }
       ],
       "EndpointProperties": [
@@ -42236,7 +42236,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 16 Apr 2026 15:15:54 GMT"
+          "Value": "Fri, 17 Apr 2026 17:57:55 GMT"
         },
         {
           "Name": "Vary",
@@ -42291,7 +42291,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 16 Apr 2026 15:15:54 GMT"
+          "Value": "Fri, 17 Apr 2026 17:57:55 GMT"
         },
         {
           "Name": "Vary",
@@ -42344,7 +42344,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 16 Apr 2026 15:15:54 GMT"
+          "Value": "Fri, 17 Apr 2026 17:57:55 GMT"
         },
         {
           "Name": "Vary",
@@ -42389,7 +42389,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 16 Apr 2026 15:15:54 GMT"
+          "Value": "Fri, 17 Apr 2026 17:57:55 GMT"
         },
         {
           "Name": "Vary",
