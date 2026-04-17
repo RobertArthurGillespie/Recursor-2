@@ -175,14 +175,21 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                     interventionFamilies.Contains("scaffold-hints") ||
                     interventionFamilies.Contains("hint-restore-minimal");
 
-                if (!hintSupportPresent &&
-                    !string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase))
+                string hintGuardrailAction = "hint reduction blocked";
+                if (!hintSupportPresent)
                 {
-                    // off → minimal is a smaller step than jumping straight to guided
-                    interventionFamilies.Add(
-                        string.Equals(currentHintMode, "off", StringComparison.OrdinalIgnoreCase)
-                            ? "hint-restore-minimal"
-                            : "scaffold-hints");
+                    if (string.Equals(currentHintMode, "off", StringComparison.OrdinalIgnoreCase))
+                    {
+                        interventionFamilies.Add("hint-restore-minimal"); // off → minimal
+                        hintGuardrailAction = "restored minimal hint support";
+                    }
+                    else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Stay at minimal — do not escalate to guided during recovery/mastery windows.
+                        interventionFamilies.Add("hint-restore-minimal");
+                        hintGuardrailAction = "preserved minimal hint support";
+                    }
+                    // guided: implicit support already present; no escalation needed
                 }
 
                 if (!interventionFamilies.Contains("pace-support"))
@@ -191,7 +198,7 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 nextWindowGuardrailTriggered = true;
                 nextWindowGuardrailLevel = "high";
                 nextWindowGuardrailNote =
-                    $"next-window hint dependence guardrail (HIGH): hint support preserved; " +
+                    $"next-window hint dependence guardrail (HIGH): {hintGuardrailAction}; " +
                     $"HintDependenceNextProbability={nextProb:0.00}";
             }
             else if (nextProb >= _policies.HintDependenceNextModerateThreshold)
