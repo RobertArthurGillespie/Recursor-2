@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dotnet build:*)",
       "Bash(grep -E \"^.*\\\\s+\\(Error|error|Warning|warning\\).*$\")",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(grep \"\\\\.cs$\")"
     ]
   }
 }

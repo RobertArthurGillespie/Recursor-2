@@ -141,15 +141,16 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         // veto any hint-reduction family that the rule engine just selected.
         // ML may only block support removal — it cannot create or increase support.
         string? mlVetoNote = null;
-        if (shadowPrediction is not null && shadowPrediction.HintDependenceProbability >= 0.85)
+        bool mlGuardrailActive = shadowPrediction is not null && shadowPrediction.HintDependenceProbability >= 0.85;
+        if (mlGuardrailActive)
         {
-            bool blocked = false;
-            blocked |= interventionFamilies.Remove("hint-fade");
-            blocked |= interventionFamilies.Remove("hint-remove");
-            blocked |= interventionFamilies.Remove("hint-reduction");
+            bool mlGuardrailRemovedHintReduction = false;
+            mlGuardrailRemovedHintReduction |= interventionFamilies.Remove("hint-fade");
+            mlGuardrailRemovedHintReduction |= interventionFamilies.Remove("hint-remove");
+            mlGuardrailRemovedHintReduction |= interventionFamilies.Remove("hint-reduction");
 
-            if (blocked)
-                mlVetoNote = $"hint reduction blocked by ML assist (HintDependenceProbability={shadowPrediction.HintDependenceProbability:0.00})";
+            if (mlGuardrailRemovedHintReduction)
+                mlVetoNote = $"hint reduction blocked by ML assist (HintDependenceProbability={shadowPrediction!.HintDependenceProbability:0.00})";
         }
 
         // Next-window guardrail: if the baseline next-window model predicts elevated hint
@@ -159,9 +160,6 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         string? nextWindowGuardrailNote = null;
         bool nextWindowGuardrailTriggered = false;
         string? nextWindowGuardrailLevel = null;
-        Console.WriteLine(
-    $"[AdaptationPolicyService] HintDependenceNextProbability = " +
-    $"{shadowPrediction?.HintDependenceNextProbability?.ToString() ?? "null"}");
         if (_policies.EnableNextWindowHintDependenceGuardrail
             && shadowPrediction?.HintDependenceNextProbability is double nextProb)
         {
@@ -226,9 +224,11 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         // and hint dependence, and not below baseline on goal understanding or attention.
         // This produces a gentle guided → minimal hint reduction supported by individual evidence.
         string? personalizedHintFadeNote = null;
+        
         if (_policies.EnablePersonalizedHintFadeRule
             && personalizedSignals is not null
             && !hasRelapse
+            && !mlGuardrailActive
             && !nextWindowGuardrailTriggered
             && string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
             && interventionFamilies.Contains("difficulty-increase")

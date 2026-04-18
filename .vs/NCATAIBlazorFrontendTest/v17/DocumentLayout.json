@@ -3,12 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\ncataiblazorfrontendtest.server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\ncataiblazorfrontendtest.server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\adaptationpolicyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\adaptationpolicyservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\recursoringestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\recursoringestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\models\\mlmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\models\\mlmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\models\\userbaselinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\models\\userbaselinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\recursorsessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\recursorsessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\ncataiblazorfrontendtest.server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\ncataiblazorfrontendtest.server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\behaviorstatefeaturevectorbuilder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -59,14 +79,6 @@
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\adx\\adxrowmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\models\\mlmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\models\\mlmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\models\\userbaselinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\models\\userbaselinemodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\adx\\adxuserbaselinequeryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\adx\\adxuserbaselinequeryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -83,16 +95,8 @@
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\adx\\adxmodelevaluationqueryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\recursoringestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\recursoringestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\featureextractionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\featureextractionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\recursorsessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\services\\recursorsessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\services\\trajectoryanalysisservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -101,10 +105,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{381B451A-2E53-40E7-BB74-A9DC11157311}|Shared\\NCATAIBlazorFrontendTest.Shared.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\shared\\chatresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{381B451A-2E53-40E7-BB74-A9DC11157311}|Shared\\NCATAIBlazorFrontendTest.Shared.csproj|solutionrelative:shared\\chatresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\ml\\mlnetbehaviorstatepredictionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -503,7 +503,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -511,188 +511,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "AdaptationPolicyService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "RelativeToolTip": "Server\\Recursor\\Services\\AdaptationPolicyService.cs",
-              "ViewState": "AgIAAFYBAAAAAAAAAAAwwGcBAAAtAAAAAAAAAA==",
+              "ViewState": "AgIAAM0AAAAAAAAAAAAkwOIAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T22:27:36.251Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "BehaviorScoringService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorScoringService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\BehaviorScoringService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorScoringService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorScoringService.cs",
-              "ViewState": "AgIAAFUAAAAAAAAAAAAswG0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T14:26:57.532Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "BehaviorStateFeatureVectorBuilder.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
-              "ViewState": "AgIAAD0AAAAAAAAAAAAswFgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T21:02:52.732Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "NCATAIBlazorFrontendTest.Server.csproj",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
-              "RelativeDocumentMoniker": "Server\\NCATAIBlazorFrontendTest.Server.csproj",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
-              "RelativeToolTip": "Server\\NCATAIBlazorFrontendTest.Server.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:40:24.219Z",
+              "WhenOpened": "2026-04-02T22:27:36.251Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "BehaviorInterpreter.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorInterpreter.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorInterpreter.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
-              "ViewState": "AgIAADkBAAAAAAAAAADwv1IBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:43:56.27Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "UserRelativeSignalService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativeSignalService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\UserRelativeSignalService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativeSignalService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\UserRelativeSignalService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T19:50:49.283Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ExplanationGenerationService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\ExplanationGenerationService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\ExplanationGenerationService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
-              "ViewState": "AgIAAIsAAAAAAAAAAAAAAJoAAAA/AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T16:48:32.849Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "RecursorController.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorController.cs",
-              "RelativeDocumentMoniker": "Server\\Controllers\\RecursorController.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorController.cs",
-              "RelativeToolTip": "Server\\Controllers\\RecursorController.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAiwA0AAABFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T02:17:36.886Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "AdxRowMapper.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowMapper.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowMapper.cs",
-              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
-              "ViewState": "AgIAALIAAAAAAAAAAAAwwNEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T14:34:07.941Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "AdxRecursorQueryService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
-              "ViewState": "AgIAAHkBAAAAAAAAAAAswIkBAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T21:27:46.027Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "RecursorUserAnalyticsController.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorUserAnalyticsController.cs",
-              "RelativeDocumentMoniker": "Server\\Controllers\\RecursorUserAnalyticsController.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorUserAnalyticsController.cs",
-              "RelativeToolTip": "Server\\Controllers\\RecursorUserAnalyticsController.cs",
-              "ViewState": "AgIAAJkAAAAAAAAAAAAowDIAAAA1AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T20:39:26.33Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "UserRelativePolicyAdvisorService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
-              "ViewState": "AgIAAA4AAAAAAAAAAAAwwDMAAAA4AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T20:37:52.829Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
               "Title": "UserBaselineModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\UserBaselineModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\UserBaselineModels.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\UserBaselineModels.cs",
               "RelativeToolTip": "Server\\Recursor\\Models\\UserBaselineModels.cs",
-              "ViewState": "AgIAAJYAAAAAAAAAAAAmwKsAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAKoAAAAAAAAAAAA4wLsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-14T20:38:34.31Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "AdaptationModels.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\AdaptationModels.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Models\\AdaptationModels.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\AdaptationModels.cs",
-              "RelativeToolTip": "Server\\Recursor\\Models\\AdaptationModels.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAA2wBsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T20:42:31.148Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "AdxRowModels.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowModels.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRowModels.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowModels.cs",
-              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowModels.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAAAowE4AAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T16:22:24.884Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 3,
               "Title": "MlModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\MlModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\MlModels.cs",
@@ -704,79 +548,57 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "AdxIngestionService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxIngestionService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxIngestionService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
-              "ViewState": "AgIAAO4AAAAAAAAAAAA3wL0BAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-01T17:00:54.104Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "AdxUserBaselineQueryService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
-              "ViewState": "AgIAAKcAAAAAAAAAAAAswLkAAAA0AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T19:14:31.063Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "InterpretationModels.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\InterpretationModels.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Models\\InterpretationModels.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\InterpretationModels.cs",
-              "RelativeToolTip": "Server\\Recursor\\Models\\InterpretationModels.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAA9wBcAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:55:43.467Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 19,
-              "Title": "AdxModelEvaluationQueryService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
-              "ViewState": "AgIAABgBAAAAAAAAAAAowDUBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T18:51:53.084Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 2,
               "Title": "RecursorIngestionService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "RelativeToolTip": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIBAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAFsBAAAAAAAAAAAgwHMBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:44:13.205Z"
+              "WhenOpened": "2026-04-02T15:44:13.205Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
-              "Title": "FeatureExtractionService.cs",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\FeatureExtractionService.cs",
-              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\FeatureExtractionService.cs",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\FeatureExtractionService.cs",
-              "RelativeToolTip": "Server\\Recursor\\Services\\FeatureExtractionService.cs",
-              "ViewState": "AgIAACYAAAAAAAAAAAAswCwAAAAaAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T04:13:01.534Z"
+              "DocumentIndex": 6,
+              "Title": "NCATAIBlazorFrontendTest.Server.csproj",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
+              "RelativeDocumentMoniker": "Server\\NCATAIBlazorFrontendTest.Server.csproj",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
+              "RelativeToolTip": "Server\\NCATAIBlazorFrontendTest.Server.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-08-12T11:40:24.219Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 7,
+              "Title": "BehaviorStateFeatureVectorBuilder.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
+              "ViewState": "AgIAAD0AAAAAAAAAAAAswFgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-09T21:02:52.732Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
+              "RelativeDocumentMoniker": "Server\\appsettings.json",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
+              "RelativeToolTip": "Server\\appsettings.json",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAmwCAAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-12T15:13:19.251Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "RecursorSessionService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorSessionService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\RecursorSessionService.cs",
@@ -788,7 +610,199 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "BehaviorScoringService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorScoringService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\BehaviorScoringService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorScoringService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorScoringService.cs",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAswG0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T14:26:57.532Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "BehaviorInterpreter.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorInterpreter.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\BehaviorInterpreter.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
+              "ViewState": "AgIAADkBAAAAAAAAAADwv1IBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T15:43:56.27Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "UserRelativeSignalService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativeSignalService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\UserRelativeSignalService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativeSignalService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\UserRelativeSignalService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T19:50:49.283Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ExplanationGenerationService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\ExplanationGenerationService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\ExplanationGenerationService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
+              "ViewState": "AgIAAIsAAAAAAAAAAAAAAJoAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-03T16:48:32.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "RecursorController.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorController.cs",
+              "RelativeDocumentMoniker": "Server\\Controllers\\RecursorController.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorController.cs",
+              "RelativeToolTip": "Server\\Controllers\\RecursorController.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAiwA0AAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T02:17:36.886Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "AdxRowMapper.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowMapper.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowMapper.cs",
+              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
+              "ViewState": "AgIAALIAAAAAAAAAAAAwwNEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T14:34:07.941Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "AdxRecursorQueryService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRecursorQueryService.cs",
+              "ViewState": "AgIAAHkBAAAAAAAAAAAswIkBAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-09T21:27:46.027Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "RecursorUserAnalyticsController.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorUserAnalyticsController.cs",
+              "RelativeDocumentMoniker": "Server\\Controllers\\RecursorUserAnalyticsController.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorUserAnalyticsController.cs",
+              "RelativeToolTip": "Server\\Controllers\\RecursorUserAnalyticsController.cs",
+              "ViewState": "AgIAAJkAAAAAAAAAAAAowDIAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T20:39:26.33Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "UserRelativePolicyAdvisorService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\UserRelativePolicyAdvisorService.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAwwDMAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T20:37:52.829Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "AdaptationModels.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\AdaptationModels.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Models\\AdaptationModels.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\AdaptationModels.cs",
+              "RelativeToolTip": "Server\\Recursor\\Models\\AdaptationModels.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAA2wBsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T20:42:31.148Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "AdxRowModels.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowModels.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRowModels.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowModels.cs",
+              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowModels.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAowE4AAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T16:22:24.884Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "AdxIngestionService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxIngestionService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxIngestionService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
+              "ViewState": "AgIAAO4AAAAAAAAAAAA3wL0BAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T17:00:54.104Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AdxUserBaselineQueryService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxUserBaselineQueryService.cs",
+              "ViewState": "AgIAAKcAAAAAAAAAAAAswLkAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-14T19:14:31.063Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "InterpretationModels.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\InterpretationModels.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Models\\InterpretationModels.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\InterpretationModels.cs",
+              "RelativeToolTip": "Server\\Recursor\\Models\\InterpretationModels.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAA9wBcAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T15:55:43.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "AdxModelEvaluationQueryService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Adx\\AdxModelEvaluationQueryService.cs",
+              "ViewState": "AgIAABgBAAAAAAAAAAAowDUBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-10T18:51:53.084Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 23,
+              "Title": "FeatureExtractionService.cs",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\FeatureExtractionService.cs",
+              "RelativeDocumentMoniker": "Server\\Recursor\\Services\\FeatureExtractionService.cs",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\FeatureExtractionService.cs",
+              "RelativeToolTip": "Server\\Recursor\\Services\\FeatureExtractionService.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAswCwAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-03T04:13:01.534Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
               "Title": "TrajectoryAnalysisService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\TrajectoryAnalysisService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\TrajectoryAnalysisService.cs",
@@ -800,7 +814,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 25,
               "Title": "ChatResponse.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Shared\\ChatResponse.cs",
               "RelativeDocumentMoniker": "Shared\\ChatResponse.cs",
@@ -809,18 +823,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-12T03:26:51.078Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 25,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
-              "RelativeDocumentMoniker": "Server\\appsettings.json",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
-              "RelativeToolTip": "Server\\appsettings.json",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAABoAAAAzAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-12T15:13:19.251Z"
             },
             {
               "$type": "Document",
@@ -1180,8 +1182,7 @@
               "RelativeToolTip": "Shared\\NCATAIBlazorFrontendTest.Shared.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T12:55:59.871Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T12:55:59.871Z"
             },
             {
               "$type": "Document",
@@ -1337,8 +1338,7 @@
               "RelativeToolTip": "Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAIBJwAkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:45:07.848Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T11:45:07.848Z"
             },
             {
               "$type": "Document",
@@ -1601,8 +1601,7 @@
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
               "RelativeToolTip": "Server\\NCATAIBlazorFrontendTest.Server.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:40:43.7Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T11:40:43.7Z"
             },
             {
               "$type": "Document",
@@ -1769,8 +1768,7 @@
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "RelativeToolTip": "Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:41:08.658Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T11:41:08.658Z"
             },
             {
               "$type": "Document",
@@ -1781,8 +1779,7 @@
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Shared\\NCATAIBlazorFrontendTest.Shared.csproj",
               "RelativeToolTip": "Shared\\NCATAIBlazorFrontendTest.Shared.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:41:18.149Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T11:41:18.149Z"
             },
             {
               "$type": "Document",
