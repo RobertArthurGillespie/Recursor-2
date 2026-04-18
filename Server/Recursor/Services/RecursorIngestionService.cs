@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
@@ -36,6 +38,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly ITrajectoryAnalysisService _trajectoryAnalysis;
     private readonly IBehaviorStateFeatureVectorBuilder _featureVectorBuilder;
     private readonly IBehaviorStatePredictionService _behaviorStatePredictionService;
+    private readonly IUserRelativeSignalService _userRelativeSignalService;
+    private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
     public RecursorIngestionService(
@@ -49,6 +53,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     ITrajectoryAnalysisService trajectoryAnalysis,
     IBehaviorStateFeatureVectorBuilder featureVectorBuilder,
     IBehaviorStatePredictionService behaviorStatePredictionService,
+    IUserRelativeSignalService userRelativeSignalService,
+    IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
         _adxIngestion = adxIngestion;
@@ -61,6 +67,8 @@ public class RecursorIngestionService : IRecursorIngestionService
         _trajectoryAnalysis = trajectoryAnalysis;
         _featureVectorBuilder = featureVectorBuilder;
         _behaviorStatePredictionService = behaviorStatePredictionService;
+        _userRelativeSignalService = userRelativeSignalService;
+        _policies = policiesOptions.Value;
         _logger = logger;
     }
 
@@ -276,7 +284,32 @@ public class RecursorIngestionService : IRecursorIngestionService
             };
         }
 
-        var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet, shadowPrediction);
+        // Phase 8 — fetch personalized signals for the hint-fade rule.
+        // Only fetched when the feature flag is on; always non-blocking (failures yield null signals).
+        PersonalizedPolicySignals? personalizedSignals = null;
+        if (_policies.EnablePersonalizedHintFadeRule)
+        {
+            try
+            {
+                var relativeSignals = await _userRelativeSignalService.GetUserRelativeSignalsAsync(session.UserId);
+                if (relativeSignals is not null)
+                {
+                    personalizedSignals = new PersonalizedPolicySignals
+                    {
+                        ConfusionDelta = relativeSignals.ConfusionDelta,
+                        HintDependenceDelta = relativeSignals.HintDependenceDelta,
+                        IsBelowBaselineGoalUnderstanding = relativeSignals.IsBelowBaselineGoalUnderstanding,
+                        IsBelowBaselineAttention = relativeSignals.IsBelowBaselineAttention
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to fetch personalized signals for session {SessionId}. Skipping personalized hint-fade rule.", session.SessionId);
+            }
+        }
+
+        var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet, shadowPrediction, personalizedSignals);
         if (adaptation is null)
         {
             _logger.LogInformation("No adaptation produced for session {SessionId}.", session.SessionId);

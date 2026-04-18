@@ -519,8 +519,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\AdaptationPolicyService.cs",
               "ViewState": "AgIAAFYBAAAAAAAAAAAwwGcBAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T22:27:36.251Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T22:27:36.251Z"
             },
             {
               "$type": "Document",
@@ -544,8 +543,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorStateFeatureVectorBuilder.cs",
               "ViewState": "AgIAAD0AAAAAAAAAAAAswFgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T21:02:52.732Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-09T21:02:52.732Z"
             },
             {
               "$type": "Document",
@@ -570,8 +568,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
               "ViewState": "AgIAADkBAAAAAAAAAADwv1IBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:43:56.27Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:43:56.27Z"
             },
             {
               "$type": "Document",
@@ -595,8 +592,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
               "ViewState": "AgIAAIsAAAAAAAAAAAAAAJoAAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T16:48:32.849Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-03T16:48:32.849Z"
             },
             {
               "$type": "Document",
@@ -740,8 +736,7 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\InterpretationModels.cs",
               "ViewState": "AgIAAAwAAAAAAAAAAAA9wBcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:55:43.467Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:55:43.467Z"
             },
             {
               "$type": "Document",
@@ -837,8 +832,7 @@
               "RelativeToolTip": "Server\\Program.cs",
               "ViewState": "AgIAAI4AAAAAAAAAAADwv6AAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-12T04:12:07.098Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T04:12:07.098Z"
             },
             {
               "$type": "Document",
@@ -1114,8 +1108,7 @@
               "RelativeToolTip": "Server\\Controllers\\ChatController.cs",
               "ViewState": "AgIAAHoAAAAAAAAAAAAgwIsAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-29T21:25:34.116Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-29T21:25:34.116Z"
             },
             {
               "$type": "Document",
@@ -1187,7 +1180,8 @@
               "RelativeToolTip": "Shared\\NCATAIBlazorFrontendTest.Shared.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T12:55:59.871Z"
+              "WhenOpened": "2025-08-12T12:55:59.871Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1211,8 +1205,7 @@
               "RelativeToolTip": "Server\\Controllers\\AuthController.cs",
               "ViewState": "AgIAADwAAAAAAAAAAAAYwBIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-22T02:01:33.192Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-22T02:01:33.192Z"
             },
             {
               "$type": "Document",
@@ -1344,7 +1337,8 @@
               "RelativeToolTip": "Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAIBJwAkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:45:07.848Z"
+              "WhenOpened": "2025-08-12T11:45:07.848Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1524,8 +1518,7 @@
               "RelativeToolTip": "Server\\Controllers\\TestingController.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAADwv+cBAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T17:53:48.455Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-26T17:53:48.455Z"
             },
             {
               "$type": "Document",
@@ -1608,7 +1601,8 @@
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\NCATAIBlazorFrontendTest.Server.csproj",
               "RelativeToolTip": "Server\\NCATAIBlazorFrontendTest.Server.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:40:43.7Z"
+              "WhenOpened": "2025-08-12T11:40:43.7Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1775,7 +1769,8 @@
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "RelativeToolTip": "Client\\NCATAIBlazorFrontendTest.Client.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:41:08.658Z"
+              "WhenOpened": "2025-08-12T11:41:08.658Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1786,7 +1781,8 @@
               "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Shared\\NCATAIBlazorFrontendTest.Shared.csproj",
               "RelativeToolTip": "Shared\\NCATAIBlazorFrontendTest.Shared.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-08-12T11:41:18.149Z"
+              "WhenOpened": "2025-08-12T11:41:18.149Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",

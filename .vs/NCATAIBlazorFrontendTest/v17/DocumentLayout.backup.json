@@ -570,7 +570,8 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\BehaviorInterpreter.cs",
               "ViewState": "AgIAADkBAAAAAAAAAADwv1IBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:43:56.27Z"
+              "WhenOpened": "2026-04-02T15:43:56.27Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -594,7 +595,8 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\ExplanationGenerationService.cs",
               "ViewState": "AgIAAIsAAAAAAAAAAAAAAJoAAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-03T16:48:32.849Z"
+              "WhenOpened": "2026-04-03T16:48:32.849Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -738,7 +740,8 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\InterpretationModels.cs",
               "ViewState": "AgIAAAwAAAAAAAAAAAA9wBcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:55:43.467Z"
+              "WhenOpened": "2026-04-02T15:55:43.467Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -834,7 +837,8 @@
               "RelativeToolTip": "Server\\Program.cs",
               "ViewState": "AgIAAI4AAAAAAAAAAADwv6AAAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-12T04:12:07.098Z"
+              "WhenOpened": "2025-08-12T04:12:07.098Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1110,7 +1114,8 @@
               "RelativeToolTip": "Server\\Controllers\\ChatController.cs",
               "ViewState": "AgIAAHoAAAAAAAAAAAAgwIsAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-29T21:25:34.116Z"
+              "WhenOpened": "2025-07-29T21:25:34.116Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1206,7 +1211,8 @@
               "RelativeToolTip": "Server\\Controllers\\AuthController.cs",
               "ViewState": "AgIAADwAAAAAAAAAAAAYwBIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-22T02:01:33.192Z"
+              "WhenOpened": "2025-08-22T02:01:33.192Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -1518,7 +1524,8 @@
               "RelativeToolTip": "Server\\Controllers\\TestingController.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAADwv+cBAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T17:53:48.455Z"
+              "WhenOpened": "2025-08-26T17:53:48.455Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",

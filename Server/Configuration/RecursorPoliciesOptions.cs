@@ -25,4 +25,27 @@ public class RecursorPoliciesOptions
     /// Default matches offline evaluation recommendation: 0.20.
     /// </summary>
     public float HintDependenceNextHighThreshold { get; set; } = 0.20f;
+
+    // ── Phase 8: personalized hint-fade rule ──────────────────────────────────
+
+    /// <summary>
+    /// When true, enables the Phase 8 personalized hint-fade rule.
+    /// When false (default), the rule is entirely inactive and no ADX signal
+    /// fetch is performed. Set to true only for controlled Phase 8 experiments.
+    /// </summary>
+    public bool EnablePersonalizedHintFadeRule { get; set; } = false;
+
+    /// <summary>
+    /// ConfusionDelta must be at or below this value for the hint-fade rule to fire.
+    /// Negative = user is less confused than their personal baseline.
+    /// Default: -0.05 (5 points below baseline).
+    /// </summary>
+    public double PersonalizedHintFadeConfusionDeltaThreshold { get; set; } = -0.05;
+
+    /// <summary>
+    /// HintDependenceDelta must be at or below this value for the hint-fade rule to fire.
+    /// Negative = user is less hint-dependent than their personal baseline.
+    /// Default: -0.05 (5 points below baseline).
+    /// </summary>
+    public double PersonalizedHintFadeHintDependenceDeltaThreshold { get; set; } = -0.05;
 }

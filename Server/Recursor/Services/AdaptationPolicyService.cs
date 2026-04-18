@@ -10,7 +10,8 @@ public interface IAdaptationPolicyService
         SessionDocument session,
         SimCatalogDocument catalog,
         HypothesisSetDocument hypothesisSet,
-        BehaviorStatePrediction? shadowPrediction = null);
+        BehaviorStatePrediction? shadowPrediction = null,
+        PersonalizedPolicySignals? personalizedSignals = null);
 }
 
 public class AdaptationPolicyService : IAdaptationPolicyService
@@ -26,7 +27,8 @@ public class AdaptationPolicyService : IAdaptationPolicyService
     SessionDocument session,
     SimCatalogDocument catalog,
     HypothesisSetDocument hypothesisSet,
-    BehaviorStatePrediction? shadowPrediction = null)
+    BehaviorStatePrediction? shadowPrediction = null,
+    PersonalizedPolicySignals? personalizedSignals = null)
     {
         if (hypothesisSet.Hypotheses.Count == 0)
             return null;
@@ -216,6 +218,39 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             }
         }
 
+        // Phase 8 — personalized hint-fade rule.
+        // Fires only when the flag is on, no relapse is active, no next-window guardrail
+        // triggered, the session is already in a success/challenge posture
+        // (difficulty-increase and pace-increase both present), and the user's own
+        // relative signals confirm they are below their personal baseline for confusion
+        // and hint dependence, and not below baseline on goal understanding or attention.
+        // This produces a gentle guided → minimal hint reduction supported by individual evidence.
+        string? personalizedHintFadeNote = null;
+        if (_policies.EnablePersonalizedHintFadeRule
+            && personalizedSignals is not null
+            && !hasRelapse
+            && !nextWindowGuardrailTriggered
+            && string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
+            && interventionFamilies.Contains("difficulty-increase")
+            && interventionFamilies.Contains("pace-increase")
+            && personalizedSignals.ConfusionDelta <= _policies.PersonalizedHintFadeConfusionDeltaThreshold
+            && personalizedSignals.HintDependenceDelta <= _policies.PersonalizedHintFadeHintDependenceDeltaThreshold
+            && !personalizedSignals.IsBelowBaselineGoalUnderstanding
+            && !personalizedSignals.IsBelowBaselineAttention)
+        {
+            interventionFamilies.Remove("scaffold-hints");
+            interventionFamilies.Remove("hint-remove");
+            interventionFamilies.Remove("hint-reduction");
+            interventionFamilies.Remove("hint-restore-minimal");
+
+            if (!interventionFamilies.Contains("hint-fade"))
+                interventionFamilies.Add("hint-fade");
+
+            personalizedHintFadeNote =
+                $"personalized hint fade applied (ConfusionDelta={personalizedSignals.ConfusionDelta:0.00}, " +
+                $"HintDependenceDelta={personalizedSignals.HintDependenceDelta:0.00})";
+        }
+
         var changes = new List<ParameterChange>();
         var usedParameters = new HashSet<string>();
 
@@ -238,6 +273,9 @@ public class AdaptationPolicyService : IAdaptationPolicyService
 
         if (nextWindowGuardrailNote is not null)
             reasoning.Add(nextWindowGuardrailNote);
+
+        if (personalizedHintFadeNote is not null)
+            reasoning.Add(personalizedHintFadeNote);
 
         var decisionIndex = session.LatestAdaptationId is null ? 0
             : (int.TryParse(session.LatestAdaptationId.Split('-').Last(), out var idx) ? idx + 1 : 0);

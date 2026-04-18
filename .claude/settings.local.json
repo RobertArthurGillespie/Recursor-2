@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(dotnet build:*)",
-      "Bash(grep -E \"^.*\\\\s+\\(Error|error|Warning|warning\\).*$\")"
+      "Bash(grep -E \"^.*\\\\s+\\(Error|error|Warning|warning\\).*$\")",
+      "Bash(xargs grep *)"
     ]
   }
 }

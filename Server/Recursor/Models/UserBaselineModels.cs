@@ -129,6 +129,22 @@ public class PersonalizedPolicyShadowDecision
     public string DivergenceReason { get; set; } = "";
 }
 
+// ── Personalized Policy Signals (Phase 8) ────────────────────────────────────
+// Compact view of user-relative signals projected for consumption by the live
+// adaptation policy. Only the four fields needed for the hint-fade rule are
+// carried here — the full UserRelativeSignals model is not passed into policy.
+// ─────────────────────────────────────────────────────────────────────────────
+public class PersonalizedPolicySignals
+{
+    // Negative values indicate the user is below their own baseline (better = lower for confusion/hint dependence).
+    public double ConfusionDelta { get; set; }
+    public double HintDependenceDelta { get; set; }
+
+    // True when the user is meaningfully below their own baseline on these cognitive dimensions.
+    public bool IsBelowBaselineGoalUnderstanding { get; set; }
+    public bool IsBelowBaselineAttention { get; set; }
+}
+
 public class UserBaselineSnapshot
 {
     // ── Identity ──────────────────────────────────────────────────────────────
