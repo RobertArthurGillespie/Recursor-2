@@ -28,6 +28,9 @@ public class SessionDocument
     public List<TrajectorySnapshot> RecentSnapshots { get; set; } = new();
     public int ConsecutiveStableMasteryWindows { get; set; }
     public int ConsecutiveRelapseWindows { get; set; }
+    // Increments on stable_mastery_pattern or improving_pattern windows; reset on relapse or other.
+    // Used to gate baseline hint-fade and hint-remove to avoid over-eager support reduction.
+    public int ConsecutiveSupportFadeEligibleWindows { get; set; }
 }
 
 public class SessionSummary

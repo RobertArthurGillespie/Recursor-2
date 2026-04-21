@@ -15,16 +15,16 @@ public class RecursorPoliciesOptions
     /// <summary>
     /// Probability threshold above which the guardrail holds hint support steady
     /// (vetoes hint-fade, hint-remove, hint-reduction).
-    /// Default matches offline evaluation recommendation: 0.10.
+    /// Raised from 0.35 → 0.45 to reduce over-conservatism in strong/stable-mastery sessions.
     /// </summary>
-    public float HintDependenceNextModerateThreshold { get; set; } = 0.10f;
+    public float HintDependenceNextModerateThreshold { get; set; } = 0.45f;
 
     /// <summary>
     /// Probability threshold above which the guardrail actively preserves hint support
     /// (vetoes reductions, adds scaffold-hints or hint-restore-minimal, adds pace-support).
-    /// Default matches offline evaluation recommendation: 0.20.
+    /// Raised from 0.60 → 0.70 to reduce over-conservatism in strong/stable-mastery sessions.
     /// </summary>
-    public float HintDependenceNextHighThreshold { get; set; } = 0.20f;
+    public float HintDependenceNextHighThreshold { get; set; } = 0.70f;
 
     // ── Phase 8: personalized hint-fade rule ──────────────────────────────────
 
@@ -48,4 +48,71 @@ public class RecursorPoliciesOptions
     /// Default: -0.05 (5 points below baseline).
     /// </summary>
     public double PersonalizedHintFadeHintDependenceDeltaThreshold { get; set; } = -0.05;
+
+    /// <summary>
+    /// Absolute-performance gate: current confusion score must be at or below this value
+    /// for the personalized hint-fade rule to fire. Prevents the rule firing for users who
+    /// are improving relative to self but still performing poorly in absolute terms.
+    /// Default: 0.30.
+    /// </summary>
+    public double PersonalizedHintFadeMaxCurrentConfusionScore { get; set; } = 0.30;
+
+    /// <summary>
+    /// Absolute-performance gate: current goal-understanding score must be at or above this
+    /// value for the personalized hint-fade rule to fire.
+    /// Default: 0.60.
+    /// </summary>
+    public double PersonalizedHintFadeMinCurrentGoalUnderstanding { get; set; } = 0.60;
+
+    // ── Baseline hint-progression streak thresholds ───────────────────────────
+
+    /// <summary>
+    /// Unused — superseded by HintFadeRequiresSupportFadeEligibleWindows.
+    /// Retained to avoid breaking existing appsettings.json files that set this value.
+    /// </summary>
+    public int HintFadeRequiresStableMasteryWindows { get; set; } = 2;
+
+    /// <summary>
+    /// Minimum consecutive stable-mastery windows required before the baseline
+    /// progression logic may remove hints entirely (minimal → off, hint-remove).
+    /// Only stable_mastery_pattern contributes; improving_pattern does not.
+    /// Default: 3.
+    /// </summary>
+    public int HintRemoveRequiresStableMasteryWindows { get; set; } = 2;
+
+    // ── Support-fade-eligible streak thresholds ───────────────────────────────
+
+    /// <summary>
+    /// Minimum consecutive support-fade-eligible windows (stable_mastery or improving)
+    /// required before the baseline progression logic may reduce hints guided → minimal.
+    /// Default: 2.
+    /// </summary>
+    public int HintFadeRequiresSupportFadeEligibleWindows { get; set; } = 2;
+
+    /// <summary>
+    /// Unused — the minimal → off gate now uses HintRemoveRequiresStableMasteryWindows.
+    /// Retained to avoid breaking existing appsettings.json files that set this value.
+    /// </summary>
+    public int HintRemoveRequiresSupportFadeEligibleWindows { get; set; } = 3;
+
+    // ── Moderate guardrail recovery override ─────────────────────────────────
+
+    /// <summary>
+    /// When true, a MODERATE next-window guardrail can be downgraded when the state
+    /// machine already computed a hint reduction AND sustained recovery evidence is
+    /// present (consecutive support-fade-eligible windows at or above the threshold
+    /// below, plus an active mastery / improving / recovery hypothesis).
+    /// HIGH guardrail is not affected by this override.
+    /// Default: true.
+    /// </summary>
+    public bool EnableModerateGuardrailRecoveryOverride { get; set; } = true;
+
+    /// <summary>
+    /// Minimum consecutive support-fade-eligible windows (stable_mastery or improving)
+    /// required before a MODERATE guardrail can be overridden by recovery evidence.
+    /// Should be >= HintFadeRequiresSupportFadeEligibleWindows (2) to ensure the
+    /// evidence comes from sustained performance rather than a single good window.
+    /// Default: 3.
+    /// </summary>
+    public int ModerateGuardrailRecoveryOverrideRequiresEligibleWindows { get; set; } = 3;
 }

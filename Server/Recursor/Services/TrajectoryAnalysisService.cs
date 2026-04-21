@@ -48,13 +48,29 @@ public class TrajectoryAnalysisService : ITrajectoryAnalysisService
         };
 
         // A. stable_mastery_pattern
-        bool stableMastery = behaviorScores is not null
+        // Primary path: current window meets the full strength bar.
+        bool stableMasteryPrimary = behaviorScores is not null
             && currentGoal >= 0.75
             && currentAttention >= 0.75
             && currentConfusion < 0.35
             && currentHintDependence < 0.35
             && avgGoal >= 0.70
             && avgAttention >= 0.70;
+
+        // Sustained path: current window and recent history are both consistently strong,
+        // even if goal understanding is only "good" rather than "excellent."
+        // Requires the historical average to match the current level, preventing a single
+        // strong window from triggering mastery after a weak history.
+        bool stableMasterySustained = behaviorScores is not null
+            && currentGoal >= 0.65
+            && currentAttention >= 0.75
+            && currentConfusion < 0.38
+            && currentHintDependence < 0.38
+            && avgGoal >= 0.65
+            && avgAttention >= 0.72
+            && avgConfusion < 0.40;
+
+        bool stableMastery = stableMasteryPrimary || stableMasterySustained;
 
         if (stableMastery)
         {

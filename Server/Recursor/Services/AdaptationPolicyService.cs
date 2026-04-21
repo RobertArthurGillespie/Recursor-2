@@ -91,13 +91,17 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         {
             interventionFamilies = interventionFamilies.Where(f => !hintFamilies.Contains(f)).ToList();
 
-            if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase))
+            // guided → minimal: any streak of mastery/improving windows is sufficient.
+            // minimal → off: stricter — requires repeated true stable mastery, not just improving.
+            if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
+                && session.ConsecutiveSupportFadeEligibleWindows >= _policies.HintFadeRequiresSupportFadeEligibleWindows)
             {
                 interventionFamilies.Add("hint-fade");   // guided → minimal
             }
-            else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase)
+                && session.ConsecutiveStableMasteryWindows >= _policies.HintRemoveRequiresStableMasteryWindows)
             {
-                interventionFamilies.Add("hint-remove"); // minimal → off
+                interventionFamilies.Add("hint-remove"); // minimal → off (requires stable mastery streak)
             }
         }
         else if (hasRelapse)
@@ -126,15 +130,21 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         {
             interventionFamilies = interventionFamilies.Where(f => !hintFamilies.Contains(f)).ToList();
 
-            if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase))
+            // Recovery alone does not build the support-fade-eligible streak, so hint reduction
+            // here only fires if the session had a prior run of mastery/improving windows.
+            // guided → minimal: fade-eligible streak (mastery or improving).
+            // minimal → off: stricter — requires stable mastery streak only.
+            if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
+                && session.ConsecutiveSupportFadeEligibleWindows >= _policies.HintFadeRequiresSupportFadeEligibleWindows)
             {
                 interventionFamilies.Add("hint-fade");   // guided -> minimal
             }
-            else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase)
+                && session.ConsecutiveStableMasteryWindows >= _policies.HintRemoveRequiresStableMasteryWindows)
             {
-                interventionFamilies.Add("hint-remove"); // minimal -> off
+                interventionFamilies.Add("hint-remove"); // minimal -> off (requires stable mastery streak)
             }
-            // off -> no hint family added
+            // off -> no hint family added; streak not met -> no hint family added this window
         }
 
         // ML guardrail: if shadow prediction indicates strong hint dependence,
@@ -163,6 +173,11 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         if (_policies.EnableNextWindowHintDependenceGuardrail
             && shadowPrediction?.HintDependenceNextProbability is double nextProb)
         {
+            bool reductionPresent =
+                interventionFamilies.Contains("hint-fade") ||
+                interventionFamilies.Contains("hint-remove") ||
+                interventionFamilies.Contains("hint-reduction");
+
             if (nextProb >= _policies.HintDependenceNextHighThreshold)
             {
                 // High: veto all hint-reduction families; ensure some hint support is present;
@@ -198,21 +213,45 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 nextWindowGuardrailTriggered = true;
                 nextWindowGuardrailLevel = "high";
                 nextWindowGuardrailNote =
-                    $"next-window hint dependence guardrail (HIGH): {hintGuardrailAction}; " +
-                    $"HintDependenceNextProbability={nextProb:0.00}";
+                    $"next-window guardrail HIGH; currentHintMode={currentHintMode ?? "null"}; " +
+                    $"nextProb={nextProb:0.00}; reductionPresent={reductionPresent}; {hintGuardrailAction}";
             }
             else if (nextProb >= _policies.HintDependenceNextModerateThreshold)
             {
-                // Moderate: veto hint-reduction families only; do not add new support.
-                interventionFamilies.Remove("hint-fade");
-                interventionFamilies.Remove("hint-remove");
-                interventionFamilies.Remove("hint-reduction");
+                // Moderate: before vetoing, check whether sustained recovery evidence
+                // outweighs the model's caution.  If the state machine already computed
+                // a reduction AND the learner has built a long enough eligible streak with
+                // an active mastery/improving/recovery hypothesis, downgrade the guardrail
+                // so the reduction can proceed.  HIGH risk is never overridden this way.
+                bool moderateRecoveryOverride =
+                    _policies.EnableModerateGuardrailRecoveryOverride
+                    && reductionPresent
+                    && (hasStableMastery || hasImproving || hasRecovery)
+                    && session.ConsecutiveSupportFadeEligibleWindows
+                        >= _policies.ModerateGuardrailRecoveryOverrideRequiresEligibleWindows;
 
                 nextWindowGuardrailTriggered = true;
-                nextWindowGuardrailLevel = "moderate";
-                nextWindowGuardrailNote =
-                    $"next-window hint dependence guardrail (MODERATE): support held steady; " +
-                    $"HintDependenceNextProbability={nextProb:0.00}";
+                if (moderateRecoveryOverride)
+                {
+                    nextWindowGuardrailLevel = "moderate-overridden";
+                    nextWindowGuardrailNote =
+                        $"next-window guardrail MODERATE overridden by recovery evidence; " +
+                        $"currentHintMode={currentHintMode ?? "null"}; nextProb={nextProb:0.00}; " +
+                        $"reductionPresent={reductionPresent}; " +
+                        $"SupportFadeEligibleWindows={session.ConsecutiveSupportFadeEligibleWindows}; " +
+                        $"reduction allowed";
+                }
+                else
+                {
+                    interventionFamilies.Remove("hint-fade");
+                    interventionFamilies.Remove("hint-remove");
+                    interventionFamilies.Remove("hint-reduction");
+
+                    nextWindowGuardrailLevel = "moderate";
+                    nextWindowGuardrailNote =
+                        $"next-window guardrail MODERATE; currentHintMode={currentHintMode ?? "null"}; " +
+                        $"nextProb={nextProb:0.00}; reductionPresent={reductionPresent}; support held steady";
+                }
             }
         }
 
@@ -236,7 +275,9 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             && personalizedSignals.ConfusionDelta <= _policies.PersonalizedHintFadeConfusionDeltaThreshold
             && personalizedSignals.HintDependenceDelta <= _policies.PersonalizedHintFadeHintDependenceDeltaThreshold
             && !personalizedSignals.IsBelowBaselineGoalUnderstanding
-            && !personalizedSignals.IsBelowBaselineAttention)
+            && !personalizedSignals.IsBelowBaselineAttention
+            && personalizedSignals.CurrentConfusionScore <= _policies.PersonalizedHintFadeMaxCurrentConfusionScore
+            && personalizedSignals.CurrentGoalUnderstanding >= _policies.PersonalizedHintFadeMinCurrentGoalUnderstanding)
         {
             interventionFamilies.Remove("scaffold-hints");
             interventionFamilies.Remove("hint-remove");
@@ -248,7 +289,8 @@ public class AdaptationPolicyService : IAdaptationPolicyService
 
             personalizedHintFadeNote =
                 $"personalized hint fade applied (ConfusionDelta={personalizedSignals.ConfusionDelta:0.00}, " +
-                $"HintDependenceDelta={personalizedSignals.HintDependenceDelta:0.00})";
+                $"HintDependenceDelta={personalizedSignals.HintDependenceDelta:0.00}, " +
+                $"CurrentConfusionScore={personalizedSignals.CurrentConfusionScore:0.00})";
         }
 
         var changes = new List<ParameterChange>();

@@ -143,6 +143,10 @@ public class PersonalizedPolicySignals
     // True when the user is meaningfully below their own baseline on these cognitive dimensions.
     public bool IsBelowBaselineGoalUnderstanding { get; set; }
     public bool IsBelowBaselineAttention { get; set; }
+
+    // Absolute values from the current window — used for the absolute-performance gate.
+    public double CurrentConfusionScore { get; set; }
+    public double CurrentGoalUnderstanding { get; set; }
 }
 
 public class UserBaselineSnapshot

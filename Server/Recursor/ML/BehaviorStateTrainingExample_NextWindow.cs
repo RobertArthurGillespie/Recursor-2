@@ -64,8 +64,7 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.ML
         [LoadColumn(50)] public float Embedding16 { get; set; }
 
         [LoadColumn(51)] public float NextWindowIndex { get; set; }
-        [LoadColumn(52)] public float NextLabelHintDependence { get; set; }
-        [LoadColumn(53)] public bool HasNextWindow { get; set; }
-        [LoadColumn(54)] public bool LabelHintDependenceNext { get; set; }
+
+        [LoadColumn(52)] public bool LabelHintDependenceNext { get; set; }
     }
 }

@@ -1,0 +1,381 @@
+
+● Let me read the three files that need changing.
+
+  Read 2 files (ctrl+o to expand)
+
+● Planned changes before editing:
+
+  1. Server/Recursor/Models/SessionModels.cs — add ConsecutiveSupportFadeEligibleWindows
+  2. Server/Recursor/Services/RecursorIngestionService.cs — update counter block to maintain the new streak
+  3. Server/Configuration/RecursorPoliciesOptions.cs — add two new threshold options
+  4. Server/Recursor/Services/AdaptationPolicyService.cs — replace ConsecutiveStableMasteryWindows gates with
+  ConsecutiveSupportFadeEligibleWindows in the two hint-progression branches
+
+  The old stable-mastery threshold options will be left in place but unused (they still gate nothing after this change). ADX
+  row model and feature vector are not touched — the new counter is session-state only for this slice.
+
+● Update(Server\Recursor\Models\SessionModels.cs)
+  ⎿  Added 3 lines
+      28      public List<TrajectorySnapshot> RecentSnapshots { get; set; } = new();
+      29      public int ConsecutiveStableMasteryWindows { get; set; }
+      30      public int ConsecutiveRelapseWindows { get; set; }
+      31 +    // Increments on stable_mastery_pattern or improving_pattern windows; reset on relapse or other.
+      32 +    // Used to gate baseline hint-fade and hint-remove to avoid over-eager support reduction.
+      33 +    public int ConsecutiveSupportFadeEligibleWindows { get; set; }
+      34  }
+      35
+      36  public class SessionSummary
+
+● Update(Server\Recursor\Services\RecursorIngestionService.cs)
+  ⎿  Added 10 lines
+      210
+      211          // Update consecutive trajectory counters for hysteresis in the adaptation policy.
+      212          bool hypothesisHasStableMastery = hypothesisLabels.Contains("stable_mastery_pattern");
+      213 +        bool hypothesisHasImproving = hypothesisLabels.Contains("improving_pattern");
+      214          bool hypothesisHasRelapse = hypothesisLabels.Contains("relapse_pattern");
+      215
+      216          if (hypothesisHasStableMastery)
+      217          {
+      218              session.ConsecutiveStableMasteryWindows += 1;
+      219 +            session.ConsecutiveSupportFadeEligibleWindows += 1;
+      220              session.ConsecutiveRelapseWindows = 0;
+      221          }
+      222 +        else if (hypothesisHasImproving)
+      223 +        {
+      224 +            session.ConsecutiveStableMasteryWindows = 0;
+      225 +            session.ConsecutiveSupportFadeEligibleWindows += 1;
+      226 +            session.ConsecutiveRelapseWindows = 0;
+      227 +        }
+      228          else if (hypothesisHasRelapse)
+      229          {
+      230              session.ConsecutiveRelapseWindows += 1;
+      231              session.ConsecutiveStableMasteryWindows = 0;
+      232 +            session.ConsecutiveSupportFadeEligibleWindows = 0;
+      233          }
+      234          else
+      235          {
+      236              session.ConsecutiveStableMasteryWindows = 0;
+      237              session.ConsecutiveRelapseWindows = 0;
+      238 +            session.ConsecutiveSupportFadeEligibleWindows = 0;
+      239          }
+      240          _sessionRepository.Update(session);
+      241
+
+● Update(Server\Configuration\RecursorPoliciesOptions.cs)
+  ⎿  Added 19 lines, removed 4 lines
+      69      /// <summary>
+      70      /// Minimum consecutive stable-mastery windows required before the baseline
+      71      /// progression logic may reduce hints from guided → minimal (hint-fade).
+      72 -    /// Prevents over-eager support reduction after a single strong or recovery window.
+      73 -    /// Default: 2.
+      72 +    /// NOTE: superseded by HintFadeRequiresSupportFadeEligibleWindows — retained but currently unused.
+      73      /// </summary>
+      74      public int HintFadeRequiresStableMasteryWindows { get; set; } = 2;
+      75
+      76      /// <summary>
+      77      /// Minimum consecutive stable-mastery windows required before the baseline
+      78      /// progression logic may remove hints entirely (minimal → off, hint-remove).
+      80 -    /// Must be stricter than HintFadeRequiresStableMasteryWindows.
+      81 -    /// Default: 3.
+      79 +    /// NOTE: superseded by HintRemoveRequiresSupportFadeEligibleWindows — retained but currently unused.
+      80      /// </summary>
+      81      public int HintRemoveRequiresStableMasteryWindows { get; set; } = 3;
+      82 +
+      83 +    // ── Support-fade-eligible streak thresholds ───────────────────────────────
+      84 +
+      85 +    /// <summary>
+      86 +    /// Minimum consecutive support-fade-eligible windows (stable_mastery or improving)
+      87 +    /// required before the baseline progression logic may reduce hints guided → minimal.
+      88 +    /// Default: 2.
+      89 +    /// </summary>
+      90 +    public int HintFadeRequiresSupportFadeEligibleWindows { get; set; } = 2;
+      91 +
+      92 +    /// <summary>
+      93 +    /// Minimum consecutive support-fade-eligible windows (stable_mastery or improving)
+      94 +    /// required before the baseline progression logic may remove hints entirely (minimal → off).
+      95 +    /// Must be stricter than HintFadeRequiresSupportFadeEligibleWindows.
+      96 +    /// Default: 3.
+      97 +    /// </summary>
+      98 +    public int HintRemoveRequiresSupportFadeEligibleWindows { get; set; } = 3;
+      99  }
+
+● Now replace the gates in both branches of AdaptationPolicyService:
+
+● Update(Server\Recursor\Services\AdaptationPolicyService.cs)
+  ⎿  Added 4 lines, removed 4 lines
+       91          {
+       92              interventionFamilies = interventionFamilies.Where(f => !hintFamilies.Contains(f)).ToList();
+       93
+       94 -            // Support reduction requires repeated stable mastery evidence to avoid
+       95 -            // over-eager fading after a single strong or recovery window.
+       94 +            // Support reduction requires a streak of support-fade-eligible windows (stable_mastery
+       95 +            // or improving) to avoid over-eager fading after a single strong or recovery window.
+       96              if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
+       97 -                && session.ConsecutiveStableMasteryWindows >= _policies.HintFadeRequiresStableMasteryWindows
+          -)
+       97 +                && session.ConsecutiveSupportFadeEligibleWindows >= _policies.HintFadeRequiresSupportFadeEli
+          +gibleWindows)
+       98              {
+       99                  interventionFamilies.Add("hint-fade");   // guided → minimal
+      100              }
+      101              else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase)
+      102 -                && session.ConsecutiveStableMasteryWindows >= _policies.HintRemoveRequiresStableMasteryWindo
+          -ws)
+      102 +                && session.ConsecutiveSupportFadeEligibleWindows >= _policies.HintRemoveRequiresSupportFadeE
+          +ligibleWindows)
+      103              {
+      104                  interventionFamilies.Add("hint-remove"); // minimal → off
+      105              }
+
+● Update(Server\Recursor\Services\AdaptationPolicyService.cs)
+  ⎿  Added 4 lines, removed 4 lines
+      130          {
+      131              interventionFamilies = interventionFamilies.Where(f => !hintFamilies.Contains(f)).ToList();
+      132
+      133 -            // Support reduction requires repeated stable mastery evidence to avoid
+      134 -            // over-eager fading after a single strong or recovery window.
+      133 +            // Recovery alone does not build the support-fade-eligible streak, so hint reduction
+      134 +            // here only fires if the session had a prior run of mastery/improving windows.
+      135              if (string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
+      136 -                && session.ConsecutiveStableMasteryWindows >= _policies.HintFadeRequiresStableMasteryWindows
+          -)
+      136 +                && session.ConsecutiveSupportFadeEligibleWindows >= _policies.HintFadeRequiresSupportFadeEli
+          +gibleWindows)
+      137              {
+      138                  interventionFamilies.Add("hint-fade");   // guided -> minimal
+      139              }
+      140              else if (string.Equals(currentHintMode, "minimal", StringComparison.OrdinalIgnoreCase)
+      141 -                && session.ConsecutiveStableMasteryWindows >= _policies.HintRemoveRequiresStableMasteryWindo
+          -ws)
+      141 +                && session.ConsecutiveSupportFadeEligibleWindows >= _policies.HintRemoveRequiresSupportFadeE
+          +ligibleWindows)
+      142              {
+      143                  interventionFamilies.Add("hint-remove"); // minimal -> off
+      144              }
+
+● Quick final verification of the ingestion counter block and the policy gates together:
+
+  Read 2 files (ctrl+o to expand)
+
+● All correct. One edge case to note: in the hasStableMastery || hasImproving branch, the counter is already incremented in
+  ingestion (before ApplyPolicy is called), so on the window that crosses the threshold, the gate reads the already-updated
+  value — meaning the fade triggers on the same window that reaches the threshold, not the next one. That's the correct and
+  intended behavior, consistent with how ConsecutiveRelapseWindows already works for the relapse branch.
+
+  ---
+  Summary
+
+  Files changed
+
+  ┌──────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────┐
+  │                         File                         │                             Change                              │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ Server/Recursor/Models/SessionModels.cs              │ Added ConsecutiveSupportFadeEligibleWindows (int)               │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │                                                      │ Extended counter block: stable_mastery increments both streaks; │
+  │ Server/Recursor/Services/RecursorIngestionService.cs │  improving_pattern increments only the new streak; relapse and  │
+  │                                                      │ else reset it                                                   │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │                                                      │ Added HintFadeRequiresSupportFadeEligibleWindows (int, default  │
+  │ Server/Configuration/RecursorPoliciesOptions.cs      │ 2) and HintRemoveRequiresSupportFadeEligibleWindows (int,       │
+  │                                                      │ default 3)                                                      │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │                                                      │ Both hint-progression branches now gate on                      │
+  │ Server/Recursor/Services/AdaptationPolicyService.cs  │ ConsecutiveSupportFadeEligibleWindows against the new           │
+  │                                                      │ thresholds                                                      │
+  └──────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────┘
+
+  Old options HintFadeRequiresStableMasteryWindows and HintRemoveRequiresStableMasteryWindows are retained in
+  RecursorPoliciesOptions but are now unused — no code reads them. They can be removed in a future cleanup pass once confirmed
+   unnecessary.
+
+  ---
+  Case A — ["improving_pattern"], streak = 2, guided
+
+  hint-fade IS allowed. improving_pattern increments ConsecutiveSupportFadeEligibleWindows, so 2 >= 2 passes. The
+  hasStableMastery || hasImproving branch fires and adds hint-fade.
+
+  Case B — ["recovery_pattern"], no improving, streak = 1
+
+  hint-fade is NOT allowed. recovery_pattern falls into the else branch in ingestion, resetting
+  ConsecutiveSupportFadeEligibleWindows to 0. After reset, 0 >= 2 fails. The hasRecovery branch runs but the gate blocks it.
+
+  Case C — ["stable_mastery_pattern"], streak = 3, minimal
+
+  hint-remove IS allowed. stable_mastery_pattern increments both streaks, so ConsecutiveSupportFadeEligibleWindows reaches 3
+  >= 3. The hasStableMastery || hasImproving branch fires and adds hint-remove.
+
+  ---
+  Why this is more practical
+
+  stable_mastery_pattern is the highest-confidence label the interpreter assigns — it requires multiple strong dimensions
+  simultaneously and appears infrequently in real sessions. improving_pattern fires much more commonly as a learner trends
+  upward but hasn't consolidated yet. By letting both labels contribute to the streak, the gate becomes reachable in realistic
+   improving sessions (typically 2–3 consecutive improving windows) rather than requiring a level of confirmed mastery that
+  only materializes late in a session or not at all.
+
+✻ Cooked for 1m 9s
+
+> Do a focused validation pass on the new support-fade-eligible streak refinement.
+
+  ## Goal
+
+  Verify that baseline hint reduction now depends on a more practical success streak, not only repeated stable mastery.
+
+  ## What to check
+
+  ### 1. Session model
+
+  Confirm:
+
+  * `ConsecutiveSupportFadeEligibleWindows` was added safely
+  * existing counters remain intact
+
+  ### 2. Counter update logic
+
+  Confirm the new counter is updated correctly in `RecursorIngestionService`:
+
+  * increments on `stable_mastery_pattern`
+  * increments on `improving_pattern`
+  * resets on relapse
+  * resets on unrelated/non-success states
+
+  ### 3. Policy options
+
+  Confirm:
+
+  * the new thresholds were added
+  * defaults are sensible
+
+  ### 4. Policy logic
+
+  Confirm baseline hint reduction now uses:
+
+  * `ConsecutiveSupportFadeEligibleWindows`
+    instead of:
+  * `ConsecutiveStableMasteryWindows`
+
+  where intended
+
+  ### 5. Non-regression
+
+  Confirm:
+
+  * relapse logic unchanged
+  * personalized rule unchanged
+  * guardrails unchanged
+
+  ### 6. Behavioral intent
+
+  Confirm the new design makes baseline hint reduction realistically reachable in sessions that are strongly improving, even
+  if `stable_mastery_pattern` is rare.
+
+  ## Output
+
+  Provide:
+
+  1. Any bugs or mismatches found
+  2. Any compile/nullability concerns
+  3. A verdict:
+
+     * “Support-fade-eligible streak refinement looks correct”
+     * or
+     * “Needs one more fix pass”
+
+  If fixes are needed, make them directly and summarize the corrected state.
+
+
+  Read 4 files (ctrl+o to expand)
+
+● All four changed files are now fully read. Here is the complete validation report.
+
+  ---
+  Validation Report
+
+  1. Session model — PASS
+
+  ConsecutiveSupportFadeEligibleWindows added as int at line 33 with an accurate inline comment. Existing
+  ConsecutiveStableMasteryWindows (line 29) and ConsecutiveRelapseWindows (line 30) are intact and unchanged. All three are
+  value types — default to 0 on session creation, no initializer required.
+
+  2. Counter update logic — PASS
+
+  ┌──────────────────────┬───────────────────────────────┬─────────────────────────────────────┬─────────────────────────┐
+  │      Condition       │ ConsecutiveStableMasteryWindo │ ConsecutiveSupportFadeEligibleWindo │ ConsecutiveRelapseWindo │
+  │                      │              ws               │                 ws                  │           ws            │
+  ├──────────────────────┼───────────────────────────────┼─────────────────────────────────────┼─────────────────────────┤
+  │ stable_mastery_patte │ +1                            │ +1                                  │ reset 0                 │
+  │ rn                   │                               │                                     │                         │
+  ├──────────────────────┼───────────────────────────────┼─────────────────────────────────────┼─────────────────────────┤
+  │ improving_pattern    │ reset 0                       │ +1                                  │ reset 0                 │
+  ├──────────────────────┼───────────────────────────────┼─────────────────────────────────────┼─────────────────────────┤
+  │ relapse_pattern      │ reset 0                       │ reset 0                             │ +1                      │
+  ├──────────────────────┼───────────────────────────────┼─────────────────────────────────────┼─────────────────────────┤
+  │ anything else        │ reset 0                       │ reset 0                             │ reset 0                 │
+  └──────────────────────┴───────────────────────────────┴─────────────────────────────────────┴─────────────────────────┘
+
+  Logic is correct and complete. The priority ordering (stable_mastery first, then improving, then relapse, then else) is
+  sound — a window that carries both stable_mastery_pattern and improving_pattern correctly falls into the first branch and
+  increments both streak counters.
+
+  One minor observation — not a bug: A recovery_pattern window falls into else, resetting
+  ConsecutiveSupportFadeEligibleWindows to 0. The comment in the hasRecovery policy branch says "hint reduction here only
+  fires if the session had a prior run of mastery/improving windows" — but since recovery resets the counter before policy
+  reads it, that branch can in practice never fire hint reduction. The behavior is consistent and semantically correct
+  (recovery ≠ eligible), but the comment overstates what the branch can do. Not worth a fix pass, but worth noting.
+
+  3. Policy options — PASS
+
+  HintFadeRequiresSupportFadeEligibleWindows = 2 and HintRemoveRequiresSupportFadeEligibleWindows = 3 are added with clear doc
+   comments. Defaults are sensible — two consecutive eligible windows before fade, three before full removal. The old
+  HintFadeRequiresStableMasteryWindows and HintRemoveRequiresStableMasteryWindows are retained and clearly marked
+  superseded/unused. No code reads them.
+
+  4. Policy gate — PASS
+
+  Both hint-progression branches use the new counter:
+
+  - hasStableMastery || hasImproving (lines 90–106): gates hint-fade on ConsecutiveSupportFadeEligibleWindows >=
+  HintFadeRequiresSupportFadeEligibleWindows and hint-remove on >= HintRemoveRequiresSupportFadeEligibleWindows ✓
+  - hasRecovery (lines 129–146): same gates ✓
+
+  No residual reference to ConsecutiveStableMasteryWindows in either branch. Timing is correct: counter is incremented in
+  ingestion before ApplyPolicy is called, so on the window that crosses the threshold the gate fires immediately rather than
+  on the next window.
+
+  5. Non-regression — PASS
+
+  ┌────────────────────────────────┬───────────────────────────────────────────────────────────────────────┐
+  │           Component            │                                Status                                 │
+  ├────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+  │ Relapse branch (lines 107–128) │ Unchanged — still ConsecutiveRelapseWindows >= 2 for minimal → guided │
+  ├────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+  │ Phase 8 personalized rule      │ Unchanged — all 10 conditions intact                                  │
+  ├────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+  │ ML guardrail                   │ Unchanged                                                             │
+  ├────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+  │ Next-window guardrail          │ Unchanged — thresholds and restore logic identical                    │
+  └────────────────────────────────┴───────────────────────────────────────────────────────────────────────┘
+
+  6. Compile / nullability — PASS
+
+  - session.ConsecutiveSupportFadeEligibleWindows is int (non-nullable)
+  - _policies.HintFadeRequiresSupportFadeEligibleWindows / HintRemoveRequiresSupportFadeEligibleWindows are int
+  - All comparisons are int >= int — no nullability concern
+  - No new dependencies introduced
+
+  7. Behavioral intent — CONFIRMED
+
+  stable_mastery_pattern fires infrequently because it requires multiple strong dimensions to converge. improving_pattern
+  fires in the far more common case where the learner is trending upward. With both labels contributing to
+  ConsecutiveSupportFadeEligibleWindows, a realistic session of 2–3 consecutive improving windows will now cross the fade
+  threshold. The streak still resets on relapse and any non-success state, so premature fading is guarded. The design is
+  reachable without being trivially easy.
+
+  ---
+  Verdict
+
+  Support-fade-eligible streak refinement looks correct. No bugs, no compile issues, no regressions. The one minor comment
+  inaccuracy in the hasRecovery branch (noted above) does not affect behavior and does not require a fix pass.
+
+✻ Churned for 58s

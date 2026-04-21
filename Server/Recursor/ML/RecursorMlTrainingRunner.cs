@@ -1,3 +1,5 @@
+using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
+
 namespace NCATAIBlazorFrontendTest.Server.Recursor.ML;
 
 /// <summary>
@@ -65,5 +67,85 @@ public static class RecursorMlTrainingRunner
             @"C:\Users\Rober\source\repos\RecursorData\models\stable_mastery_v1.zip";
 
         StableMasteryModelTrainer.Train(csvPath, modelOutputPath);
+    }
+
+    // ── Clean v2 pipeline: ADX export → next-window CSV → train ─────────────────
+
+    /// <summary>
+    /// Exports BehaviorStateTrainingRows from ADX matching the supplied filter,
+    /// builds a next-window CSV (LabelHintDependenceNext = next row's label),
+    /// and writes it to <paramref name="csvOutputPath"/>.
+    ///
+    /// Call this first, then call TrainNextWindowHintDependence_CleanV2() with the
+    /// same CSV path once you are happy with the exported data.
+    ///
+    /// Usage from Program.cs (after var app = builder.Build()):
+    /// <code>
+    ///   var exportSvc = app.Services.GetRequiredService&lt;IAdxTrainingExportService&gt;();
+    ///   var filter = new BehaviorStateTrainingExportFilter
+    ///   {
+    ///       StartUtc      = new DateTime(2025, 3, 15, 0, 0, 0, DateTimeKind.Utc),
+    ///       InferenceMode = "shadow-mlnet",
+    ///   };
+    ///   await RecursorMlTrainingRunner.ExportNextWindowCsvAsync(
+    ///       exportSvc, filter,
+    ///       @"C:\RecursorData\training\behavior_state_next_window_v2_clean.csv");
+    /// </code>
+    /// </summary>
+    public static async Task ExportNextWindowCsvAsync(
+        IAdxTrainingExportService exportService,
+        BehaviorStateTrainingExportFilter filter,
+        string csvOutputPath)
+    {
+        Console.WriteLine($"[ExportNextWindowCsvAsync] Querying ADX...");
+
+        var rows = await exportService.ExportCleanRowsAsync(filter);
+        Console.WriteLine($"[ExportNextWindowCsvAsync] Exported {rows.Count} raw rows from ADX.");
+
+        if (rows.Count == 0)
+        {
+            Console.WriteLine("[ExportNextWindowCsvAsync] No rows returned — check filters and ADX config.");
+            return;
+        }
+
+        Console.WriteLine($"[ExportNextWindowCsvAsync] Building next-window dataset...");
+        var stats = NextWindowDatasetBuilder.BuildAndWriteCsv(rows, csvOutputPath);
+
+        Console.WriteLine($"[ExportNextWindowCsvAsync] Done.");
+        Console.WriteLine($"  Input rows:        {stats.TotalInputRows}");
+        Console.WriteLine($"  Sessions:          {stats.TotalSessions}");
+        Console.WriteLine($"  Dropped (last):    {stats.DroppedAsLastInSession}");
+        Console.WriteLine($"  Dropped (NaN):     {stats.DroppedNaN}");
+        Console.WriteLine($"  Output rows:       {stats.TotalOutputRows}");
+        Console.WriteLine($"  Label TRUE:        {stats.LabelTrueCount}");
+        Console.WriteLine($"  Label FALSE:       {stats.LabelFalseCount}");
+        Console.WriteLine($"  CSV written to:    {csvOutputPath}");
+    }
+
+    /// <summary>
+    /// Trains the next-window hint-dependence model (Baseline / no embeddings) from a
+    /// pre-built next-window CSV and saves the model zip.
+    ///
+    /// Use after ExportNextWindowCsvAsync() has produced a clean CSV.
+    /// The output model is separate from the AutoEncoder-based artifacts —
+    /// it will NOT overwrite hint_dependence_next_window_baseline.zip.
+    ///
+    /// Usage from Program.cs:
+    /// <code>
+    ///   RecursorMlTrainingRunner.TrainNextWindowHintDependence_CleanV2(
+    ///       @"C:\RecursorData\training\behavior_state_next_window_v2_clean.csv",
+    ///       @"C:\RecursorData\models\hint_dependence_next_window_v2_clean.zip");
+    /// </code>
+    /// </summary>
+    public static void TrainNextWindowHintDependence_CleanV2(
+        string csvPath,
+        string modelOutputPath)
+    {
+        Console.WriteLine($"[TrainNextWindowHintDependence_CleanV2] Training from: {csvPath}");
+        Console.WriteLine($"[TrainNextWindowHintDependence_CleanV2] Output model:  {modelOutputPath}");
+
+        HintDependenceNextWindowTrainer_Baseline.Train(csvPath, modelOutputPath);
+
+        Console.WriteLine($"[TrainNextWindowHintDependence_CleanV2] Complete.");
     }
 }

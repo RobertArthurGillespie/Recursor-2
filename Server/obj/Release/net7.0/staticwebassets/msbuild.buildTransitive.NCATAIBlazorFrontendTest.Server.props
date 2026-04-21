@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\NCATAIBlazorFrontendTest.Server.props" />
-</Project>

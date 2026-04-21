@@ -98,6 +98,7 @@ builder.Services.AddSingleton<IAdxIngestionService, AdxIngestionService>();
 builder.Services.AddSingleton<IAdxRecursorQueryService, AdxRecursorQueryService>();
 builder.Services.AddSingleton<IAdxModelEvaluationQueryService, AdxModelEvaluationQueryService>();
 builder.Services.AddSingleton<IAdxUserBaselineQueryService, AdxUserBaselineQueryService>();
+builder.Services.AddSingleton<IAdxTrainingExportService, AdxTrainingExportService>();
 builder.Services.AddSingleton<IUserRelativeSignalService, UserRelativeSignalService>();
 builder.Services.AddSingleton<IUserRelativePolicyAdvisorService, UserRelativePolicyAdvisorService>();
 

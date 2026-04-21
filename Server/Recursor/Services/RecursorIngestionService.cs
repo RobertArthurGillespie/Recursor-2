@@ -210,22 +210,32 @@ public class RecursorIngestionService : IRecursorIngestionService
 
         // Update consecutive trajectory counters for hysteresis in the adaptation policy.
         bool hypothesisHasStableMastery = hypothesisLabels.Contains("stable_mastery_pattern");
+        bool hypothesisHasImproving = hypothesisLabels.Contains("improving_pattern");
         bool hypothesisHasRelapse = hypothesisLabels.Contains("relapse_pattern");
 
         if (hypothesisHasStableMastery)
         {
             session.ConsecutiveStableMasteryWindows += 1;
+            session.ConsecutiveSupportFadeEligibleWindows += 1;
+            session.ConsecutiveRelapseWindows = 0;
+        }
+        else if (hypothesisHasImproving)
+        {
+            session.ConsecutiveStableMasteryWindows = 0;
+            session.ConsecutiveSupportFadeEligibleWindows += 1;
             session.ConsecutiveRelapseWindows = 0;
         }
         else if (hypothesisHasRelapse)
         {
             session.ConsecutiveRelapseWindows += 1;
             session.ConsecutiveStableMasteryWindows = 0;
+            session.ConsecutiveSupportFadeEligibleWindows = 0;
         }
         else
         {
             session.ConsecutiveStableMasteryWindows = 0;
             session.ConsecutiveRelapseWindows = 0;
+            session.ConsecutiveSupportFadeEligibleWindows = 0;
         }
         _sessionRepository.Update(session);
 
@@ -299,7 +309,9 @@ public class RecursorIngestionService : IRecursorIngestionService
                         ConfusionDelta = relativeSignals.ConfusionDelta,
                         HintDependenceDelta = relativeSignals.HintDependenceDelta,
                         IsBelowBaselineGoalUnderstanding = relativeSignals.IsBelowBaselineGoalUnderstanding,
-                        IsBelowBaselineAttention = relativeSignals.IsBelowBaselineAttention
+                        IsBelowBaselineAttention = relativeSignals.IsBelowBaselineAttention,
+                        CurrentConfusionScore = relativeSignals.CurrentConfusionScore,
+                        CurrentGoalUnderstanding = relativeSignals.CurrentGoalUnderstanding
                     };
                 }
             }
