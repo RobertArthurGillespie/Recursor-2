@@ -294,10 +294,10 @@ public class RecursorIngestionService : IRecursorIngestionService
             };
         }
 
-        // Phase 8 — fetch personalized signals for the hint-fade rule.
-        // Only fetched when the feature flag is on; always non-blocking (failures yield null signals).
+        // Phase 8 personalization — fetch personalized signals for any active personalized rule.
+        // Only fetched when at least one personalized rule flag is on; always non-blocking.
         PersonalizedPolicySignals? personalizedSignals = null;
-        if (_policies.EnablePersonalizedHintFadeRule)
+        if (_policies.EnablePersonalizedHintFadeRule || _policies.EnablePersonalizedConfusionBlockDifficultyRule)
         {
             try
             {
@@ -317,7 +317,7 @@ public class RecursorIngestionService : IRecursorIngestionService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to fetch personalized signals for session {SessionId}. Skipping personalized hint-fade rule.", session.SessionId);
+                _logger.LogWarning(ex, "Failed to fetch personalized signals for session {SessionId}. Skipping personalized rules.", session.SessionId);
             }
         }
 

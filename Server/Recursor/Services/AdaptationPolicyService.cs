@@ -293,6 +293,25 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 $"CurrentConfusionScore={personalizedSignals.CurrentConfusionScore:0.00})";
         }
 
+        // Phase 8 personalization expansion — personalized confusion-based difficulty-increase block.
+        // Fires only when the flag is on, personalizedSignals are available,
+        // confusion is above the user's personal baseline by more than the configured
+        // threshold, and a difficulty-increase action is in the current proposal.
+        // Only removes difficulty-increase; does not add any other actions.
+        string? confusionBlockDifficultyNote = null;
+        if (_policies.EnablePersonalizedConfusionBlockDifficultyRule
+            && personalizedSignals is not null
+            && personalizedSignals.ConfusionDelta > _policies.PersonalizedConfusionBlockDifficultyIncreaseThreshold
+            && interventionFamilies.Contains("difficulty-increase"))
+        {
+            interventionFamilies.Remove("difficulty-increase");
+            confusionBlockDifficultyNote =
+                $"difficulty increase blocked: confusion above personal baseline " +
+                $"(ConfusionDelta={personalizedSignals.ConfusionDelta:0.00}, " +
+                $"CurrentConfusion={personalizedSignals.CurrentConfusionScore:0.00}, " +
+                $"Threshold={_policies.PersonalizedConfusionBlockDifficultyIncreaseThreshold:0.00})";
+        }
+
         var changes = new List<ParameterChange>();
         var usedParameters = new HashSet<string>();
 
@@ -318,6 +337,9 @@ public class AdaptationPolicyService : IAdaptationPolicyService
 
         if (personalizedHintFadeNote is not null)
             reasoning.Add(personalizedHintFadeNote);
+
+        if (confusionBlockDifficultyNote is not null)
+            reasoning.Add(confusionBlockDifficultyNote);
 
         var decisionIndex = session.LatestAdaptationId is null ? 0
             : (int.TryParse(session.LatestAdaptationId.Split('-').Last(), out var idx) ? idx + 1 : 0);

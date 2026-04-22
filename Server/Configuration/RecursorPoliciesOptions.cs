@@ -64,6 +64,22 @@ public class RecursorPoliciesOptions
     /// </summary>
     public double PersonalizedHintFadeMinCurrentGoalUnderstanding { get; set; } = 0.60;
 
+    // ── Phase 8 personalization expansion: confusion-based difficulty-increase block ──
+
+    /// <summary>
+    /// When true, blocks difficulty increases when the user's confusion score
+    /// is above their personal baseline by more than the configured threshold.
+    /// Default: false.
+    /// </summary>
+    public bool EnablePersonalizedConfusionBlockDifficultyRule { get; set; } = false;
+
+    /// <summary>
+    /// ConfusionDelta must exceed this value for the difficulty-increase block to fire.
+    /// Positive = user is more confused than their personal baseline.
+    /// Default: 0.05 (5 points above baseline).
+    /// </summary>
+    public double PersonalizedConfusionBlockDifficultyIncreaseThreshold { get; set; } = 0.05;
+
     // ── Baseline hint-progression streak thresholds ───────────────────────────
 
     /// <summary>
