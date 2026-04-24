@@ -301,7 +301,9 @@ public class RecursorIngestionService : IRecursorIngestionService
         // active personalized rule. Only fetched when at least one rule flag is on; always non-blocking.
         PersonalizedPolicySignals? personalizedSignals = null;
         UserPolicyThresholds? userThresholds = null;
-        if (_policies.EnablePersonalizedHintFadeRule || _policies.EnablePersonalizedConfusionBlockDifficultyRule)
+        if (_policies.EnablePersonalizedHintFadeRule
+            || _policies.EnablePersonalizedConfusionBlockDifficultyRule
+            || _policies.EnablePersonalizedDifficultyAccelerationRule)
         {
             try
             {

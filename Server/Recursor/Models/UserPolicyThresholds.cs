@@ -38,4 +38,25 @@ public class UserPolicyThresholds
     // Absolute gate: current goal understanding must be at or above this for the rule to fire.
     // Null → falls back to RecursorPoliciesOptions.PersonalizedHintFadeMinCurrentGoalUnderstanding.
     public double? HintFadeMinCurrentGoalUnderstanding { get; set; }
+
+    // ── Personalized difficulty acceleration rule ─────────────────────────────
+    // ConfusionDelta must be at or below this for the rule to fire.
+    // Null → falls back to RecursorPoliciesOptions.PersonalizedDifficultyAccelerationConfusionDeltaThreshold.
+    public double? DifficultyAccelerationConfusionDeltaThreshold { get; set; }
+
+    // HintDependenceDelta must be at or below this for the rule to fire.
+    // Null → falls back to RecursorPoliciesOptions.PersonalizedDifficultyAccelerationHintDependenceDeltaThreshold.
+    public double? DifficultyAccelerationHintDependenceDeltaThreshold { get; set; }
+
+    // Absolute gate: current confusion must be at or below this for the rule to fire.
+    // Null → falls back to RecursorPoliciesOptions.PersonalizedDifficultyAccelerationMaxCurrentConfusionScore.
+    public double? DifficultyAccelerationMaxCurrentConfusionScore { get; set; }
+
+    // Absolute gate: current goal understanding must be at or above this for the rule to fire.
+    // Null → falls back to RecursorPoliciesOptions.PersonalizedDifficultyAccelerationMinCurrentGoalUnderstanding.
+    public double? DifficultyAccelerationMinCurrentGoalUnderstanding { get; set; }
+
+    // Difficulty delta applied when the acceleration rule fires.
+    // Null → falls back to RecursorPoliciesOptions.PersonalizedDifficultyAccelerationDelta.
+    public double? DifficultyAccelerationDelta { get; set; }
 }

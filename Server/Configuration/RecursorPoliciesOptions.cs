@@ -80,6 +80,51 @@ public class RecursorPoliciesOptions
     /// </summary>
     public double PersonalizedConfusionBlockDifficultyIncreaseThreshold { get; set; } = 0.05;
 
+    // ── Phase 8 personalization expansion: difficulty acceleration rule ────────
+
+    /// <summary>
+    /// When true, allows a slightly stronger difficulty increase when the learner
+    /// is performing significantly above their personal baseline.
+    /// Only fires when a difficulty-increase is already proposed; never creates one.
+    /// Default: false.
+    /// </summary>
+    public bool EnablePersonalizedDifficultyAccelerationRule { get; set; } = false;
+
+    /// <summary>
+    /// ConfusionDelta must be at or below this value for the acceleration rule to fire.
+    /// Negative = user is less confused than their personal baseline.
+    /// Default: -0.08 (8 points below baseline).
+    /// </summary>
+    public double PersonalizedDifficultyAccelerationConfusionDeltaThreshold { get; set; } = -0.08;
+
+    /// <summary>
+    /// HintDependenceDelta must be at or below this value for the acceleration rule to fire.
+    /// Negative = user is less hint-dependent than their personal baseline.
+    /// Default: -0.08 (8 points below baseline).
+    /// </summary>
+    public double PersonalizedDifficultyAccelerationHintDependenceDeltaThreshold { get; set; } = -0.08;
+
+    /// <summary>
+    /// Absolute gate: current confusion score must be at or below this value.
+    /// Prevents acceleration from firing when the learner is improving relative
+    /// to baseline but still performing poorly in absolute terms.
+    /// Default: 0.25.
+    /// </summary>
+    public double PersonalizedDifficultyAccelerationMaxCurrentConfusionScore { get; set; } = 0.25;
+
+    /// <summary>
+    /// Absolute gate: current goal-understanding score must be at or above this value.
+    /// Default: 0.70.
+    /// </summary>
+    public double PersonalizedDifficultyAccelerationMinCurrentGoalUnderstanding { get; set; } = 0.70;
+
+    /// <summary>
+    /// Difficulty delta applied when the acceleration rule fires.
+    /// Should exceed the base difficulty-increase delta (0.05) but remain conservative.
+    /// Default: 0.08.
+    /// </summary>
+    public double PersonalizedDifficultyAccelerationDelta { get; set; } = 0.08;
+
     // ── Baseline hint-progression streak thresholds ───────────────────────────
 
     /// <summary>

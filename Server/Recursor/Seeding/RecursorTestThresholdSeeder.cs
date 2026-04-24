@@ -26,11 +26,16 @@ public static class RecursorTestThresholdSeeder
     public const string TolerantUserId  = "recursor-test-tolerant";
 
     // ── Global defaults for reference (matches RecursorPoliciesOptions defaults) ─
-    //   ConfusionBlockDifficultyIncreaseThreshold  = 0.05
-    //   HintFadeConfusionDeltaThreshold            = -0.05
-    //   HintFadeHintDependenceDeltaThreshold       = -0.05
-    //   HintFadeMaxCurrentConfusionScore           = 0.30
-    //   HintFadeMinCurrentGoalUnderstanding        = 0.60
+    //   ConfusionBlockDifficultyIncreaseThreshold          = 0.05
+    //   HintFadeConfusionDeltaThreshold                    = -0.05
+    //   HintFadeHintDependenceDeltaThreshold               = -0.05
+    //   HintFadeMaxCurrentConfusionScore                   = 0.30
+    //   HintFadeMinCurrentGoalUnderstanding                = 0.60
+    //   DifficultyAccelerationConfusionDeltaThreshold      = -0.08
+    //   DifficultyAccelerationHintDependenceDeltaThreshold = -0.08
+    //   DifficultyAccelerationMaxCurrentConfusionScore     = 0.25
+    //   DifficultyAccelerationMinCurrentGoalUnderstanding  = 0.70
+    //   DifficultyAccelerationDelta                        = 0.08
 
     public static void Seed(IUserThresholdRepository repo)
     {
@@ -40,6 +45,8 @@ public static class RecursorTestThresholdSeeder
         // Hint fade: requires confusion AND hint-dependence each 12% below baseline
         //   (global: 5%), and stricter absolute gates.
         //   Only fires for users performing strongly both in relative and absolute terms.
+        // Difficulty acceleration: requires strong below-baseline evidence (15%) and
+        //   stricter absolute gates; smaller acceleration delta (6 vs. global 8 points).
         repo.Upsert(new UserPolicyThresholds
         {
             UserId = SensitiveUserId,
@@ -50,6 +57,12 @@ public static class RecursorTestThresholdSeeder
             HintFadeHintDependenceDeltaThreshold   = -0.12,     // ← stricter than global -0.05
             HintFadeMaxCurrentConfusionScore       =  0.22,     // ← tighter than global 0.30
             HintFadeMinCurrentGoalUnderstanding    =  0.70,     // ← higher floor than global 0.60
+
+            DifficultyAccelerationConfusionDeltaThreshold      = -0.15, // ← stricter than global -0.08
+            DifficultyAccelerationHintDependenceDeltaThreshold = -0.15, // ← stricter than global -0.08
+            DifficultyAccelerationMaxCurrentConfusionScore     =  0.18, // ← tighter than global 0.25
+            DifficultyAccelerationMinCurrentGoalUnderstanding  =  0.78, // ← higher floor than global 0.70
+            DifficultyAccelerationDelta                        =  0.06, // ← smaller boost than global 0.08
         });
 
         // ── User B: tolerant / aggressive ────────────────────────────────────
@@ -58,6 +71,8 @@ public static class RecursorTestThresholdSeeder
         // Hint fade: fires when confusion AND hint-dependence are only 2% below baseline
         //   (global: 5%), and relaxed absolute gates.
         //   Enables earlier hint removal for users who absorb challenge well.
+        // Difficulty acceleration: fires with lighter below-baseline evidence (5%) and
+        //   relaxed absolute gates; larger acceleration delta (10 vs. global 8 points).
         repo.Upsert(new UserPolicyThresholds
         {
             UserId = TolerantUserId,
@@ -68,6 +83,12 @@ public static class RecursorTestThresholdSeeder
             HintFadeHintDependenceDeltaThreshold   = -0.02,     // ← looser than global -0.05
             HintFadeMaxCurrentConfusionScore       =  0.40,     // ← looser than global 0.30
             HintFadeMinCurrentGoalUnderstanding    =  0.50,     // ← lower floor than global 0.60
+
+            DifficultyAccelerationConfusionDeltaThreshold      = -0.05, // ← looser than global -0.08
+            DifficultyAccelerationHintDependenceDeltaThreshold = -0.05, // ← looser than global -0.08
+            DifficultyAccelerationMaxCurrentConfusionScore     =  0.32, // ← looser than global 0.25
+            DifficultyAccelerationMinCurrentGoalUnderstanding  =  0.62, // ← lower floor than global 0.70
+            DifficultyAccelerationDelta                        =  0.10, // ← larger boost than global 0.08
         });
     }
 }

@@ -138,6 +138,27 @@ public class RecursorTestThresholdSeederTests
             "Tolerant hint-fade confusion threshold should be less negative than global.");
     }
 
+    // ── 3b. Acceleration thresholds: global sits between sensitive and tolerant ──
+
+    [Fact]
+    public void AccelerationConfusionDeltaThreshold_GlobalBetweenSensitiveAndTolerant()
+    {
+        const double globalDefault = -0.08;
+        var (s, t) = SeedAndGet();
+        Assert.True(s.DifficultyAccelerationConfusionDeltaThreshold < globalDefault,
+            "Sensitive acceleration confusion threshold should be more negative than global.");
+        Assert.True(t.DifficultyAccelerationConfusionDeltaThreshold > globalDefault,
+            "Tolerant acceleration confusion threshold should be less negative than global.");
+    }
+
+    [Fact]
+    public void AccelerationDelta_SensitiveLowerThanTolerant()
+    {
+        var (s, t) = SeedAndGet();
+        Assert.True(s.DifficultyAccelerationDelta < t.DifficultyAccelerationDelta,
+            $"Sensitive delta ({s.DifficultyAccelerationDelta}) should be smaller than tolerant ({t.DifficultyAccelerationDelta}).");
+    }
+
     // ── 4. Behavioral split at policy level ───────────────────────────────────
     // These tests drive AdaptationPolicyService directly with seeded thresholds.
 
@@ -233,6 +254,70 @@ public class RecursorTestThresholdSeederTests
         // Sensitive must NOT fire the personalized hint-fade rule.
         if (resultSensitive is not null)
             Assert.DoesNotContain("personalized hint fade applied", resultSensitive.ReasoningSummary);
+    }
+
+    private static AdaptationPolicyService AccelerationService() =>
+        new(Options.Create(new RecursorPoliciesOptions
+        {
+            EnablePersonalizedDifficultyAccelerationRule               = true,
+            // Global thresholds sit between sensitive and tolerant.
+            PersonalizedDifficultyAccelerationConfusionDeltaThreshold  = -0.08,
+            PersonalizedDifficultyAccelerationHintDependenceDeltaThreshold = -0.08,
+            PersonalizedDifficultyAccelerationMaxCurrentConfusionScore = 0.25,
+            PersonalizedDifficultyAccelerationMinCurrentGoalUnderstanding = 0.70,
+            PersonalizedDifficultyAccelerationDelta                    = 0.08,
+
+            EnablePersonalizedHintFadeRule                             = false,
+            EnablePersonalizedConfusionBlockDifficultyRule             = false,
+            HintFadeRequiresSupportFadeEligibleWindows                 = 2,
+            HintRemoveRequiresStableMasteryWindows                     = 2,
+            EnableNextWindowHintDependenceGuardrail                    = false,
+        }));
+
+    /// <summary>
+    /// Marginal acceleration signals: ConfusionDelta=-0.06, HintDependenceDelta=-0.06.
+    /// Tolerant acceleration threshold (-0.05) is satisfied → fires with tolerant delta (0.10).
+    /// Global threshold (-0.08) is NOT satisfied → base delta (0.05) with global defaults.
+    /// Sensitive threshold (-0.15) is NOT satisfied → base delta (0.05).
+    /// </summary>
+    [Fact]
+    public void Acceleration_MarginalSignals_OnlyTolerantFires()
+    {
+        var (sensitive, tolerant) = SeedAndGet();
+        var sut = AccelerationService();
+
+        var marginalSignals = new PersonalizedPolicySignals
+        {
+            ConfusionDelta              = -0.06,
+            HintDependenceDelta         = -0.06,
+            IsBelowBaselineGoalUnderstanding = false,
+            IsBelowBaselineAttention    = false,
+            CurrentConfusionScore       = 0.20,
+            CurrentGoalUnderstanding    = 0.75,
+        };
+
+        var resultSensitive = sut.ApplyPolicy(MasterySession(), Catalog(), MasteryHypothesisSet(),
+            shadowPrediction: null, personalizedSignals: marginalSignals, userThresholds: sensitive);
+
+        var resultTolerant = sut.ApplyPolicy(MasterySession(), Catalog(), MasteryHypothesisSet(),
+            shadowPrediction: null, personalizedSignals: marginalSignals, userThresholds: tolerant);
+
+        // Tolerant: acceleration fires with tolerant delta (0.10).
+        Assert.NotNull(resultTolerant);
+        Assert.Contains("personalized difficulty acceleration applied", resultTolerant.ReasoningSummary);
+        Assert.Contains("[user-specific thresholds]", resultTolerant.ReasoningSummary);
+        var tolerantDiff = resultTolerant.ParameterChanges.FirstOrDefault(
+            c => c.Parameter == "difficulty" && c.Operation == "increase");
+        Assert.NotNull(tolerantDiff);
+        Assert.Equal(0.10, (double)tolerantDiff.Value!);
+
+        // Sensitive: acceleration must NOT fire; difficulty stays at base 0.05.
+        Assert.NotNull(resultSensitive);
+        Assert.DoesNotContain("personalized difficulty acceleration", resultSensitive.ReasoningSummary);
+        var sensitiveDiff = resultSensitive.ParameterChanges.FirstOrDefault(
+            c => c.Parameter == "difficulty" && c.Operation == "increase");
+        Assert.NotNull(sensitiveDiff);
+        Assert.Equal(0.05, (double)sensitiveDiff.Value!);
     }
 
     /// <summary>

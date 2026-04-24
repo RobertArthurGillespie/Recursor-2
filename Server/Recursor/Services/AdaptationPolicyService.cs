@@ -18,10 +18,12 @@ public interface IAdaptationPolicyService
 public class AdaptationPolicyService : IAdaptationPolicyService
 {
     private readonly RecursorPoliciesOptions _policies;
+    private readonly ILogger<AdaptationPolicyService> _logger;
 
-    public AdaptationPolicyService(IOptions<RecursorPoliciesOptions> policiesOptions)
+    public AdaptationPolicyService(IOptions<RecursorPoliciesOptions> policiesOptions, ILogger<AdaptationPolicyService> logger)
     {
         _policies = policiesOptions.Value;
+        _logger = logger;
     }
 
     public AdaptationDecisionDocument? ApplyPolicy(
@@ -348,6 +350,70 @@ public class AdaptationPolicyService : IAdaptationPolicyService
                 changes.Add(change);
         }
 
+        // Phase 8 — personalized difficulty acceleration rule.
+        // Fires after family-to-change conversion so the confusion-block rule's removal
+        // of difficulty-increase is already reflected in `changes`.
+        // Only strengthens an existing difficulty-increase ParameterChange — never creates one.
+        // Never fires during relapse or while a next-window guardrail is active.
+        string? difficultyAccelerationNote = null;
+
+        var accelConfusionDeltaThreshold = userThresholds?.DifficultyAccelerationConfusionDeltaThreshold
+            ?? _policies.PersonalizedDifficultyAccelerationConfusionDeltaThreshold;
+        var accelHintDependenceDeltaThreshold = userThresholds?.DifficultyAccelerationHintDependenceDeltaThreshold
+            ?? _policies.PersonalizedDifficultyAccelerationHintDependenceDeltaThreshold;
+        var accelMaxCurrentConfusionScore = userThresholds?.DifficultyAccelerationMaxCurrentConfusionScore
+            ?? _policies.PersonalizedDifficultyAccelerationMaxCurrentConfusionScore;
+        var accelMinCurrentGoalUnderstanding = userThresholds?.DifficultyAccelerationMinCurrentGoalUnderstanding
+            ?? _policies.PersonalizedDifficultyAccelerationMinCurrentGoalUnderstanding;
+        var accelDelta = userThresholds?.DifficultyAccelerationDelta
+            ?? _policies.PersonalizedDifficultyAccelerationDelta;
+
+        var existingDifficultyIncrease = changes.FirstOrDefault(
+            c => c.Parameter == "difficulty" && c.Operation == "increase");
+
+        if (_policies.EnablePersonalizedDifficultyAccelerationRule
+            && personalizedSignals is not null
+            && !hasRelapse
+            && !nextWindowGuardrailTriggered
+            && existingDifficultyIncrease is not null
+            && personalizedSignals.ConfusionDelta <= accelConfusionDeltaThreshold
+            && personalizedSignals.HintDependenceDelta <= accelHintDependenceDeltaThreshold
+            && !personalizedSignals.IsBelowBaselineGoalUnderstanding
+            && !personalizedSignals.IsBelowBaselineAttention
+            && personalizedSignals.CurrentConfusionScore <= accelMaxCurrentConfusionScore
+            && personalizedSignals.CurrentGoalUnderstanding >= accelMinCurrentGoalUnderstanding)
+        {
+            var catalogDef = catalog.AdaptiveParameters.FirstOrDefault(p => p.Name == "difficulty");
+            double boundedAccelDelta = catalogDef?.Min.HasValue == true && catalogDef.Max.HasValue == true
+                ? Math.Min(accelDelta, catalogDef.Max.Value - catalogDef.Min.Value)
+                : accelDelta;
+
+            int changeIdx = changes.IndexOf(existingDifficultyIncrease);
+            changes[changeIdx] = new ParameterChange
+            {
+                Parameter = "difficulty",
+                Operation = "increase",
+                Value = boundedAccelDelta
+            };
+
+            bool anyAccelUserThreshold =
+                userThresholds?.DifficultyAccelerationConfusionDeltaThreshold.HasValue == true ||
+                userThresholds?.DifficultyAccelerationHintDependenceDeltaThreshold.HasValue == true ||
+                userThresholds?.DifficultyAccelerationMaxCurrentConfusionScore.HasValue == true ||
+                userThresholds?.DifficultyAccelerationMinCurrentGoalUnderstanding.HasValue == true ||
+                userThresholds?.DifficultyAccelerationDelta.HasValue == true;
+
+            difficultyAccelerationNote =
+                $"personalized difficulty acceleration applied " +
+                $"(ConfusionDelta={personalizedSignals.ConfusionDelta:0.00}, " +
+                $"HintDependenceDelta={personalizedSignals.HintDependenceDelta:0.00}, " +
+                $"AcceleratedDelta={boundedAccelDelta:0.00}" +
+                (anyAccelUserThreshold ? " [user-specific thresholds]" : "") + ")";
+
+            _logger.LogInformation("difficulty acceleration applied");
+            _logger.LogInformation(difficultyAccelerationNote);
+        }
+
         if (changes.Count == 0 && !nextWindowGuardrailTriggered)
             return null;
 
@@ -367,8 +433,17 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         if (confusionBlockDifficultyNote is not null)
             reasoning.Add(confusionBlockDifficultyNote);
 
+        if (difficultyAccelerationNote is not null)
+            reasoning.Add(difficultyAccelerationNote);
+
         var decisionIndex = session.LatestAdaptationId is null ? 0
             : (int.TryParse(session.LatestAdaptationId.Split('-').Last(), out var idx) ? idx + 1 : 0);
+
+        var reasoningSummary = string.Join("; ", reasoning);
+
+        _logger.LogInformation(
+            "Reasoning for adaptation is: {ReasoningSummary}",
+            reasoningSummary);
 
         return new AdaptationDecisionDocument
         {
@@ -386,6 +461,8 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             NextHintDependenceGuardrailTriggered = nextWindowGuardrailTriggered,
             NextHintDependenceGuardrailLevel = nextWindowGuardrailLevel,
         };
+
+        ;
     }
 
     private static IEnumerable<string> GetInterventionFamilies(string hypothesisLabel)
