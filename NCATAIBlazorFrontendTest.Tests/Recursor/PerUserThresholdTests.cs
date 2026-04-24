@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
@@ -63,7 +64,7 @@ public class PerUserThresholdTests
                 HintFadeRequiresSupportFadeEligibleWindows = 2,
                 HintRemoveRequiresStableMasteryWindows = 2,
                 EnableNextWindowHintDependenceGuardrail = false,
-            }));
+            }), NullLogger<AdaptationPolicyService>.Instance);
 
         private static PersonalizedPolicySignals SignalsWithConfusionDelta(double delta) =>
             new() { ConfusionDelta = delta, CurrentConfusionScore = 0.40 + delta };
@@ -226,7 +227,7 @@ public class PerUserThresholdTests
                 HintFadeRequiresSupportFadeEligibleWindows = 2,
                 HintRemoveRequiresStableMasteryWindows = 2,
                 EnableNextWindowHintDependenceGuardrail = false,
-            }));
+            }), NullLogger<AdaptationPolicyService>.Instance);
 
         // Signals that satisfy all global hint-fade conditions.
         private static PersonalizedPolicySignals PassingSignals() => new()

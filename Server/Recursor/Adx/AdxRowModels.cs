@@ -148,3 +148,64 @@ public class BehaviorStateTrainingRow
     public string ModelVersion { get; set; } = "";
     public string InferenceMode { get; set; } = "shadow";
 }
+
+// ── UserBehaviorProfiles row ──────────────────────────────────────────────────
+// Full profile snapshot. ADX is append-only; use arg_max(UpdatedAtUtc, *) to
+// retrieve the current profile for a given UserId.
+public class UserBehaviorProfileRow
+{
+    public string UserId { get; set; } = "";
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime UpdatedAtUtc { get; set; }
+    public string LastSessionId { get; set; } = "";
+    public int TotalSessions { get; set; }
+    public int TotalWindows { get; set; }
+
+    public double AvgConfusionScore { get; set; }
+    public double AvgHintDependenceScore { get; set; }
+    public double AvgHesitationScore { get; set; }
+    public double AvgGoalUnderstanding { get; set; }
+    public double AvgAttentionDetection { get; set; }
+    public double AvgProcedureSequencing { get; set; }
+    public double AvgSelfCorrection { get; set; }
+    public double AvgTaskContinuity { get; set; }
+    public double StableMasteryRate { get; set; }
+    public double ConfusionRate { get; set; }
+    public double HintDependenceRate { get; set; }
+
+    // Nullable — null means "use global default" for that threshold.
+    public double? ConfusionBlockDifficultyIncreaseThreshold { get; set; }
+    public double? HintFadeConfusionDeltaThreshold { get; set; }
+    public double? HintFadeHintDependenceDeltaThreshold { get; set; }
+    public double? HintFadeMaxCurrentConfusionScore { get; set; }
+    public double? HintFadeMinCurrentGoalUnderstanding { get; set; }
+    public double? DifficultyAccelerationConfusionDeltaThreshold { get; set; }
+    public double? DifficultyAccelerationHintDependenceDeltaThreshold { get; set; }
+    public double? DifficultyAccelerationMaxCurrentConfusionScore { get; set; }
+    public double? DifficultyAccelerationMinCurrentGoalUnderstanding { get; set; }
+    public double? DifficultyAccelerationDelta { get; set; }
+}
+
+// ── UserBehaviorProfileUpdates row ────────────────────────────────────────────
+// Per-window behavioral observation used to reconstruct profile history
+// and to audit incremental mean updates.
+public class UserBehaviorProfileUpdateRow
+{
+    public string UserId { get; set; } = "";
+    public string SessionId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+
+    public double ConfusionScore { get; set; }
+    public double HintDependenceScore { get; set; }
+    public double HesitationScore { get; set; }
+    public double GoalUnderstanding { get; set; }
+    public double AttentionDetection { get; set; }
+    public double ProcedureSequencing { get; set; }
+    public double SelfCorrection { get; set; }
+    public double TaskContinuity { get; set; }
+
+    public bool HasStableMastery { get; set; }
+    public bool HasConfusionPattern { get; set; }
+    public bool HasHintDependencePattern { get; set; }
+}

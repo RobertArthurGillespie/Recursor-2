@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
@@ -175,7 +176,7 @@ public class RecursorTestThresholdSeederTests
             HintFadeRequiresSupportFadeEligibleWindows         = 2,
             HintRemoveRequiresStableMasteryWindows             = 2,
             EnableNextWindowHintDependenceGuardrail            = false,
-        }));
+        }), NullLogger<AdaptationPolicyService>.Instance);
 
     private static AdaptationPolicyService ConfusionBlockService() =>
         new(Options.Create(new RecursorPoliciesOptions
@@ -186,7 +187,7 @@ public class RecursorTestThresholdSeederTests
             HintFadeRequiresSupportFadeEligibleWindows            = 2,
             HintRemoveRequiresStableMasteryWindows                = 2,
             EnableNextWindowHintDependenceGuardrail               = false,
-        }));
+        }), NullLogger<AdaptationPolicyService>.Instance);
 
     private static SimCatalogDocument Catalog() => new()
     {
@@ -272,7 +273,7 @@ public class RecursorTestThresholdSeederTests
             HintFadeRequiresSupportFadeEligibleWindows                 = 2,
             HintRemoveRequiresStableMasteryWindows                     = 2,
             EnableNextWindowHintDependenceGuardrail                    = false,
-        }));
+        }), NullLogger<AdaptationPolicyService>.Instance);
 
     /// <summary>
     /// Marginal acceleration signals: ConfusionDelta=-0.06, HintDependenceDelta=-0.06.

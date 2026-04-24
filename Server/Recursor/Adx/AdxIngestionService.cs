@@ -15,6 +15,8 @@ public interface IAdxIngestionService
     Task IngestHypothesisSetAsync(HypothesisSetRow row);
     Task IngestAdaptationDecisionAsync(AdaptationDecisionRow row);
     Task IngestBehaviorStateTrainingRowAsync(BehaviorStateTrainingRow row);
+    Task IngestUserBehaviorProfileAsync(UserBehaviorProfileRow row);
+    Task IngestUserBehaviorProfileUpdateAsync(UserBehaviorProfileUpdateRow row);
 }
 
 public class AdxIngestionService : IAdxIngestionService
@@ -144,6 +146,44 @@ public class AdxIngestionService : IAdxIngestionService
             {
                 IngestionMappingKind = IngestionMappingKind.Csv,
                 IngestionMappingReference = "BehaviorStateTrainingRowsCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    public async Task IngestUserBehaviorProfileAsync(UserBehaviorProfileRow row)
+    {
+        if (!CheckClient("UserBehaviorProfiles")) return;
+
+        var table = BuildUserBehaviorProfilesTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "UserBehaviorProfiles")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "UserBehaviorProfilesCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    public async Task IngestUserBehaviorProfileUpdateAsync(UserBehaviorProfileUpdateRow row)
+    {
+        if (!CheckClient("UserBehaviorProfileUpdates")) return;
+
+        var table = BuildUserBehaviorProfileUpdatesTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "UserBehaviorProfileUpdates")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "UserBehaviorProfileUpdatesCsvMapping"
             }
         };
 
@@ -429,6 +469,110 @@ public class AdxIngestionService : IAdxIngestionService
             row.PredStableMasteryProbability,
             row.ModelVersion,
             row.InferenceMode
+        );
+
+        return table;
+    }
+
+    private static DataTable BuildUserBehaviorProfilesTable(UserBehaviorProfileRow row)
+    {
+        var table = new DataTable("UserBehaviorProfiles");
+        table.Columns.Add("UserId",                                          typeof(string));
+        table.Columns.Add("CreatedAtUtc",                                    typeof(DateTime));
+        table.Columns.Add("UpdatedAtUtc",                                    typeof(DateTime));
+        table.Columns.Add("LastSessionId",                                   typeof(string));
+        table.Columns.Add("TotalSessions",                                   typeof(int));
+        table.Columns.Add("TotalWindows",                                    typeof(int));
+        table.Columns.Add("AvgConfusionScore",                               typeof(double));
+        table.Columns.Add("AvgHintDependenceScore",                          typeof(double));
+        table.Columns.Add("AvgHesitationScore",                              typeof(double));
+        table.Columns.Add("AvgGoalUnderstanding",                            typeof(double));
+        table.Columns.Add("AvgAttentionDetection",                           typeof(double));
+        table.Columns.Add("AvgProcedureSequencing",                          typeof(double));
+        table.Columns.Add("AvgSelfCorrection",                               typeof(double));
+        table.Columns.Add("AvgTaskContinuity",                               typeof(double));
+        table.Columns.Add("StableMasteryRate",                               typeof(double));
+        table.Columns.Add("ConfusionRate",                                   typeof(double));
+        table.Columns.Add("HintDependenceRate",                              typeof(double));
+        table.Columns.Add("ConfusionBlockDifficultyIncreaseThreshold",       typeof(double));
+        table.Columns.Add("HintFadeConfusionDeltaThreshold",                 typeof(double));
+        table.Columns.Add("HintFadeHintDependenceDeltaThreshold",            typeof(double));
+        table.Columns.Add("HintFadeMaxCurrentConfusionScore",                typeof(double));
+        table.Columns.Add("HintFadeMinCurrentGoalUnderstanding",             typeof(double));
+        table.Columns.Add("DifficultyAccelerationConfusionDeltaThreshold",   typeof(double));
+        table.Columns.Add("DifficultyAccelerationHintDependenceDeltaThreshold", typeof(double));
+        table.Columns.Add("DifficultyAccelerationMaxCurrentConfusionScore",  typeof(double));
+        table.Columns.Add("DifficultyAccelerationMinCurrentGoalUnderstanding", typeof(double));
+        table.Columns.Add("DifficultyAccelerationDelta",                     typeof(double));
+
+        table.Rows.Add(
+            row.UserId,
+            row.CreatedAtUtc,
+            row.UpdatedAtUtc,
+            row.LastSessionId,
+            row.TotalSessions,
+            row.TotalWindows,
+            row.AvgConfusionScore,
+            row.AvgHintDependenceScore,
+            row.AvgHesitationScore,
+            row.AvgGoalUnderstanding,
+            row.AvgAttentionDetection,
+            row.AvgProcedureSequencing,
+            row.AvgSelfCorrection,
+            row.AvgTaskContinuity,
+            row.StableMasteryRate,
+            row.ConfusionRate,
+            row.HintDependenceRate,
+            row.ConfusionBlockDifficultyIncreaseThreshold       ?? (object)DBNull.Value,
+            row.HintFadeConfusionDeltaThreshold                 ?? (object)DBNull.Value,
+            row.HintFadeHintDependenceDeltaThreshold            ?? (object)DBNull.Value,
+            row.HintFadeMaxCurrentConfusionScore                ?? (object)DBNull.Value,
+            row.HintFadeMinCurrentGoalUnderstanding             ?? (object)DBNull.Value,
+            row.DifficultyAccelerationConfusionDeltaThreshold   ?? (object)DBNull.Value,
+            row.DifficultyAccelerationHintDependenceDeltaThreshold ?? (object)DBNull.Value,
+            row.DifficultyAccelerationMaxCurrentConfusionScore  ?? (object)DBNull.Value,
+            row.DifficultyAccelerationMinCurrentGoalUnderstanding ?? (object)DBNull.Value,
+            row.DifficultyAccelerationDelta                     ?? (object)DBNull.Value
+        );
+
+        return table;
+    }
+
+    private static DataTable BuildUserBehaviorProfileUpdatesTable(UserBehaviorProfileUpdateRow row)
+    {
+        var table = new DataTable("UserBehaviorProfileUpdates");
+        table.Columns.Add("UserId",                   typeof(string));
+        table.Columns.Add("SessionId",                typeof(string));
+        table.Columns.Add("WindowIndex",              typeof(int));
+        table.Columns.Add("CreatedAtUtc",             typeof(DateTime));
+        table.Columns.Add("ConfusionScore",           typeof(double));
+        table.Columns.Add("HintDependenceScore",      typeof(double));
+        table.Columns.Add("HesitationScore",          typeof(double));
+        table.Columns.Add("GoalUnderstanding",        typeof(double));
+        table.Columns.Add("AttentionDetection",       typeof(double));
+        table.Columns.Add("ProcedureSequencing",      typeof(double));
+        table.Columns.Add("SelfCorrection",           typeof(double));
+        table.Columns.Add("TaskContinuity",           typeof(double));
+        table.Columns.Add("HasStableMastery",         typeof(bool));
+        table.Columns.Add("HasConfusionPattern",      typeof(bool));
+        table.Columns.Add("HasHintDependencePattern", typeof(bool));
+
+        table.Rows.Add(
+            row.UserId,
+            row.SessionId,
+            row.WindowIndex,
+            row.CreatedAtUtc,
+            row.ConfusionScore,
+            row.HintDependenceScore,
+            row.HesitationScore,
+            row.GoalUnderstanding,
+            row.AttentionDetection,
+            row.ProcedureSequencing,
+            row.SelfCorrection,
+            row.TaskContinuity,
+            row.HasStableMastery,
+            row.HasConfusionPattern,
+            row.HasHintDependencePattern
         );
 
         return table;

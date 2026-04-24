@@ -40,6 +40,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IBehaviorStatePredictionService _behaviorStatePredictionService;
     private readonly IUserRelativeSignalService _userRelativeSignalService;
     private readonly IUserThresholdRepository _userThresholdRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IUserProfileUpdateService _userProfileUpdateService;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -56,6 +58,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     IBehaviorStatePredictionService behaviorStatePredictionService,
     IUserRelativeSignalService userRelativeSignalService,
     IUserThresholdRepository userThresholdRepository,
+    IUserProfileRepository userProfileRepository,
+    IUserProfileUpdateService userProfileUpdateService,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -71,6 +75,8 @@ public class RecursorIngestionService : IRecursorIngestionService
         _behaviorStatePredictionService = behaviorStatePredictionService;
         _userRelativeSignalService = userRelativeSignalService;
         _userThresholdRepository = userThresholdRepository;
+        _userProfileRepository = userProfileRepository;
+        _userProfileUpdateService = userProfileUpdateService;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -242,6 +248,21 @@ public class RecursorIngestionService : IRecursorIngestionService
         }
         _sessionRepository.Update(session);
 
+        // Phase 6B: update longitudinal user profile with this window's behavioral data.
+        // Non-blocking — a failed update never stops the adaptation pipeline.
+        try
+        {
+            await _userProfileUpdateService.UpdateProfileAsync(
+                session.UserId, session.SessionId, behaviorProfile.WindowIndex,
+                behaviorProfile, hypothesisLabels);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Profile update failed for userId '{UserId}' (session {SessionId}). Continuing pipeline.",
+                session.UserId, session.SessionId);
+        }
+
         // Shadow ML prediction — shadow output feeds the ML guardrail in AdaptationPolicyService.
         // It may veto hint-reduction families when hint dependence probability is high (>= 0.85).
         // It does not create new adaptations or affect difficulty / pace.
@@ -326,12 +347,25 @@ public class RecursorIngestionService : IRecursorIngestionService
                 _logger.LogWarning(ex, "Failed to fetch personalized signals for session {SessionId}. Skipping personalized rules.", session.SessionId);
             }
 
-            // Per-user threshold lookup is synchronous (in-memory) — always safe to call.
-            userThresholds = _userThresholdRepository.Get(session.UserId);
-            if (userThresholds is not null)
+            // Phase 6A: prefer thresholds from persistent user profile; fall back to seeded
+            // in-memory thresholds if no profile exists. Both produce the same UserPolicyThresholds
+            // type consumed by ApplyPolicy — the fallback chain is transparent to the policy layer.
+            var userProfile = await _userProfileRepository.GetAsync(session.UserId);
+            if (userProfile is not null)
+            {
+                userThresholds = UserProfileThresholdMapper.ToUserPolicyThresholds(userProfile);
                 _logger.LogInformation(
-                    "Per-user policy thresholds active for userId '{UserId}' (session {SessionId}).",
+                    "Per-user profile thresholds active for userId '{UserId}' (session {SessionId}).",
                     session.UserId, session.SessionId);
+            }
+            else
+            {
+                userThresholds = _userThresholdRepository.Get(session.UserId);
+                if (userThresholds is not null)
+                    _logger.LogInformation(
+                        "Per-user seeded thresholds active for userId '{UserId}' (session {SessionId}).",
+                        session.UserId, session.SessionId);
+            }
         }
 
         var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet, shadowPrediction, personalizedSignals, userThresholds);

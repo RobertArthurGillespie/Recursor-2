@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
@@ -46,7 +47,7 @@ public class PersonalizedDifficultyAccelerationRuleTests
             HintRemoveRequiresStableMasteryWindows     = 2,
             EnableNextWindowHintDependenceGuardrail    = false,
         });
-        return new AdaptationPolicyService(options);
+        return new AdaptationPolicyService(options, NullLogger<AdaptationPolicyService>.Instance);
     }
 
     private static SimCatalogDocument CreateCatalog() => new()

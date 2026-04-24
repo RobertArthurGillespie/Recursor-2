@@ -74,6 +74,7 @@ GlobalFFOptions.Configure(options => options.BinaryFolder = Path.Combine(AppCont
 builder.Services.AddSingleton<ISessionRepository, SessionRepository>();
 builder.Services.AddSingleton<ISimCatalogRepository, SimCatalogRepository>();
 builder.Services.AddSingleton<IUserThresholdRepository, InMemoryUserThresholdRepository>();
+builder.Services.AddSingleton<IUserProfileRepository, InMemoryUserProfileRepository>();
 
 // Bind typed ADX options from the "Adx" config section.
 builder.Services.Configure<AdxOptions>(builder.Configuration.GetSection("Adx"));
@@ -104,6 +105,7 @@ builder.Services.AddSingleton<IAdxUserBaselineQueryService, AdxUserBaselineQuery
 builder.Services.AddSingleton<IAdxTrainingExportService, AdxTrainingExportService>();
 builder.Services.AddSingleton<IUserRelativeSignalService, UserRelativeSignalService>();
 builder.Services.AddSingleton<IUserRelativePolicyAdvisorService, UserRelativePolicyAdvisorService>();
+builder.Services.AddSingleton<IUserProfileUpdateService, UserProfileUpdateService>();
 
 // Recursor pipeline services (scoped — one per request).
 builder.Services.AddScoped<IFeatureExtractionService, FeatureExtractionService>();

@@ -182,6 +182,70 @@ public static class AdxRowMapper
         };
     }
 
+    // ── Phase 6B: user profile row mappings ──────────────────────────────────
+
+    public static UserBehaviorProfileRow MapUserBehaviorProfile(
+        NCATAIBlazorFrontendTest.Server.Recursor.Models.UserBehaviorProfile profile) =>
+        new()
+        {
+            UserId        = profile.UserId,
+            CreatedAtUtc  = profile.CreatedAtUtc,
+            UpdatedAtUtc  = profile.UpdatedAtUtc,
+            LastSessionId = profile.LastSessionId,
+            TotalSessions = profile.TotalSessions,
+            TotalWindows  = profile.TotalWindows,
+
+            AvgConfusionScore      = profile.AvgConfusionScore,
+            AvgHintDependenceScore = profile.AvgHintDependenceScore,
+            AvgHesitationScore     = profile.AvgHesitationScore,
+            AvgGoalUnderstanding   = profile.AvgGoalUnderstanding,
+            AvgAttentionDetection  = profile.AvgAttentionDetection,
+            AvgProcedureSequencing = profile.AvgProcedureSequencing,
+            AvgSelfCorrection      = profile.AvgSelfCorrection,
+            AvgTaskContinuity      = profile.AvgTaskContinuity,
+            StableMasteryRate      = profile.StableMasteryRate,
+            ConfusionRate          = profile.ConfusionRate,
+            HintDependenceRate     = profile.HintDependenceRate,
+
+            ConfusionBlockDifficultyIncreaseThreshold          = profile.ConfusionBlockDifficultyIncreaseThreshold,
+            HintFadeConfusionDeltaThreshold                    = profile.HintFadeConfusionDeltaThreshold,
+            HintFadeHintDependenceDeltaThreshold               = profile.HintFadeHintDependenceDeltaThreshold,
+            HintFadeMaxCurrentConfusionScore                   = profile.HintFadeMaxCurrentConfusionScore,
+            HintFadeMinCurrentGoalUnderstanding                = profile.HintFadeMinCurrentGoalUnderstanding,
+            DifficultyAccelerationConfusionDeltaThreshold      = profile.DifficultyAccelerationConfusionDeltaThreshold,
+            DifficultyAccelerationHintDependenceDeltaThreshold = profile.DifficultyAccelerationHintDependenceDeltaThreshold,
+            DifficultyAccelerationMaxCurrentConfusionScore     = profile.DifficultyAccelerationMaxCurrentConfusionScore,
+            DifficultyAccelerationMinCurrentGoalUnderstanding  = profile.DifficultyAccelerationMinCurrentGoalUnderstanding,
+            DifficultyAccelerationDelta                        = profile.DifficultyAccelerationDelta,
+        };
+
+    public static UserBehaviorProfileUpdateRow MapUserBehaviorProfileUpdate(
+        string userId, string sessionId, int windowIndex, DateTime createdAtUtc,
+        double confusionScore, double hintDependenceScore, double hesitationScore,
+        double goalUnderstanding, double attentionDetection, double procedureSequencing,
+        double selfCorrection, double taskContinuity,
+        bool hasStableMastery, bool hasConfusionPattern, bool hasHintDependencePattern) =>
+        new()
+        {
+            UserId       = userId,
+            SessionId    = sessionId,
+            WindowIndex  = windowIndex,
+            CreatedAtUtc = createdAtUtc,
+
+            ConfusionScore      = confusionScore,
+            HintDependenceScore = hintDependenceScore,
+            HesitationScore     = hesitationScore,
+            GoalUnderstanding   = goalUnderstanding,
+            AttentionDetection  = attentionDetection,
+            ProcedureSequencing = procedureSequencing,
+            SelfCorrection      = selfCorrection,
+            TaskContinuity      = taskContinuity,
+
+            HasStableMastery       = hasStableMastery,
+            HasConfusionPattern    = hasConfusionPattern,
+            HasHintDependencePattern = hasHintDependencePattern,
+        };
+
     // ── Reverse mappings (ADX row → domain model) ─────────────────────────────
     // Used by debug query endpoints. Note: FeatureWindowDocument.Id is not stored
     // in ADX, so the returned document will have Id = "".
