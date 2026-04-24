@@ -11,7 +11,8 @@ public interface IAdaptationPolicyService
         SimCatalogDocument catalog,
         HypothesisSetDocument hypothesisSet,
         BehaviorStatePrediction? shadowPrediction = null,
-        PersonalizedPolicySignals? personalizedSignals = null);
+        PersonalizedPolicySignals? personalizedSignals = null,
+        UserPolicyThresholds? userThresholds = null);
 }
 
 public class AdaptationPolicyService : IAdaptationPolicyService
@@ -28,7 +29,8 @@ public class AdaptationPolicyService : IAdaptationPolicyService
     SimCatalogDocument catalog,
     HypothesisSetDocument hypothesisSet,
     BehaviorStatePrediction? shadowPrediction = null,
-    PersonalizedPolicySignals? personalizedSignals = null)
+    PersonalizedPolicySignals? personalizedSignals = null,
+    UserPolicyThresholds? userThresholds = null)
     {
         if (hypothesisSet.Hypotheses.Count == 0)
             return null;
@@ -262,8 +264,18 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         // relative signals confirm they are below their personal baseline for confusion
         // and hint dependence, and not below baseline on goal understanding or attention.
         // This produces a gentle guided → minimal hint reduction supported by individual evidence.
+        // Thresholds resolve to per-user override when present, otherwise global config default.
         string? personalizedHintFadeNote = null;
-        
+
+        var hintFadeConfusionDeltaThreshold = userThresholds?.HintFadeConfusionDeltaThreshold
+            ?? _policies.PersonalizedHintFadeConfusionDeltaThreshold;
+        var hintFadeHintDependenceDeltaThreshold = userThresholds?.HintFadeHintDependenceDeltaThreshold
+            ?? _policies.PersonalizedHintFadeHintDependenceDeltaThreshold;
+        var hintFadeMaxCurrentConfusionScore = userThresholds?.HintFadeMaxCurrentConfusionScore
+            ?? _policies.PersonalizedHintFadeMaxCurrentConfusionScore;
+        var hintFadeMinCurrentGoalUnderstanding = userThresholds?.HintFadeMinCurrentGoalUnderstanding
+            ?? _policies.PersonalizedHintFadeMinCurrentGoalUnderstanding;
+
         if (_policies.EnablePersonalizedHintFadeRule
             && personalizedSignals is not null
             && !hasRelapse
@@ -272,12 +284,12 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             && string.Equals(currentHintMode, "guided", StringComparison.OrdinalIgnoreCase)
             && interventionFamilies.Contains("difficulty-increase")
             && interventionFamilies.Contains("pace-increase")
-            && personalizedSignals.ConfusionDelta <= _policies.PersonalizedHintFadeConfusionDeltaThreshold
-            && personalizedSignals.HintDependenceDelta <= _policies.PersonalizedHintFadeHintDependenceDeltaThreshold
+            && personalizedSignals.ConfusionDelta <= hintFadeConfusionDeltaThreshold
+            && personalizedSignals.HintDependenceDelta <= hintFadeHintDependenceDeltaThreshold
             && !personalizedSignals.IsBelowBaselineGoalUnderstanding
             && !personalizedSignals.IsBelowBaselineAttention
-            && personalizedSignals.CurrentConfusionScore <= _policies.PersonalizedHintFadeMaxCurrentConfusionScore
-            && personalizedSignals.CurrentGoalUnderstanding >= _policies.PersonalizedHintFadeMinCurrentGoalUnderstanding)
+            && personalizedSignals.CurrentConfusionScore <= hintFadeMaxCurrentConfusionScore
+            && personalizedSignals.CurrentGoalUnderstanding >= hintFadeMinCurrentGoalUnderstanding)
         {
             interventionFamilies.Remove("scaffold-hints");
             interventionFamilies.Remove("hint-remove");
@@ -287,10 +299,17 @@ public class AdaptationPolicyService : IAdaptationPolicyService
             if (!interventionFamilies.Contains("hint-fade"))
                 interventionFamilies.Add("hint-fade");
 
+            bool anyHintFadeUserThreshold =
+                userThresholds?.HintFadeConfusionDeltaThreshold.HasValue == true ||
+                userThresholds?.HintFadeHintDependenceDeltaThreshold.HasValue == true ||
+                userThresholds?.HintFadeMaxCurrentConfusionScore.HasValue == true ||
+                userThresholds?.HintFadeMinCurrentGoalUnderstanding.HasValue == true;
+
             personalizedHintFadeNote =
                 $"personalized hint fade applied (ConfusionDelta={personalizedSignals.ConfusionDelta:0.00}, " +
                 $"HintDependenceDelta={personalizedSignals.HintDependenceDelta:0.00}, " +
-                $"CurrentConfusionScore={personalizedSignals.CurrentConfusionScore:0.00})";
+                $"CurrentConfusionScore={personalizedSignals.CurrentConfusionScore:0.00}" +
+                (anyHintFadeUserThreshold ? " [user-specific thresholds]" : "") + ")";
         }
 
         // Phase 8 personalization expansion — personalized confusion-based difficulty-increase block.
@@ -298,18 +317,25 @@ public class AdaptationPolicyService : IAdaptationPolicyService
         // confusion is above the user's personal baseline by more than the configured
         // threshold, and a difficulty-increase action is in the current proposal.
         // Only removes difficulty-increase; does not add any other actions.
+        // Threshold resolves to per-user override when present, otherwise global config default.
         string? confusionBlockDifficultyNote = null;
+
+        var confusionBlockThreshold = userThresholds?.ConfusionBlockDifficultyIncreaseThreshold
+            ?? _policies.PersonalizedConfusionBlockDifficultyIncreaseThreshold;
+
         if (_policies.EnablePersonalizedConfusionBlockDifficultyRule
             && personalizedSignals is not null
-            && personalizedSignals.ConfusionDelta > _policies.PersonalizedConfusionBlockDifficultyIncreaseThreshold
+            && personalizedSignals.ConfusionDelta > confusionBlockThreshold
             && interventionFamilies.Contains("difficulty-increase"))
         {
             interventionFamilies.Remove("difficulty-increase");
+            bool confusionBlockUserThreshold = userThresholds?.ConfusionBlockDifficultyIncreaseThreshold.HasValue == true;
             confusionBlockDifficultyNote =
                 $"difficulty increase blocked: confusion above personal baseline " +
                 $"(ConfusionDelta={personalizedSignals.ConfusionDelta:0.00}, " +
                 $"CurrentConfusion={personalizedSignals.CurrentConfusionScore:0.00}, " +
-                $"Threshold={_policies.PersonalizedConfusionBlockDifficultyIncreaseThreshold:0.00})";
+                $"Threshold={confusionBlockThreshold:0.00}" +
+                (confusionBlockUserThreshold ? " [user-specific]" : "") + ")";
         }
 
         var changes = new List<ParameterChange>();

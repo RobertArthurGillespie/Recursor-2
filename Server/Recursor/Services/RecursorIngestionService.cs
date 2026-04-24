@@ -39,6 +39,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IBehaviorStateFeatureVectorBuilder _featureVectorBuilder;
     private readonly IBehaviorStatePredictionService _behaviorStatePredictionService;
     private readonly IUserRelativeSignalService _userRelativeSignalService;
+    private readonly IUserThresholdRepository _userThresholdRepository;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -54,6 +55,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     IBehaviorStateFeatureVectorBuilder featureVectorBuilder,
     IBehaviorStatePredictionService behaviorStatePredictionService,
     IUserRelativeSignalService userRelativeSignalService,
+    IUserThresholdRepository userThresholdRepository,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -68,6 +70,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _featureVectorBuilder = featureVectorBuilder;
         _behaviorStatePredictionService = behaviorStatePredictionService;
         _userRelativeSignalService = userRelativeSignalService;
+        _userThresholdRepository = userThresholdRepository;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -294,9 +297,10 @@ public class RecursorIngestionService : IRecursorIngestionService
             };
         }
 
-        // Phase 8 personalization — fetch personalized signals for any active personalized rule.
-        // Only fetched when at least one personalized rule flag is on; always non-blocking.
+        // Phase 8 personalization — fetch personalized signals and per-user thresholds for any
+        // active personalized rule. Only fetched when at least one rule flag is on; always non-blocking.
         PersonalizedPolicySignals? personalizedSignals = null;
+        UserPolicyThresholds? userThresholds = null;
         if (_policies.EnablePersonalizedHintFadeRule || _policies.EnablePersonalizedConfusionBlockDifficultyRule)
         {
             try
@@ -319,9 +323,16 @@ public class RecursorIngestionService : IRecursorIngestionService
             {
                 _logger.LogWarning(ex, "Failed to fetch personalized signals for session {SessionId}. Skipping personalized rules.", session.SessionId);
             }
+
+            // Per-user threshold lookup is synchronous (in-memory) — always safe to call.
+            userThresholds = _userThresholdRepository.Get(session.UserId);
+            if (userThresholds is not null)
+                _logger.LogInformation(
+                    "Per-user policy thresholds active for userId '{UserId}' (session {SessionId}).",
+                    session.UserId, session.SessionId);
         }
 
-        var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet, shadowPrediction, personalizedSignals);
+        var adaptation = _adaptationPolicy.ApplyPolicy(session, catalog, hypothesisSet, shadowPrediction, personalizedSignals, userThresholds);
         if (adaptation is null)
         {
             _logger.LogInformation("No adaptation produced for session {SessionId}.", session.SessionId);

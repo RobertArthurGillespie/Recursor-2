@@ -22,6 +22,7 @@ using Kusto.Ingest;
 using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
+using NCATAIBlazorFrontendTest.Server.Recursor.Seeding;
 using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 using Kusto.Data.Net.Client;
@@ -35,6 +36,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -68,9 +70,10 @@ GlobalFFOptions.Configure(options => options.BinaryFolder = Path.Combine(AppCont
 
 // ── Recursor Engine ───────────────────────────────────────────────────────────
 
-// In-memory repositories (singleton — session state and sim catalog stay in memory).
+// In-memory repositories (singleton — session state, sim catalog, and user thresholds stay in memory).
 builder.Services.AddSingleton<ISessionRepository, SessionRepository>();
 builder.Services.AddSingleton<ISimCatalogRepository, SimCatalogRepository>();
+builder.Services.AddSingleton<IUserThresholdRepository, InMemoryUserThresholdRepository>();
 
 // Bind typed ADX options from the "Adx" config section.
 builder.Services.Configure<AdxOptions>(builder.Configuration.GetSection("Adx"));
@@ -196,6 +199,11 @@ static KustoConnectionStringBuilder BuildAdxCsb(string uri, AdxOptions opts) =>
 // ─────────────────────────────────────────────────────────────────────────────
 
 var app = builder.Build();
+
+// Phase 8D — seed test user thresholds for live validation.
+// Seeds two contrasting users (recursor-test-sensitive / recursor-test-tolerant)
+// so manual runs can exercise per-user threshold overrides without real ADX data.
+RecursorTestThresholdSeeder.Seed(app.Services.GetRequiredService<IUserThresholdRepository>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
