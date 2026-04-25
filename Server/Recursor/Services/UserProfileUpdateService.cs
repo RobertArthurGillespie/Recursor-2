@@ -5,13 +5,17 @@ using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
-// ── User Profile Update Service (Phase 6B) ────────────────────────────────────
+// ── User Profile Update Service (Phase 6B / 6C) ──────────────────────────────
 // Updates the longitudinal UserBehaviorProfile for a user after each produced
 // behavior window. Uses an incremental mean (Welford's online algorithm) so
 // running averages are computed in O(1) without replaying history.
 //
-// Only updates behavioral baseline fields. Threshold override fields are never
-// touched — those come from manual tuning or a future auto-calibration phase.
+// Update order each call:
+//   1. Update behavioral baseline fields (averages and rates).
+//   2. Call IUserThresholdDerivationService.DeriveThresholds — sets threshold
+//      override fields once TotalWindows >= 10 (Phase 6C).
+//   3. Upsert the updated profile into IUserProfileRepository.
+//   4. Append ADX per-window update row and full profile snapshot.
 //
 // Side effects:
 //   1. Upserts the updated profile into IUserProfileRepository (in-memory cache).
@@ -34,15 +38,18 @@ public class UserProfileUpdateService : IUserProfileUpdateService
 {
     private readonly IUserProfileRepository _profileRepository;
     private readonly IAdxIngestionService _adxIngestion;
+    private readonly IUserThresholdDerivationService _thresholdDerivation;
     private readonly ILogger<UserProfileUpdateService> _logger;
 
     public UserProfileUpdateService(
         IUserProfileRepository profileRepository,
         IAdxIngestionService adxIngestion,
+        IUserThresholdDerivationService thresholdDerivation,
         ILogger<UserProfileUpdateService> logger)
     {
         _profileRepository = profileRepository;
         _adxIngestion = adxIngestion;
+        _thresholdDerivation = thresholdDerivation;
         _logger = logger;
     }
 
@@ -109,7 +116,10 @@ public class UserProfileUpdateService : IUserProfileUpdateService
         profile.ConfusionRate      = IncrementalMean(profile.ConfusionRate,      hasConfusion      ? 1.0 : 0.0, newN);
         profile.HintDependenceRate = IncrementalMean(profile.HintDependenceRate, hasHintDependence ? 1.0 : 0.0, newN);
 
-        // Threshold overrides are never touched here — they come from manual tuning.
+        // ── Derive per-user threshold overrides (Phase 6C) ───────────────────
+        // Fires only when TotalWindows >= 10. Below that floor, threshold fields
+        // are left unchanged so global defaults remain active.
+        _thresholdDerivation.DeriveThresholds(profile);
 
         // ── Persist updated profile ───────────────────────────────────────────
         await _profileRepository.UpsertAsync(profile);

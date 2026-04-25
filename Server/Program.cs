@@ -74,7 +74,11 @@ GlobalFFOptions.Configure(options => options.BinaryFolder = Path.Combine(AppCont
 builder.Services.AddSingleton<ISessionRepository, SessionRepository>();
 builder.Services.AddSingleton<ISimCatalogRepository, SimCatalogRepository>();
 builder.Services.AddSingleton<IUserThresholdRepository, InMemoryUserThresholdRepository>();
-builder.Services.AddSingleton<IUserProfileRepository, InMemoryUserProfileRepository>();
+// Phase 6D: InMemoryUserProfileRepository is registered as itself so HybridUserProfileRepository
+// can inject it as the concrete fallback store.  IUserProfileRepository resolves to the hybrid
+// implementation, which queries ADX first and falls back to in-memory on miss or failure.
+builder.Services.AddSingleton<InMemoryUserProfileRepository>();
+builder.Services.AddSingleton<IUserProfileRepository, HybridUserProfileRepository>();
 
 // Bind typed ADX options from the "Adx" config section.
 builder.Services.Configure<AdxOptions>(builder.Configuration.GetSection("Adx"));
@@ -102,9 +106,11 @@ builder.Services.AddSingleton<IAdxIngestionService, AdxIngestionService>();
 builder.Services.AddSingleton<IAdxRecursorQueryService, AdxRecursorQueryService>();
 builder.Services.AddSingleton<IAdxModelEvaluationQueryService, AdxModelEvaluationQueryService>();
 builder.Services.AddSingleton<IAdxUserBaselineQueryService, AdxUserBaselineQueryService>();
+builder.Services.AddSingleton<IAdxUserProfileQueryService, AdxUserProfileQueryService>();
 builder.Services.AddSingleton<IAdxTrainingExportService, AdxTrainingExportService>();
 builder.Services.AddSingleton<IUserRelativeSignalService, UserRelativeSignalService>();
 builder.Services.AddSingleton<IUserRelativePolicyAdvisorService, UserRelativePolicyAdvisorService>();
+builder.Services.AddSingleton<IUserThresholdDerivationService, UserThresholdDerivationService>();
 builder.Services.AddSingleton<IUserProfileUpdateService, UserProfileUpdateService>();
 
 // Recursor pipeline services (scoped — one per request).

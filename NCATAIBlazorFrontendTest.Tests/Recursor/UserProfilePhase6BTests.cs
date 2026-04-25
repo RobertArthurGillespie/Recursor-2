@@ -30,7 +30,10 @@ public class UserProfilePhase6BTests
     private static UserProfileUpdateService CreateService(
         IUserProfileRepository repo,
         IAdxIngestionService? adx = null)
-        => new(repo, adx ?? new NoOpAdxIngestion(), NullLogger<UserProfileUpdateService>.Instance);
+        => new(repo,
+               adx ?? new NoOpAdxIngestion(),
+               new UserThresholdDerivationService(NullLogger<UserThresholdDerivationService>.Instance),
+               NullLogger<UserProfileUpdateService>.Instance);
 
     private static BehaviorProfileDocument MakeProfile(
         string sessionId = "s1",
