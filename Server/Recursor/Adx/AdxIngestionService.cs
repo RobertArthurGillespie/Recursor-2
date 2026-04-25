@@ -427,6 +427,11 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("ModelVersion",                     typeof(string));
         table.Columns.Add("InferenceMode",                    typeof(string));
 
+        // Phase 7A — confusion shadow prediction detail
+        table.Columns.Add("PredictedConfusionRisk",           typeof(string));
+        table.Columns.Add("ConfusionModelVersion",            typeof(string));
+        table.Columns.Add("ConfusionPredictionUtc",           typeof(DateTime));
+
         table.Rows.Add(
             row.SessionId,
             row.UserId,
@@ -468,7 +473,10 @@ public class AdxIngestionService : IAdxIngestionService
             row.PredHintDependenceProbability,
             row.PredStableMasteryProbability,
             row.ModelVersion,
-            row.InferenceMode
+            row.InferenceMode,
+            row.PredictedConfusionRisk,
+            row.ConfusionModelVersion,
+            row.ConfusionPredictionUtc ?? (object)DBNull.Value
         );
 
         return table;

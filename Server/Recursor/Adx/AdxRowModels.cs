@@ -147,6 +147,11 @@ public class BehaviorStateTrainingRow
     public double PredStableMasteryProbability { get; set; }
     public string ModelVersion { get; set; } = "";
     public string InferenceMode { get; set; } = "shadow";
+
+    // Confusion shadow prediction detail (Phase 7A — shadow/observability only).
+    public string PredictedConfusionRisk { get; set; } = "";
+    public string ConfusionModelVersion { get; set; } = "";
+    public DateTime? ConfusionPredictionUtc { get; set; }
 }
 
 // ── UserBehaviorProfiles row ──────────────────────────────────────────────────

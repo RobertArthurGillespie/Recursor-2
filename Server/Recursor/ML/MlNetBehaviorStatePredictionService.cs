@@ -61,6 +61,11 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         _confusionModel                = TryLoadModel(confusionModelPath,                "Confusion");
         _stableMasteryModel            = TryLoadModel(stableMasteryModelPath,            "StableMastery");
         _hintDependenceNextWindowModel = TryLoadModel(hintDependenceNextWindowModelPath, "HintDependenceNextWindow");
+
+        // Startup summary for confusion model (Phase 7A).
+        _logger.LogInformation(
+            "[MlNetBehaviorStatePredictionService] Confusion model status — configured={Configured} loaded={Loaded}.",
+            !string.IsNullOrWhiteSpace(confusionModelPath), _confusionModel is not null);
     }
 
     public Task<BehaviorStatePrediction?> PredictAsync(BehaviorStateFeatureVector input)
@@ -81,6 +86,23 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
             ModelVersion              = _modelVersion,
             InferenceMode             = "shadow-mlnet",
         };
+
+        // Confusion shadow detail (Phase 7A) — observability only, no adaptation effect.
+        if (_confusionModel is not null)
+        {
+            prediction.PredictedConfusionRisk  = ClassifyConfusionRisk(confusion);
+            prediction.ConfusionModelVersion   = _modelVersion + "-confusion";
+            prediction.ConfusionPredictionUtc  = DateTime.UtcNow;
+            _logger.LogInformation(
+                "[MlNetBehaviorStatePredictionService] Confusion shadow inference ran. " +
+                "ConfusionProbability={ConfusionProbability:0.000} PredictedConfusionRisk={PredictedConfusionRisk}",
+                confusion, prediction.PredictedConfusionRisk);
+        }
+        else
+        {
+            _logger.LogDebug(
+                "[MlNetBehaviorStatePredictionService] Confusion model not loaded — confusion shadow inference skipped.");
+        }
 
         // Next-window guardrail — populate only when the model is loaded.
         if (_hintDependenceNextWindowModel is not null)
@@ -208,6 +230,19 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
             return null;
         }
     }
+
+    /// <summary>
+    /// Converts a raw confusion probability into a categorical risk label.
+    /// Thresholds mirror the HintDependenceNextWindow guardrail bands (0.45 / 0.70).
+    /// Shadow-only — not used by the adaptation policy.
+    /// </summary>
+    private static string ClassifyConfusionRisk(float probability) => probability switch
+    {
+        >= 0.70f => "high",
+        >= 0.45f => "moderate",
+        >= 0.20f => "low",
+        _        => "none"
+    };
 
     public void Dispose()
     {

@@ -275,11 +275,19 @@ public class RecursorIngestionService : IRecursorIngestionService
             if (shadowPrediction is not null)
             {
                 _logger.LogInformation(
-                    " \"Shadow ML prediction generated. SessionId={SessionId} WindowIndex={WindowIndex} \" +\n    \"ModelVersion={ModelVersion} InferenceMode={InferenceMode} \" +\n    \"HintDependenceProbability={HintDependenceProbability} \" +\n    \"HintDependenceNextProbability={HintDependenceNextProbability} \" +\n    \"HintDependenceNextPredictedLabel={HintDependenceNextPredictedLabel} \" +\n    \"HintDependenceNextModelVersion={HintDependenceNextModelVersion}\"",
-                    session.SessionId, featureVector.WindowIndex, shadowPrediction.ModelVersion, shadowPrediction.InferenceMode, shadowPrediction?.HintDependenceProbability,
-    shadowPrediction?.HintDependenceNextProbability,
-    shadowPrediction?.HintDependenceNextPredictedLabel,
-    shadowPrediction?.HintDependenceNextModelVersion);
+                    "Shadow ML prediction generated. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                    "ModelVersion={ModelVersion} InferenceMode={InferenceMode} " +
+                    "ConfusionProbability={ConfusionProbability:0.000} PredictedConfusionRisk={PredictedConfusionRisk} " +
+                    "ConfusionModelVersion={ConfusionModelVersion} " +
+                    "HintDependenceProbability={HintDependenceProbability:0.000} " +
+                    "HintDependenceNextProbability={HintDependenceNextProbability}",
+                    session.SessionId, featureVector.WindowIndex,
+                    shadowPrediction.ModelVersion, shadowPrediction.InferenceMode,
+                    shadowPrediction.ConfusionProbability,
+                    shadowPrediction.PredictedConfusionRisk ?? "n/a",
+                    shadowPrediction.ConfusionModelVersion ?? "n/a",
+                    shadowPrediction.HintDependenceProbability,
+                    shadowPrediction.HintDependenceNextProbability);
             }
         }
         catch (Exception ex)
@@ -294,6 +302,14 @@ public class RecursorIngestionService : IRecursorIngestionService
             {
                 var trainingRow = AdxRowMapper.MapBehaviorStateTrainingRow(featureVector, hypothesisSet, shadowPrediction);
                 await _adxIngestion.IngestBehaviorStateTrainingRowAsync(trainingRow);
+                _logger.LogInformation(
+                    "Confusion shadow prediction persisted to ADX. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                    "ConfusionProbability={ConfusionProbability:0.000} PredictedConfusionRisk={PredictedConfusionRisk} " +
+                    "ConfusionPredictionUtc={ConfusionPredictionUtc}",
+                    session.SessionId, featureVector.WindowIndex,
+                    shadowPrediction?.ConfusionProbability ?? 0.0,
+                    shadowPrediction?.PredictedConfusionRisk ?? "n/a",
+                    shadowPrediction?.ConfusionPredictionUtc?.ToString("o") ?? "n/a");
             }
             catch (Exception ex)
             {

@@ -179,6 +179,11 @@ public static class AdxRowMapper
             PredStableMasteryProbability = prediction?.StableMasteryProbability ?? 0.0,
             ModelVersion = prediction?.ModelVersion ?? "",
             InferenceMode = prediction?.InferenceMode ?? "shadow",
+
+            // Confusion shadow detail (Phase 7A)
+            PredictedConfusionRisk  = prediction?.PredictedConfusionRisk ?? "",
+            ConfusionModelVersion   = prediction?.ConfusionModelVersion ?? "",
+            ConfusionPredictionUtc  = prediction?.ConfusionPredictionUtc,
         };
     }
 

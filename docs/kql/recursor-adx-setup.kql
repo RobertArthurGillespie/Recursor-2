@@ -193,33 +193,85 @@
 
 .alter-merge table BehaviorStateTrainingRows (UserId: string)
 
+// Phase 7A — confusion shadow prediction detail (add to any database provisioned before Phase 7A)
+.alter-merge table BehaviorStateTrainingRows (
+    PredictedConfusionRisk: string,
+    ConfusionModelVersion:  string,
+    ConfusionPredictionUtc: datetime
+)
+
 
 // ============================================================
-// Named CSV ingestion mapping note
+// Named CSV ingestion mappings
 // ============================================================
 // Three tables use named CSV mappings referenced by AdxIngestionService:
 //
-//   RawEvents              → RawEventsCsvMapping         (already includes UserId — no change)
-//   BehaviorProfiles       → BehaviorProfilesCsvMapping  (MUST be updated — see below)
-//   BehaviorStateTrainingRows → BehaviorStateTrainingRowsCsvMapping (MUST be updated — see below)
+//   RawEvents              → RawEventsCsvMapping         (positional, no change needed)
+//   BehaviorProfiles       → BehaviorProfilesCsvMapping  (8 columns, positional)
+//   BehaviorStateTrainingRows → BehaviorStateTrainingRowsCsvMapping (44 columns — see below)
 //
-// UserId was added as the second column (after SessionId) in the DataTable
-// builders for BehaviorProfiles and BehaviorStateTrainingRows. If the named
-// mappings currently exist in ADX and map columns by position, the column
-// positions have shifted and the mappings must be recreated.
-//
-// RECOMMENDED: drop and recreate each affected mapping using explicit
-// column-name references rather than positional ordinals, so future schema
-// additions do not require mapping changes.
-//
-// Example for BehaviorProfiles (adjust column list to match the full schema):
-//
-// .create-or-alter table BehaviorProfiles ingestion csv mapping 'BehaviorProfilesCsvMapping'
-// '[{"Name":"SessionId","Ordinal":0},{"Name":"UserId","Ordinal":1},
-//   {"Name":"WindowIndex","Ordinal":2},{"Name":"SourceFeatureWindowId","Ordinal":3},
-//   {"Name":"InterpreterVersion","Ordinal":4},{"Name":"DimensionScores","Ordinal":5},
-//   {"Name":"BehaviorScores","Ordinal":6},{"Name":"CreatedAtUtc","Ordinal":7}]'
-//
-// A similar mapping should be created for BehaviorStateTrainingRows covering
-// all 41 columns in the order defined in BuildBehaviorStateTrainingRowsTable.
+// The mapping below covers all 44 columns in the exact order produced by
+// BuildBehaviorStateTrainingRowsTable in AdxIngestionService.cs.
+// Ordinals 41-43 are the Phase 7A addition; run this to update a stale mapping.
 // ============================================================
+
+.create-or-alter table BehaviorStateTrainingRows ingestion csv mapping 'BehaviorStateTrainingRowsCsvMapping'
+'['
+'  {"Name":"SessionId",                       "Ordinal":0},'
+'  {"Name":"UserId",                          "Ordinal":1},'
+'  {"Name":"SimId",                           "Ordinal":2},'
+'  {"Name":"ScenarioId",                      "Ordinal":3},'
+'  {"Name":"WindowIndex",                     "Ordinal":4},'
+'  {"Name":"TaskType",                        "Ordinal":5},'
+'  {"Name":"CreatedAtUtc",                    "Ordinal":6},'
+'  {"Name":"AttentionDetection",              "Ordinal":7},'
+'  {"Name":"GoalUnderstanding",               "Ordinal":8},'
+'  {"Name":"ProcedureSequencing",             "Ordinal":9},'
+'  {"Name":"PaceRegulation",                  "Ordinal":10},'
+'  {"Name":"SelfCorrection",                  "Ordinal":11},'
+'  {"Name":"FeedbackResponsiveness",          "Ordinal":12},'
+'  {"Name":"SafetyCompliance",                "Ordinal":13},'
+'  {"Name":"TaskContinuity",                  "Ordinal":14},'
+'  {"Name":"ConfusionScore",                  "Ordinal":15},'
+'  {"Name":"HesitationScore",                 "Ordinal":16},'
+'  {"Name":"ImpulsivityScore",                "Ordinal":17},'
+'  {"Name":"HintDependenceScore",             "Ordinal":18},'
+'  {"Name":"GoalTrend",                       "Ordinal":19},'
+'  {"Name":"AttentionTrend",                  "Ordinal":20},'
+'  {"Name":"ConfusionTrend",                  "Ordinal":21},'
+'  {"Name":"HintDependenceTrend",             "Ordinal":22},'
+'  {"Name":"CurrentHintMode",                 "Ordinal":23},'
+'  {"Name":"CurrentDifficulty",               "Ordinal":24},'
+'  {"Name":"CurrentTimePressure",             "Ordinal":25},'
+'  {"Name":"CurrentErrorTolerance",           "Ordinal":26},'
+'  {"Name":"ConsecutiveStableMasteryWindows", "Ordinal":27},'
+'  {"Name":"ConsecutiveRelapseWindows",       "Ordinal":28},'
+'  {"Name":"EventCountInWindow",              "Ordinal":29},'
+'  {"Name":"ErrorCountInWindow",              "Ordinal":30},'
+'  {"Name":"HintCountInWindow",               "Ordinal":31},'
+'  {"Name":"StepCompleteCountInWindow",       "Ordinal":32},'
+'  {"Name":"LabelConfusion",                  "Ordinal":33},'
+'  {"Name":"LabelHintDependence",             "Ordinal":34},'
+'  {"Name":"LabelStableMastery",              "Ordinal":35},'
+'  {"Name":"PredConfusionProbability",        "Ordinal":36},'
+'  {"Name":"PredHintDependenceProbability",   "Ordinal":37},'
+'  {"Name":"PredStableMasteryProbability",    "Ordinal":38},'
+'  {"Name":"ModelVersion",                    "Ordinal":39},'
+'  {"Name":"InferenceMode",                   "Ordinal":40},'
+'  {"Name":"PredictedConfusionRisk",          "Ordinal":41},'
+'  {"Name":"ConfusionModelVersion",           "Ordinal":42},'
+'  {"Name":"ConfusionPredictionUtc",          "Ordinal":43}'
+']'
+
+// BehaviorProfiles mapping (8 columns)
+.create-or-alter table BehaviorProfiles ingestion csv mapping 'BehaviorProfilesCsvMapping'
+'['
+'  {"Name":"SessionId",             "Ordinal":0},'
+'  {"Name":"UserId",                "Ordinal":1},'
+'  {"Name":"WindowIndex",           "Ordinal":2},'
+'  {"Name":"SourceFeatureWindowId", "Ordinal":3},'
+'  {"Name":"InterpreterVersion",    "Ordinal":4},'
+'  {"Name":"DimensionScores",       "Ordinal":5},'
+'  {"Name":"BehaviorScores",        "Ordinal":6},'
+'  {"Name":"CreatedAtUtc",          "Ordinal":7}'
+']'

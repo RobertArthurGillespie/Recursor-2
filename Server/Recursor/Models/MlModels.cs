@@ -62,4 +62,11 @@ public class BehaviorStatePrediction
     public double? HintDependenceNextProbability { get; set; }
     public bool? HintDependenceNextPredictedLabel { get; set; }
     public string? HintDependenceNextModelVersion { get; set; }
+
+    // Confusion shadow prediction detail (Phase 7A — shadow/observability only).
+    // Null when the confusion model is not configured, not found, or inference failed.
+    // Does not affect adaptation decisions.
+    public string? PredictedConfusionRisk { get; set; }    // "none" | "low" | "moderate" | "high"
+    public string? ConfusionModelVersion { get; set; }
+    public DateTime? ConfusionPredictionUtc { get; set; }
 }
