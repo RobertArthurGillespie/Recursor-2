@@ -85,6 +85,9 @@ public class AdaptationDecisionRow
     public double? HintDependenceNextProbability { get; set; }
     public bool NextHintDependenceGuardrailTriggered { get; set; }
     public string? NextHintDependenceGuardrailLevel { get; set; }
+
+    // Phase 8A guardrail notes — null when the modifier did not fire or was disabled.
+    public string? Phase8AGuardrailNotes { get; set; }
 }
 
 public class BehaviorStateTrainingRow
@@ -152,6 +155,19 @@ public class BehaviorStateTrainingRow
     public string PredictedConfusionRisk { get; set; } = "";
     public string ConfusionModelVersion { get; set; } = "";
     public DateTime? ConfusionPredictionUtc { get; set; }
+
+    // Stable mastery shadow prediction detail (Phase 7B — shadow/observability only).
+    public string PredictedStableMasteryState { get; set; } = "";
+    public string StableMasteryModelVersion { get; set; } = "";
+    public DateTime? StableMasteryPredictionUtc { get; set; }
+
+    // Multi-signal guardrail summary (Phase 7C — shadow/observability only).
+    public string GuardrailOverallBehaviorState { get; set; } = "";
+    public bool GuardrailConfusionSignalAgreement { get; set; }
+    public bool GuardrailStableMasterySignalAgreement { get; set; }
+    public string GuardrailHintDependenceRiskLevel { get; set; } = "";
+    public int GuardrailConflictCount { get; set; }
+    public string GuardrailWarnings { get; set; } = "";  // pipe-separated; use split(" | ") in KQL
 }
 
 // ── UserBehaviorProfiles row ──────────────────────────────────────────────────

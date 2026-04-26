@@ -69,4 +69,11 @@ public class BehaviorStatePrediction
     public string? PredictedConfusionRisk { get; set; }    // "none" | "low" | "moderate" | "high"
     public string? ConfusionModelVersion { get; set; }
     public DateTime? ConfusionPredictionUtc { get; set; }
+
+    // Stable mastery shadow prediction detail (Phase 7B — shadow/observability only).
+    // Null when the stable mastery model is not configured, not found, or inference failed.
+    // Does not affect adaptation decisions.
+    public string? PredictedStableMasteryState { get; set; }  // "none" | "emerging" | "stable" | "strong"
+    public string? StableMasteryModelVersion { get; set; }
+    public DateTime? StableMasteryPredictionUtc { get; set; }
 }

@@ -344,6 +344,7 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("HintDependenceNextProbability",        typeof(double));
         table.Columns.Add("NextHintDependenceGuardrailTriggered", typeof(bool));
         table.Columns.Add("NextHintDependenceGuardrailLevel",     typeof(string));
+        table.Columns.Add("Phase8AGuardrailNotes",                typeof(string));
 
         table.Rows.Add(
             row.SessionId,
@@ -358,7 +359,8 @@ public class AdxIngestionService : IAdxIngestionService
             row.CreatedAtUtc,
             row.HintDependenceNextProbability ?? (object)DBNull.Value,
             row.NextHintDependenceGuardrailTriggered,
-            row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value
+            row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value,
+            row.Phase8AGuardrailNotes ?? (object)DBNull.Value
         );
 
         return table;
@@ -432,6 +434,19 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("ConfusionModelVersion",            typeof(string));
         table.Columns.Add("ConfusionPredictionUtc",           typeof(DateTime));
 
+        // Phase 7B — stable mastery shadow prediction detail
+        table.Columns.Add("PredictedStableMasteryState",      typeof(string));
+        table.Columns.Add("StableMasteryModelVersion",        typeof(string));
+        table.Columns.Add("StableMasteryPredictionUtc",       typeof(DateTime));
+
+        // Phase 7C — multi-signal guardrail summary
+        table.Columns.Add("GuardrailOverallBehaviorState",        typeof(string));
+        table.Columns.Add("GuardrailConfusionSignalAgreement",     typeof(bool));
+        table.Columns.Add("GuardrailStableMasterySignalAgreement", typeof(bool));
+        table.Columns.Add("GuardrailHintDependenceRiskLevel",      typeof(string));
+        table.Columns.Add("GuardrailConflictCount",                typeof(int));
+        table.Columns.Add("GuardrailWarnings",                     typeof(string));
+
         table.Rows.Add(
             row.SessionId,
             row.UserId,
@@ -476,7 +491,16 @@ public class AdxIngestionService : IAdxIngestionService
             row.InferenceMode,
             row.PredictedConfusionRisk,
             row.ConfusionModelVersion,
-            row.ConfusionPredictionUtc ?? (object)DBNull.Value
+            row.ConfusionPredictionUtc ?? (object)DBNull.Value,
+            row.PredictedStableMasteryState,
+            row.StableMasteryModelVersion,
+            row.StableMasteryPredictionUtc ?? (object)DBNull.Value,
+            row.GuardrailOverallBehaviorState,
+            row.GuardrailConfusionSignalAgreement,
+            row.GuardrailStableMasterySignalAgreement,
+            row.GuardrailHintDependenceRiskLevel,
+            row.GuardrailConflictCount,
+            row.GuardrailWarnings
         );
 
         return table;

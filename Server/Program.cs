@@ -123,6 +123,8 @@ builder.Services.AddScoped<IRecursorSessionService, RecursorSessionService>();
 builder.Services.AddScoped<IBehaviorScoringService, BehaviorScoringService>();
 builder.Services.AddScoped<IExplanationGenerationService, AzureOpenAiExplanationService>();
 builder.Services.AddScoped<IBehaviorStateFeatureVectorBuilder, BehaviorStateFeatureVectorBuilder>();
+builder.Services.AddScoped<IMultiSignalGuardrailService, MultiSignalGuardrailService>();
+builder.Services.AddScoped<IPhase8AGuardrailModifierService, Phase8AGuardrailModifierService>();
 // Recursor ML prediction: use real ML.NET service if at least one model file is configured
 // and present; otherwise fall back to the no-op shadow service so the app starts without
 // any trained models.

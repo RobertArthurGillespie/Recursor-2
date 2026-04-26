@@ -66,6 +66,11 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         _logger.LogInformation(
             "[MlNetBehaviorStatePredictionService] Confusion model status — configured={Configured} loaded={Loaded}.",
             !string.IsNullOrWhiteSpace(confusionModelPath), _confusionModel is not null);
+
+        // Startup summary for stable mastery model (Phase 7B).
+        _logger.LogInformation(
+            "[MlNetBehaviorStatePredictionService] StableMastery model status — configured={Configured} loaded={Loaded}.",
+            !string.IsNullOrWhiteSpace(stableMasteryModelPath), _stableMasteryModel is not null);
     }
 
     public Task<BehaviorStatePrediction?> PredictAsync(BehaviorStateFeatureVector input)
@@ -102,6 +107,23 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         {
             _logger.LogDebug(
                 "[MlNetBehaviorStatePredictionService] Confusion model not loaded — confusion shadow inference skipped.");
+        }
+
+        // StableMastery shadow detail (Phase 7B) — observability only, no adaptation effect.
+        if (_stableMasteryModel is not null)
+        {
+            prediction.PredictedStableMasteryState = ClassifyStableMasteryState(mastery);
+            prediction.StableMasteryModelVersion   = _modelVersion + "-stablemastery";
+            prediction.StableMasteryPredictionUtc  = DateTime.UtcNow;
+            _logger.LogInformation(
+                "[MlNetBehaviorStatePredictionService] StableMastery shadow inference ran. " +
+                "StableMasteryProbability={StableMasteryProbability:0.000} PredictedStableMasteryState={PredictedStableMasteryState}",
+                mastery, prediction.PredictedStableMasteryState);
+        }
+        else
+        {
+            _logger.LogDebug(
+                "[MlNetBehaviorStatePredictionService] StableMastery model not loaded — stable mastery shadow inference skipped.");
         }
 
         // Next-window guardrail — populate only when the model is loaded.
@@ -241,6 +263,18 @@ public sealed class MlNetBehaviorStatePredictionService : IBehaviorStatePredicti
         >= 0.70f => "high",
         >= 0.45f => "moderate",
         >= 0.20f => "low",
+        _        => "none"
+    };
+
+    /// <summary>
+    /// Converts a raw stable mastery probability into a categorical state label.
+    /// Shadow-only — not used by the adaptation policy.
+    /// </summary>
+    private static string ClassifyStableMasteryState(float probability) => probability switch
+    {
+        >= 0.80f => "strong",
+        >= 0.60f => "stable",
+        >= 0.35f => "emerging",
         _        => "none"
     };
 

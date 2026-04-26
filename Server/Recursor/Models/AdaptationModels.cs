@@ -17,6 +17,10 @@ public class AdaptationDecisionDocument
     public double? HintDependenceNextProbability { get; set; }
     public bool NextHintDependenceGuardrailTriggered { get; set; }
     public string? NextHintDependenceGuardrailLevel { get; set; }
+
+    // Phase 8A guardrail notes — null when the modifier did not fire or was disabled.
+    // Pipe-separated list of blocked actions and the triggering rule/field.
+    public string? Phase8AGuardrailNotes { get; set; }
 }
 
 public class ParameterChange

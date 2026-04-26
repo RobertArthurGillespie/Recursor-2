@@ -125,6 +125,17 @@ public class RecursorPoliciesOptions
     /// </summary>
     public double PersonalizedDifficultyAccelerationDelta { get; set; } = 0.08;
 
+    // ── Phase 8A: ML-assisted gated guardrail modifier ───────────────────────
+
+    /// <summary>
+    /// When true, the Phase 8A post-policy guardrail modifier is active.
+    /// The modifier reviews each proposed adaptation and removes parameter changes
+    /// that violate the four Phase 8A safety rules (conflicted-state veto,
+    /// high-confusion protection, strong-mastery permission, hint-dependence protection).
+    /// It never creates new adaptations.  Default: false.
+    /// </summary>
+    public bool EnablePhase8AGuardrailModifier { get; set; } = false;
+
     // ── Baseline hint-progression streak thresholds ───────────────────────────
 
     /// <summary>

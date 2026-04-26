@@ -109,13 +109,15 @@ public static class AdxRowMapper
             HintDependenceNextProbability = doc.HintDependenceNextProbability,
             NextHintDependenceGuardrailTriggered = doc.NextHintDependenceGuardrailTriggered,
             NextHintDependenceGuardrailLevel = doc.NextHintDependenceGuardrailLevel,
+            Phase8AGuardrailNotes = doc.Phase8AGuardrailNotes,
         };
     }
 
     public static BehaviorStateTrainingRow MapBehaviorStateTrainingRow(
         BehaviorStateFeatureVector featureVector,
         HypothesisSetDocument hypothesisSet,
-        BehaviorStatePrediction? prediction)
+        BehaviorStatePrediction? prediction,
+        MultiSignalGuardrailSummary? guardrail = null)
     {
         var labels = hypothesisSet.Hypotheses.Select(h => h.Label).ToHashSet();
 
@@ -184,6 +186,21 @@ public static class AdxRowMapper
             PredictedConfusionRisk  = prediction?.PredictedConfusionRisk ?? "",
             ConfusionModelVersion   = prediction?.ConfusionModelVersion ?? "",
             ConfusionPredictionUtc  = prediction?.ConfusionPredictionUtc,
+
+            // Stable mastery shadow detail (Phase 7B)
+            PredictedStableMasteryState = prediction?.PredictedStableMasteryState ?? "",
+            StableMasteryModelVersion   = prediction?.StableMasteryModelVersion ?? "",
+            StableMasteryPredictionUtc  = prediction?.StableMasteryPredictionUtc,
+
+            // Multi-signal guardrail summary (Phase 7C)
+            GuardrailOverallBehaviorState        = guardrail?.OverallBehaviorState ?? "",
+            GuardrailConfusionSignalAgreement     = guardrail?.ConfusionSignalAgreement ?? false,
+            GuardrailStableMasterySignalAgreement = guardrail?.StableMasterySignalAgreement ?? false,
+            GuardrailHintDependenceRiskLevel      = guardrail?.HintDependenceRiskLevel ?? "",
+            GuardrailConflictCount                = guardrail?.GuardrailConflictCount ?? 0,
+            GuardrailWarnings                     = guardrail is not null
+                ? string.Join(" | ", guardrail.GuardrailWarnings)
+                : "",
         };
     }
 

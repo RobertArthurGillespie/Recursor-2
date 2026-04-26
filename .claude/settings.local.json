@@ -6,7 +6,8 @@
       "Bash(xargs grep *)",
       "Bash(grep \"\\\\.cs$\")",
       "Bash(dotnet sln add *)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "Bash(awk ' *)"
     ]
   }
 }

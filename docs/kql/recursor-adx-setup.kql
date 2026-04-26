@@ -200,6 +200,29 @@
     ConfusionPredictionUtc: datetime
 )
 
+// Phase 7B — stable mastery shadow prediction detail (add to any database provisioned before Phase 7B)
+.alter-merge table BehaviorStateTrainingRows (
+    PredictedStableMasteryState: string,
+    StableMasteryModelVersion:   string,
+    StableMasteryPredictionUtc:  datetime
+)
+
+// Phase 7C — multi-signal guardrail summary (add to any database provisioned before Phase 7C)
+.alter-merge table BehaviorStateTrainingRows (
+    GuardrailOverallBehaviorState:        string,
+    GuardrailConfusionSignalAgreement:    bool,
+    GuardrailStableMasterySignalAgreement: bool,
+    GuardrailHintDependenceRiskLevel:     string,
+    GuardrailConflictCount:               int,
+    GuardrailWarnings:                    string
+)
+
+// Phase 8A — ML-assisted gated guardrail modifier (add to any database provisioned before Phase 8A)
+// Null for adaptation decisions produced before Phase 8A was enabled.
+.alter-merge table AdaptationDecisions_v2 (
+    Phase8AGuardrailNotes: string
+)
+
 
 // ============================================================
 // Named CSV ingestion mappings
@@ -208,11 +231,13 @@
 //
 //   RawEvents              → RawEventsCsvMapping         (positional, no change needed)
 //   BehaviorProfiles       → BehaviorProfilesCsvMapping  (8 columns, positional)
-//   BehaviorStateTrainingRows → BehaviorStateTrainingRowsCsvMapping (44 columns — see below)
+//   BehaviorStateTrainingRows → BehaviorStateTrainingRowsCsvMapping (47 columns — see below)
 //
-// The mapping below covers all 44 columns in the exact order produced by
+// The mapping below covers all 53 columns in the exact order produced by
 // BuildBehaviorStateTrainingRowsTable in AdxIngestionService.cs.
-// Ordinals 41-43 are the Phase 7A addition; run this to update a stale mapping.
+// Ordinals 41-43 are the Phase 7A addition.
+// Ordinals 44-46 are the Phase 7B addition.
+// Ordinals 47-52 are the Phase 7C addition; run this to update a stale mapping.
 // ============================================================
 
 .create-or-alter table BehaviorStateTrainingRows ingestion csv mapping 'BehaviorStateTrainingRowsCsvMapping'
@@ -260,7 +285,16 @@
 '  {"Name":"InferenceMode",                   "Ordinal":40},'
 '  {"Name":"PredictedConfusionRisk",          "Ordinal":41},'
 '  {"Name":"ConfusionModelVersion",           "Ordinal":42},'
-'  {"Name":"ConfusionPredictionUtc",          "Ordinal":43}'
+'  {"Name":"ConfusionPredictionUtc",          "Ordinal":43},'
+'  {"Name":"PredictedStableMasteryState",          "Ordinal":44},'
+'  {"Name":"StableMasteryModelVersion",            "Ordinal":45},'
+'  {"Name":"StableMasteryPredictionUtc",           "Ordinal":46},'
+'  {"Name":"GuardrailOverallBehaviorState",        "Ordinal":47},'
+'  {"Name":"GuardrailConfusionSignalAgreement",    "Ordinal":48},'
+'  {"Name":"GuardrailStableMasterySignalAgreement","Ordinal":49},'
+'  {"Name":"GuardrailHintDependenceRiskLevel",     "Ordinal":50},'
+'  {"Name":"GuardrailConflictCount",               "Ordinal":51},'
+'  {"Name":"GuardrailWarnings",                    "Ordinal":52}'
 ']'
 
 // BehaviorProfiles mapping (8 columns)

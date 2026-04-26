@@ -42,6 +42,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IUserThresholdRepository _userThresholdRepository;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly IUserProfileUpdateService _userProfileUpdateService;
+    private readonly IMultiSignalGuardrailService _multiSignalGuardrail;
+    private readonly IPhase8AGuardrailModifierService _phase8aModifier;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -60,6 +62,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     IUserThresholdRepository userThresholdRepository,
     IUserProfileRepository userProfileRepository,
     IUserProfileUpdateService userProfileUpdateService,
+    IMultiSignalGuardrailService multiSignalGuardrail,
+    IPhase8AGuardrailModifierService phase8aModifier,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -77,6 +81,8 @@ public class RecursorIngestionService : IRecursorIngestionService
         _userThresholdRepository = userThresholdRepository;
         _userProfileRepository = userProfileRepository;
         _userProfileUpdateService = userProfileUpdateService;
+        _multiSignalGuardrail = multiSignalGuardrail;
+        _phase8aModifier = phase8aModifier;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -295,21 +301,48 @@ public class RecursorIngestionService : IRecursorIngestionService
             _logger.LogWarning(ex, "Shadow ML prediction failed for session {SessionId}. Continuing pipeline.", session.SessionId);
         }
 
+        // Multi-signal guardrail summary — observability only, never blocks or changes adaptation.
+        // Computed here so the result can be persisted in-line with the training row below.
+        // personalizedSignals are not yet available at this point; user-relative warnings are
+        // deferred until a future phase restructures that fetch earlier in the pipeline.
+        MultiSignalGuardrailSummary? guardrailSummary = null;
+        try
+        {
+            guardrailSummary = _multiSignalGuardrail.Evaluate(hypothesisSet, shadowPrediction, null);
+            _logger.LogInformation(
+                "Multi-signal guardrail summary. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                "OverallBehaviorState={OverallBehaviorState} " +
+                "ConfusionAgreement={ConfusionAgreement} MasteryAgreement={MasteryAgreement} " +
+                "HintDependenceRisk={HintDependenceRisk} ConflictCount={ConflictCount} " +
+                "Warnings=[{Warnings}]",
+                session.SessionId, featureVector?.WindowIndex ?? -1,
+                guardrailSummary.OverallBehaviorState,
+                guardrailSummary.ConfusionSignalAgreement,
+                guardrailSummary.StableMasterySignalAgreement,
+                guardrailSummary.HintDependenceRiskLevel,
+                guardrailSummary.GuardrailConflictCount,
+                string.Join(" | ", guardrailSummary.GuardrailWarnings));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Multi-signal guardrail evaluation failed for session {SessionId}. Continuing pipeline.", session.SessionId);
+        }
+
         // Training-row ingestion — additive only, never blocks or changes adaptation.
         if (featureVector is not null)
         {
             try
             {
-                var trainingRow = AdxRowMapper.MapBehaviorStateTrainingRow(featureVector, hypothesisSet, shadowPrediction);
+                var trainingRow = AdxRowMapper.MapBehaviorStateTrainingRow(featureVector, hypothesisSet, shadowPrediction, guardrailSummary);
                 await _adxIngestion.IngestBehaviorStateTrainingRowAsync(trainingRow);
                 _logger.LogInformation(
-                    "Confusion shadow prediction persisted to ADX. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                    "Training row persisted to ADX. SessionId={SessionId} WindowIndex={WindowIndex} " +
                     "ConfusionProbability={ConfusionProbability:0.000} PredictedConfusionRisk={PredictedConfusionRisk} " +
-                    "ConfusionPredictionUtc={ConfusionPredictionUtc}",
+                    "GuardrailState={GuardrailState}",
                     session.SessionId, featureVector.WindowIndex,
                     shadowPrediction?.ConfusionProbability ?? 0.0,
                     shadowPrediction?.PredictedConfusionRisk ?? "n/a",
-                    shadowPrediction?.ConfusionPredictionUtc?.ToString("o") ?? "n/a");
+                    guardrailSummary?.OverallBehaviorState ?? "n/a");
             }
             catch (Exception ex)
             {
@@ -399,6 +432,45 @@ public class RecursorIngestionService : IRecursorIngestionService
                 AdaptationProduced = false,
                 HypothesisLabels = hypothesisLabels,
                 Explanation = explanationNoAdaptation
+            };
+        }
+
+        // Phase 8A: post-policy safety modifier.
+        // Reviews the proposed adaptation and removes parameter changes that violate
+        // Phase 8A guardrail rules (conflicted/struggling veto, high-confusion block,
+        // strong-mastery permission, hint-dependence protection).
+        // Only fires when enabled AND a guardrail summary is available.
+        // Never creates new changes. Does not affect adaptation if flag is off.
+        if (_policies.EnablePhase8AGuardrailModifier && guardrailSummary is not null)
+        {
+            adaptation = _phase8aModifier.Apply(adaptation, guardrailSummary, shadowPrediction);
+        }
+
+        // If Phase 8A vetoed every parameter change, ingest the audit record but
+        // treat the result as "no adaptation" so the sim is not told to do anything.
+        if (adaptation.Phase8AGuardrailNotes is not null && adaptation.ParameterChanges.Count == 0)
+        {
+            _logger.LogInformation(
+                "Phase 8A vetoed all parameter changes for session {SessionId}. " +
+                "Ingesting audit record. Notes={Notes}",
+                session.SessionId, adaptation.Phase8AGuardrailNotes);
+            try
+            {
+                await _adxIngestion.IngestAdaptationDecisionAsync(AdxRowMapper.MapAdaptationDecision(adaptation));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to ingest Phase 8A fully-vetoed adaptation for session {SessionId}.",
+                    session.SessionId);
+            }
+            var explanationVetoed = await _explanationService.GenerateExplanationAsync(
+                session, behaviorProfile, hypothesisSet, null);
+            return new IngestionResult
+            {
+                AdaptationProduced = false,
+                HypothesisLabels = hypothesisLabels,
+                Explanation = explanationVetoed
             };
         }
 
