@@ -111,6 +111,8 @@ public static class AdxRowMapper
             NextHintDependenceGuardrailTriggered = doc.NextHintDependenceGuardrailTriggered,
             NextHintDependenceGuardrailLevel = doc.NextHintDependenceGuardrailLevel,
             Phase8AGuardrailNotes = doc.Phase8AGuardrailNotes,
+            Phase8EReliabilityNotes = doc.Phase8EReliabilityNotes,
+            Phase8EReliabilityMode = doc.Phase8EReliabilityMode,
         };
     }
 

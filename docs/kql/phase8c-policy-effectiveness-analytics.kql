@@ -1,0 +1,627 @@
+// ============================================================
+// Phase 8C — Policy Effectiveness Analytics
+// ============================================================
+// Read-only KQL analytics for evaluating which adaptation
+// intervention families are associated with improved, neutral,
+// or worsened next-window learner outcomes.
+//
+// Prerequisites:
+//   - Phase 8B is running: AdaptationEffectiveness is being
+//     populated (one row per evaluated window pair).
+//   - BehaviorStateTrainingRows is populated with Phase 7A/7B/7C
+//     columns: PredictedConfusionRisk, PredictedStableMasteryState,
+//     GuardrailOverallBehaviorState, GuardrailHintDependenceRiskLevel.
+//
+// ANALYTICS ONLY — no C# behavior changes in this phase.
+// Run each query block individually in the ADX Web UI.
+//
+// Outcome classification (set by AdaptationEffectivenessService):
+//   "improved"  — ConfusionDelta <= -0.05
+//   "worsened"  — ConfusionDelta >= +0.05
+//   "neutral"   — otherwise
+//
+// Delta sign conventions (next - pre):
+//   ConfusionDelta        < 0 is good (confusion dropped)
+//   HintDependenceDelta   < 0 is good (dependence dropped)
+//   GoalUnderstandingDelta> 0 is good (understanding rose)
+//
+// Known intervention families (from AdaptationPolicyService):
+//   Support:    difficulty-reduction, pace-support, scaffold-hints,
+//               scaffold-error-tolerance, distractor-reduction,
+//               hint-restore-minimal
+//   Fade:       hint-fade, hint-remove, hint-reduction
+//   Challenge:  difficulty-increase, pace-increase
+// ============================================================
+
+
+// ============================================================
+// Section 1: Core Outcome Analytics
+// ============================================================
+
+// ── Q1: Full outcome summary per intervention family ─────────
+// Primary leaderboard for intervention family health.
+// Each row in AdaptationEffectiveness may cover multiple families,
+// so mv-expand duplicates the outcome once per family — this is
+// intentional and correct for per-family attribution.
+//
+// How to interpret:
+//   ImprovementRate > 0.50 with Total >= 30 is the baseline
+//   threshold for considering a family "policy-ready" (see Q15).
+//   AvgConfusionDelta < 0 confirms net confusion reduction.
+//   P25/P75 spread shows variability: a wide positive P75 means
+//   the family harms a significant minority even when the median
+//   is negative.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    Total                     = count(),
+    Improved                  = countif(Outcome == "improved"),
+    Neutral                   = countif(Outcome == "neutral"),
+    Worsened                  = countif(Outcome == "worsened"),
+    AvgConfusionDelta         = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta    = round(avg(HintDependenceDelta), 4),
+    AvgGoalUnderstandingDelta = round(avg(GoalUnderstandingDelta), 4),
+    P25ConfusionDelta         = round(percentile(ConfusionDelta, 25), 4),
+    P75ConfusionDelta         = round(percentile(ConfusionDelta, 75), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3),
+    NeutralRate     = round(todouble(Neutral)  / Total, 3)
+| project
+    InterventionFamily, Total,
+    ImprovementRate, WorseningRate, NeutralRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta,
+    P25ConfusionDelta, P75ConfusionDelta
+| order by ImprovementRate desc
+
+
+// ── Q2: Best-performing intervention families ────────────────
+// Families passing minimum sample and dual threshold filters.
+//
+// Filters applied:
+//   Total >= 10       — avoids noise from sparse families
+//   ImprovementRate > 0.40  — majority of evaluations improved
+//   WorseningRate < 0.25    — harm rate is acceptably low
+//
+// How to interpret:
+//   This is the candidate list for policy promotion.
+//   Cross-reference with Q11 (difficulty safety by mastery state)
+//   and Q8 (hint safety by dependence risk) before promoting
+//   any family to an active policy rule.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| where Total >= 10
+| where ImprovementRate > 0.40
+| where WorseningRate < 0.25
+| project InterventionFamily, Total, ImprovementRate, WorseningRate, AvgConfusionDelta
+| order by ImprovementRate desc
+| take 10
+
+
+// ── Q3: Worst-performing intervention families ───────────────
+// Families with the highest worsening rates or most positive
+// average confusion delta.
+//
+// How to interpret:
+//   WorseningRate > 0.30 or AvgConfusionDelta > 0 are warning
+//   signals warranting guardrail review.
+//   Do not act on this data until Total >= 20; small sample
+//   results are noisy.
+//   Cross-reference with Q5 (by learner state): a high worsening
+//   rate may be limited to one learner-state segment, in which
+//   case a state-conditional guardrail is more surgical than
+//   suppressing the whole family.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| where Total >= 10
+| order by WorseningRate desc, AvgConfusionDelta desc
+| take 10
+
+
+// ── Q4: Outcomes by parameter change (parameter + operation) ─
+// Bridges interval-family names to the actual sim knobs.
+// A family can map to multiple parameters; this shows which
+// specific knob movement is responsible for good or bad outcomes.
+//
+// How to interpret:
+//   If "difficulty / decrease" shows great outcomes but
+//   "hintMode / set" (from the same confusion_pattern family)
+//   shows poor ones, a future guardrail can suppress the
+//   hint change without suppressing the difficulty change.
+//   ParameterChanges is stored as a dynamic JSON array of
+//   {Parameter, Operation, Value} objects.
+
+AdaptationEffectiveness
+| mv-expand pc = ParameterChanges
+| extend
+    Parameter = tostring(pc.Parameter),
+    Operation = tostring(pc.Operation)
+| summarize
+    Total                     = count(),
+    Improved                  = countif(Outcome == "improved"),
+    Neutral                   = countif(Outcome == "neutral"),
+    Worsened                  = countif(Outcome == "worsened"),
+    AvgConfusionDelta         = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta    = round(avg(HintDependenceDelta), 4),
+    AvgGoalUnderstandingDelta = round(avg(GoalUnderstandingDelta), 4)
+  by Parameter, Operation
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| project Parameter, Operation, Total, ImprovementRate, WorseningRate,
+          AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta
+| order by ImprovementRate desc
+
+
+// ============================================================
+// Section 2: Learner-State Segmented Analytics
+// ============================================================
+// Join key:
+//   AdaptationEffectiveness.SessionId  + AppliedAtWindowIndex
+//   BehaviorStateTrainingRows.SessionId + WindowIndex
+//
+// This retrieves the guardrail state AT THE MOMENT the adaptation
+// was applied, giving context for why the policy fired and
+// whether the learner state prediction was accurate.
+// ============================================================
+
+
+// ── Q5: Outcomes by GuardrailOverallBehaviorState ───────────
+// Shows how each intervention family performs when the learner
+// was in each overall behavior state at decision time.
+//
+// How to interpret:
+//   Support families (scaffold-hints, difficulty-reduction) should
+//   show higher improvement rates in "struggling" / "confused" states.
+//   Challenge families (difficulty-increase, hint-fade) should show
+//   higher improvement rates in "stable_mastery" states.
+//   If a challenge family shows high worsening in "stable_mastery",
+//   the mastery prediction may be noisy — check Q7.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailOverallBehaviorState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| order by GuardrailOverallBehaviorState asc, ImprovementRate desc
+
+
+// ── Q6: Outcomes by PredictedConfusionRisk ──────────────────
+// Segments results by the shadow confusion risk level ("low",
+// "moderate", "high") at the time the adaptation was applied.
+//
+// How to interpret:
+//   Confusion-support families should show higher improvement rates
+//   when PredictedConfusionRisk = "high".
+//   If difficulty-increase shows WorseningRate > 0.25 when
+//   PredictedConfusionRisk = "high", the Phase 8A guardrail
+//   threshold may need tightening.
+//   If scaffold-hints shows poor outcomes when confusion = "low",
+//   it may be over-firing on non-confused learners.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        PredictedConfusionRisk;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), PredictedConfusionRisk
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| order by PredictedConfusionRisk asc, ImprovementRate desc
+
+
+// ── Q7: Outcomes by PredictedStableMasteryState ─────────────
+// Segments results by the shadow mastery prediction at decision time.
+//
+// How to interpret:
+//   difficulty-increase and hint-fade/hint-remove should show
+//   good outcomes when PredictedStableMasteryState = "stable_mastery".
+//   If they show WorseningRate > 0.20 in "stable_mastery" rows,
+//   the mastery prediction is not reliable enough to gate
+//   challenge-escalation decisions — do not promote to policy yet.
+//   If they show good outcomes in "not_mastery" rows, the policy
+//   may already be over-triggering those families.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        PredictedStableMasteryState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), PredictedStableMasteryState
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| order by PredictedStableMasteryState asc, ImprovementRate desc
+
+
+// ── Q8: Hint-family outcomes by GuardrailHintDependenceRiskLevel
+// Filters to hint-related families only, segmented by the hint
+// dependence guardrail level at decision time.
+//
+// How to interpret:
+//   When GuardrailHintDependenceRiskLevel = "high":
+//     - hint-fade / hint-remove should show poor outcomes
+//       (confirming the guardrail was correct to block them).
+//     - scaffold-hints / hint-restore-minimal should show
+//       improved outcomes (support was needed).
+//   If hint-fade shows good outcomes at "high" dependence risk,
+//   the guardrail is over-conservative — adjust the threshold.
+//   If scaffold-hints shows poor outcomes at "low" dependence risk,
+//   it is being applied when the learner does not need support.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailHintDependenceRiskLevel;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| where tostring(family) in (
+    "hint-fade", "hint-remove", "hint-reduction",
+    "hint-restore-minimal", "scaffold-hints"
+  )
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    Total                  = count(),
+    Improved               = countif(Outcome == "improved"),
+    Worsened               = countif(Outcome == "worsened"),
+    AvgConfusionDelta      = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta = round(avg(HintDependenceDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailHintDependenceRiskLevel
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| order by GuardrailHintDependenceRiskLevel asc, InterventionFamily asc
+
+
+// ============================================================
+// Section 3: Safety-Specific Queries
+// ============================================================
+
+// ── Q9: Hint-reduction safety analysis ──────────────────────
+// Covers hint-fade, hint-remove, hint-reduction,
+// hint-restore-minimal, and scaffold-hints.
+//
+// Hypothesis being tested:
+//   hint-fade (guided → minimal) and hint-remove (minimal → off)
+//   are aggressive reductions and should only fire safely
+//   during stable mastery windows.
+//   hint-restore-minimal adds support back — it should show
+//   near-zero or negative HintDependenceDelta (dependence drops
+//   once support is restored and learner reorients).
+//
+// Warning signals:
+//   hint-fade WorseningRate > 0.25 → guardrail threshold too loose
+//   hint-remove AvgHintDependenceDelta > 0 → removal causing panic
+//   hint-restore-minimal AvgConfusionDelta > 0 → support arriving
+//     too late to prevent confusion on that window
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| where tostring(family) in (
+    "hint-fade", "hint-remove", "hint-reduction",
+    "hint-restore-minimal", "scaffold-hints"
+  )
+| summarize
+    Total                  = count(),
+    Improved               = countif(Outcome == "improved"),
+    Neutral                = countif(Outcome == "neutral"),
+    Worsened               = countif(Outcome == "worsened"),
+    AvgConfusionDelta      = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta = round(avg(HintDependenceDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| project
+    InterventionFamily, Total,
+    ImprovementRate, WorseningRate,
+    AvgConfusionDelta, AvgHintDependenceDelta
+| order by InterventionFamily asc
+
+
+// ── Q10: Difficulty-change safety analysis ──────────────────
+// Covers difficulty-increase and difficulty-reduction.
+//
+// Hypothesis being tested:
+//   difficulty-increase should produce improved or neutral outcomes
+//   when the mastery signal was accurate.
+//   difficulty-reduction should reliably reduce confusion in
+//   struggling learners.
+//
+// Warning signals:
+//   difficulty-increase AvgConfusionDelta > 0 → firing too eagerly
+//     (learner was not ready); cross-reference with Q11.
+//   difficulty-reduction AvgGoalUnderstandingDelta < 0 → over-reducing
+//     (learner disengages when task is too easy).
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| where tostring(family) in ("difficulty-increase", "difficulty-reduction")
+| summarize
+    Total                     = count(),
+    Improved                  = countif(Outcome == "improved"),
+    Neutral                   = countif(Outcome == "neutral"),
+    Worsened                  = countif(Outcome == "worsened"),
+    AvgConfusionDelta         = round(avg(ConfusionDelta), 4),
+    AvgGoalUnderstandingDelta = round(avg(GoalUnderstandingDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| project
+    InterventionFamily, Total,
+    ImprovementRate, WorseningRate,
+    AvgConfusionDelta, AvgGoalUnderstandingDelta
+| order by InterventionFamily asc
+
+
+// ── Q11: Difficulty-increase safety by PredictedStableMasteryState
+// The key safety check for the difficulty-increase family.
+// Answers: "Does difficulty-increase only work when the mastery
+//           prediction is actually reliable?"
+//
+// How to interpret:
+//   Expected good outcome:
+//     PredictedStableMasteryState = "stable_mastery" →
+//       ImprovementRate > 0.50, WorseningRate < 0.15
+//   Expected marginal outcome:
+//     PredictedStableMasteryState = "not_mastery" →
+//       WorseningRate > 0.25 (the prediction was wrong → harm)
+//
+//   If the "stable_mastery" row shows WorseningRate > 0.20:
+//     The mastery model is not reliable enough to protect this
+//     escalation. Do not promote difficulty-increase to policy yet.
+//   If the "not_mastery" row shows ImprovementRate > 0.40:
+//     The policy is benefiting learners the mastery model missed;
+//     evaluate whether the label threshold needs adjustment.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        PredictedStableMasteryState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| where tostring(family) == "difficulty-increase"
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by PredictedStableMasteryState
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| project PredictedStableMasteryState, Total, ImprovementRate, WorseningRate, AvgConfusionDelta
+| order by PredictedStableMasteryState asc
+
+
+// ── Q12: Scaffold / support effectiveness ───────────────────
+// Covers scaffold-hints, scaffold-error-tolerance,
+// distractor-reduction, pace-support, and difficulty-reduction.
+//
+// Hypothesis being tested:
+//   Support families should uniformly reduce confusion and
+//   hint dependence.  If they do not, they may be over-applied
+//   to learners who do not need them, reducing challenge
+//   without delivering benefit.
+//
+// Warning signals:
+//   AvgGoalUnderstandingDelta < -0.05 → over-scaffolding is
+//     reducing challenge below the learner's productive zone.
+//   AvgHintDependenceDelta > 0.05 → scaffold-hints is increasing
+//     dependence rather than resolving it; check whether
+//     "guided" mode is the appropriate step for the learner.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| where tostring(family) in (
+    "scaffold-hints", "scaffold-error-tolerance",
+    "distractor-reduction", "pace-support", "difficulty-reduction"
+  )
+| summarize
+    Total                     = count(),
+    Improved                  = countif(Outcome == "improved"),
+    Neutral                   = countif(Outcome == "neutral"),
+    Worsened                  = countif(Outcome == "worsened"),
+    AvgConfusionDelta         = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta    = round(avg(HintDependenceDelta), 4),
+    AvgGoalUnderstandingDelta = round(avg(GoalUnderstandingDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| project
+    InterventionFamily, Total,
+    ImprovementRate, WorseningRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta
+| order by ImprovementRate desc
+
+
+// ============================================================
+// Section 4: Composite / Cross-Tabulation Queries
+// ============================================================
+
+// ── Q13: Full cross-tabulation — learner state × family ─────
+// Every (GuardrailOverallBehaviorState, InterventionFamily) pair
+// with its own outcome counts.  Designed for dashboards and
+// heatmaps.
+//
+// How to interpret:
+//   "Safe zone" quadrant: GuardrailOverallBehaviorState = "confused"
+//     AND InterventionFamily = "scaffold-hints" with high
+//     ImprovementRate → a specific guardrail condition that works.
+//   "Danger zone" quadrant: high ImprovementRate for a challenge
+//     family in a "struggling" state → likely a false-positive
+//     mastery signal; add a state-conditional guardrail.
+//   Rows with Total < 5 are filtered (too noisy to act on).
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailOverallBehaviorState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| where Total >= 5
+| project
+    GuardrailOverallBehaviorState, InterventionFamily, Total,
+    ImprovementRate, WorseningRate, AvgConfusionDelta
+| order by GuardrailOverallBehaviorState asc, ImprovementRate desc
+
+
+// ── Q14: Confusion-delta distribution by family (percentiles) ─
+// Percentile spread tells you whether a family is reliably
+// beneficial (tight, negative range) or variable (wide range
+// straddling zero).
+//
+// How to interpret:
+//   Median < -0.05 → more than half the evaluations improved.
+//   P10 > 0 → the family is harmful in 90% of cases.
+//   P90 - P10 spread > 0.3 → high variance; the family depends
+//     heavily on learner state context → add state segmentation
+//     before trusting it (use Q5–Q8 to find the safe segment).
+//   Families with Median < -0.05 AND Spread < 0.20 are the most
+//   consistently reliable candidates for policy promotion.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    Total             = count(),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4),
+    P10               = round(percentile(ConfusionDelta, 10), 4),
+    P25               = round(percentile(ConfusionDelta, 25), 4),
+    Median            = round(percentile(ConfusionDelta, 50), 4),
+    P75               = round(percentile(ConfusionDelta, 75), 4),
+    P90               = round(percentile(ConfusionDelta, 90), 4)
+  by InterventionFamily = tostring(family)
+| extend Spread = round(P90 - P10, 4)
+| project InterventionFamily, Total, AvgConfusionDelta, P10, P25, Median, P75, P90, Spread
+| order by Median asc   // most reliably helpful families first
+
+
+// ============================================================
+// Section 5: Policy Promotion Readiness
+// ============================================================
+
+// ── Q15: Which families are ready for policy promotion? ──────
+// A family is "PolicyReady = true" when it meets ALL four gates:
+//
+//   Gate 1 — Sample size:    Total >= 30
+//     Rationale: fewer than 30 evaluations are too noisy to
+//     distinguish real signal from random variation.
+//
+//   Gate 2 — Majority improve: ImprovementRate > 0.50
+//     Rationale: more than half of applications must reduce
+//     confusion by at least 5pp to justify automatic weighting.
+//
+//   Gate 3 — Low harm rate: WorseningRate < 0.15
+//     Rationale: fewer than 1 in 7 applications should worsen
+//     confusion.  Above this, the harm footprint is too large
+//     for automated escalation.
+//
+//   Gate 4 — Net benefit: AvgConfusionDelta < -0.05
+//     Rationale: even if improvement rate is above 50%, the
+//     average benefit must be meaningful (5pp confusion drop)
+//     to outweigh implementation risk.
+//
+// "PolicyReady = true" means: safe to begin a CONTROLLED
+// EXPERIMENT allowing this family to influence policy weights.
+// It does NOT mean: unconditionally apply across all learner
+// states.  Always cross-reference Q5–Q8 before implementing.
+//
+// These gates are conservative (first promotion cycle).
+// After two successful policy cycles, consider relaxing
+// Gate 1 to >= 20 and Gate 3 to < 0.20.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    Total             = count(),
+    Improved          = countif(Outcome == "improved"),
+    Worsened          = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovementRate = round(todouble(Improved) / Total, 3),
+    WorseningRate   = round(todouble(Worsened) / Total, 3)
+| extend PolicyReady = (
+    Total >= 30
+    and ImprovementRate > 0.50
+    and WorseningRate < 0.15
+    and AvgConfusionDelta < -0.05
+  )
+| project
+    InterventionFamily, Total,
+    ImprovementRate, WorseningRate, AvgConfusionDelta,
+    PolicyReady
+| order by PolicyReady desc, ImprovementRate desc

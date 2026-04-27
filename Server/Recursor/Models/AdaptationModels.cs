@@ -21,6 +21,11 @@ public class AdaptationDecisionDocument
     // Phase 8A guardrail notes — null when the modifier did not fire or was disabled.
     // Pipe-separated list of blocked actions and the triggering rule/field.
     public string? Phase8AGuardrailNotes { get; set; }
+
+    // Phase 8E reliability weighting — null when mode is "disabled".
+    public string? Phase8EReliabilityNotes { get; set; }
+    // Mirrors RecursorPolicyReliabilityOptions.Mode at decision time; null when disabled.
+    public string? Phase8EReliabilityMode { get; set; }
 }
 
 public class ParameterChange

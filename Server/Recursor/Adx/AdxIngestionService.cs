@@ -366,6 +366,8 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("NextHintDependenceGuardrailTriggered", typeof(bool));
         table.Columns.Add("NextHintDependenceGuardrailLevel",     typeof(string));
         table.Columns.Add("Phase8AGuardrailNotes",                typeof(string));
+        table.Columns.Add("Phase8EReliabilityNotes",              typeof(string));
+        table.Columns.Add("Phase8EReliabilityMode",               typeof(string));
 
         table.Rows.Add(
             row.SessionId,
@@ -382,7 +384,9 @@ public class AdxIngestionService : IAdxIngestionService
             row.HintDependenceNextProbability ?? (object)DBNull.Value,
             row.NextHintDependenceGuardrailTriggered,
             row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value,
-            row.Phase8AGuardrailNotes ?? (object)DBNull.Value
+            row.Phase8AGuardrailNotes ?? (object)DBNull.Value,
+            row.Phase8EReliabilityNotes ?? (object)DBNull.Value,
+            row.Phase8EReliabilityMode ?? (object)DBNull.Value
         );
 
         return table;

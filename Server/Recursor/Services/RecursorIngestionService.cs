@@ -45,6 +45,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IMultiSignalGuardrailService _multiSignalGuardrail;
     private readonly IPhase8AGuardrailModifierService _phase8aModifier;
     private readonly IAdaptationEffectivenessService _adaptationEffectiveness;
+    private readonly IPolicyReliabilityWeightingService _phase8eReliability;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -66,6 +67,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     IMultiSignalGuardrailService multiSignalGuardrail,
     IPhase8AGuardrailModifierService phase8aModifier,
     IAdaptationEffectivenessService adaptationEffectiveness,
+    IPolicyReliabilityWeightingService phase8eReliability,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -86,6 +88,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _multiSignalGuardrail = multiSignalGuardrail;
         _phase8aModifier = phase8aModifier;
         _adaptationEffectiveness = adaptationEffectiveness;
+        _phase8eReliability = phase8eReliability;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -507,6 +510,42 @@ public class RecursorIngestionService : IRecursorIngestionService
                 AdaptationProduced = false,
                 HypothesisLabels = hypothesisLabels,
                 Explanation = explanationVetoed
+            };
+        }
+
+        // Phase 8E: policy reliability weighting.
+        // Suppresses "risky" intervention families (and their owned parameter changes) based on
+        // pre-configured Phase 8D reliability tier data. Never creates new changes.
+        // Mode "disabled" (default) — no effect.
+        // Mode "shadow"   — logs what would be suppressed; adaptation is not modified.
+        // Mode "active"   — removes risky families and their parameter changes.
+        adaptation = _phase8eReliability.Apply(adaptation);
+
+        // If Phase 8E active-mode suppressed every parameter change, ingest the audit record
+        // but return "no adaptation" so the sim receives no instructions.
+        if (adaptation.Phase8EReliabilityMode == "active" && adaptation.ParameterChanges.Count == 0)
+        {
+            _logger.LogInformation(
+                "Phase 8E suppressed all parameter changes for session {SessionId}. " +
+                "Ingesting audit record. Notes={Notes}",
+                session.SessionId, adaptation.Phase8EReliabilityNotes);
+            try
+            {
+                await _adxIngestion.IngestAdaptationDecisionAsync(AdxRowMapper.MapAdaptationDecision(adaptation));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to ingest Phase 8E fully-suppressed adaptation for session {SessionId}.",
+                    session.SessionId);
+            }
+            var explanationSuppressed = await _explanationService.GenerateExplanationAsync(
+                session, behaviorProfile, hypothesisSet, null);
+            return new IngestionResult
+            {
+                AdaptationProduced = false,
+                HypothesisLabels = hypothesisLabels,
+                Explanation = explanationSuppressed
             };
         }
 

@@ -158,6 +158,10 @@ var resolvedHintDependenceNextWindowPath = ResolveModelPath(
 // Bind policy options so AdaptationPolicyService can read guardrail thresholds.
 builder.Services.Configure<RecursorPoliciesOptions>(
     builder.Configuration.GetSection("Recursor:Policies"));
+// Phase 8E: reliability weighting options and service.
+builder.Services.Configure<RecursorPolicyReliabilityOptions>(
+    builder.Configuration.GetSection("Recursor:PolicyReliability"));
+builder.Services.AddScoped<IPolicyReliabilityWeightingService, PolicyReliabilityWeightingService>();
 
 bool anyModelPresent =
     (resolvedHintDependencePath            is not null && File.Exists(resolvedHintDependencePath))            ||

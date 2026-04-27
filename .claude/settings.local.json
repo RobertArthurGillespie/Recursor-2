@@ -8,7 +8,8 @@
       "Bash(dotnet sln add *)",
       "Bash(dotnet test *)",
       "Bash(awk ' *)",
-      "Bash(awk -F/ '{ *)"
+      "Bash(awk -F/ '{ *)",
+      "Bash(awk '/create table AdaptationDecisions_v2/,/^\\\\\\)/' \"C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/docs/kql/recursor-adx-setup.kql\")"
     ]
   }
 }

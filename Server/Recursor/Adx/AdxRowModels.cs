@@ -89,6 +89,10 @@ public class AdaptationDecisionRow
 
     // Phase 8A guardrail notes — null when the modifier did not fire or was disabled.
     public string? Phase8AGuardrailNotes { get; set; }
+
+    // Phase 8E reliability weighting — null when mode is "disabled".
+    public string? Phase8EReliabilityNotes { get; set; }
+    public string? Phase8EReliabilityMode { get; set; }
 }
 
 public class BehaviorStateTrainingRow

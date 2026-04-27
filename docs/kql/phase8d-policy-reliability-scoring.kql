@@ -1,0 +1,864 @@
+// ============================================================
+// Phase 8D — Policy Reliability Scoring
+// ============================================================
+// Converts AdaptationEffectiveness outcomes into categorical
+// reliability scores for intervention families and parameter-
+// change patterns.
+//
+// This phase is ANALYTICS AND SCORING ONLY.
+// No C# behavior is changed.  Results are evidence for Phase 8E
+// policy weighting — they do not automatically influence policy.
+//
+// Prerequisites:
+//   - Phase 8B running: AdaptationEffectiveness is being populated.
+//   - Phase 7A/7B/7C running: BehaviorStateTrainingRows has
+//     GuardrailOverallBehaviorState, PredictedConfusionRisk,
+//     PredictedStableMasteryState, GuardrailHintDependenceRiskLevel.
+//
+// ── Reliability tier definitions ─────────────────────────────
+//
+//   "insufficient-data"
+//       SampleCount < 10.
+//       No tier can be assigned.  Wait for more data.
+//
+//   "risky"
+//       WorsenedRate >= 0.35.
+//       More than a third of evaluations worsened learner confusion.
+//       Evaluated before "promising" — high harm overrides high gain.
+//
+//   "promising"
+//       ImprovedRate >= 0.60 AND WorsenedRate <= 0.20.
+//       Majority improved, fewer than 1-in-5 worsened.
+//
+//   "neutral"
+//       All other cases.  Not harmful enough to suppress, not
+//       reliable enough to promote.
+//
+// ── Tier priority order ───────────────────────────────────────
+//   1. insufficient-data  (sample count trumps all)
+//   2. risky              (harm rate is a harder veto than gain rate)
+//   3. promising          (majority improve AND low harm)
+//   4. neutral            (catch-all)
+//
+// ── Phase 8E recommendation labels ───────────────────────────
+//   "promote"              — tier=promising, consistent across segments
+//   "conditional-promote"  — tier=promising but state-conditional
+//   "hold"                 — tier=neutral, stable
+//   "suppress"             — tier=risky or consistently-risky
+//   "gather-more-data"     — tier=insufficient-data
+//
+// ── Delta sign conventions ────────────────────────────────────
+//   ConfusionDelta        < 0 is good (confusion dropped)
+//   HintDependenceDelta   < 0 is good (dependence dropped)
+//   GoalUnderstandingDelta> 0 is good (understanding rose)
+//
+// ── Known intervention families ──────────────────────────────
+//   Support:   difficulty-reduction, pace-support, scaffold-hints,
+//              scaffold-error-tolerance, distractor-reduction,
+//              hint-restore-minimal
+//   Fade:      hint-fade, hint-remove, hint-reduction
+//   Challenge: difficulty-increase, pace-increase
+// ============================================================
+
+
+// ============================================================
+// Section 0: Stored KQL function
+// ============================================================
+// Run this block ONCE as a management command (starts with ".")
+// before running any query that calls PolicyFamilyReliability().
+// In the ADX Web UI: highlight only this block and click Run.
+//
+// The function is idempotent — safe to re-run to update it.
+// It queries AdaptationEffectiveness at call time; it does not
+// cache results.
+// ============================================================
+
+.create-or-alter function with (folder="Phase8D", docstring="Per-family reliability score and tier from AdaptationEffectiveness")
+PolicyFamilyReliability() {
+    AdaptationEffectiveness
+    | mv-expand family = InterventionFamilies
+    | summarize
+        SampleCount               = count(),
+        ImprovedCount             = countif(Outcome == "improved"),
+        NeutralCount              = countif(Outcome == "neutral"),
+        WorsenedCount             = countif(Outcome == "worsened"),
+        AvgConfusionDelta         = round(avg(ConfusionDelta), 4),
+        AvgHintDependenceDelta    = round(avg(HintDependenceDelta), 4),
+        AvgGoalUnderstandingDelta = round(avg(GoalUnderstandingDelta), 4)
+      by InterventionFamily = tostring(family)
+    | extend
+        ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+        WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3),
+        NeutralRate  = round(todouble(NeutralCount)  / SampleCount, 3)
+    | extend ReliabilityTier = case(
+        SampleCount < 10,                                       "insufficient-data",
+        WorsenedRate >= 0.35,                                   "risky",
+        ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+        "neutral"
+      )
+}
+
+
+// ============================================================
+// Section 1: Core Reliability Scoring
+// ============================================================
+
+// ── Q1: Full reliability score table ─────────────────────────
+// The primary per-family reliability leaderboard.
+// Requires PolicyFamilyReliability() to be created (Section 0).
+//
+// How to interpret:
+//   ReliabilityTier is the primary decision label.
+//   Sort by tier (promising → neutral → risky → insufficient-data)
+//   to see at a glance which families have earned trust.
+//
+//   AvgConfusionDelta < -0.05 confirms that the average outcome
+//   is not just classified "improved" by the 5pp threshold but
+//   is meaningfully better in absolute terms.
+//
+//   NeutralCount being large relative to SampleCount can mean
+//   the family is only mildly effective — worth monitoring but
+//   not worth promoting yet.
+
+PolicyFamilyReliability()
+| project
+    InterventionFamily,
+    SampleCount, ImprovedCount, NeutralCount, WorsenedCount,
+    ImprovedRate, WorsenedRate, NeutralRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta,
+    ReliabilityTier
+| order by
+    case(ReliabilityTier, "promising", 0, "neutral", 1, "risky", 2, "insufficient-data", 3, 4) asc,
+    ImprovedRate desc
+
+
+// ── Q2: Intervention families to trust ───────────────────────
+// Families that have cleared the "promising" tier.
+//
+// How to interpret:
+//   These are the Phase 8E promotion candidates.
+//   Before acting on this list, cross-reference with Q11/Q12
+//   to confirm the tier is stable across learner-state segments.
+//   A family that is "promising" overall but "risky" in one segment
+//   needs a state-conditional guardrail, not unconditional promotion.
+//
+//   Ordered by AvgConfusionDelta to rank the most impactful first
+//   within the promising tier.
+
+PolicyFamilyReliability()
+| where ReliabilityTier == "promising"
+| project
+    InterventionFamily, SampleCount,
+    ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta
+| order by AvgConfusionDelta asc   // most beneficial first
+
+
+// ── Q3: Intervention families to avoid ───────────────────────
+// Families in the "risky" tier — worsening rate >= 35%.
+//
+// How to interpret:
+//   Do not suppress a family based on this alone without also
+//   reviewing Q6 (by PredictedConfusionRisk) and Q7 (by mastery
+//   state).  A family may be risky only when applied to the wrong
+//   learner state — in which case a targeted guardrail condition
+//   is more precise than a blanket suppression.
+//
+//   "neutral" families are NOT shown here.  They are listed in Q1.
+//   If you want borderline-risky neutrals, filter Q1 for
+//   WorsenedRate >= 0.25 and ReliabilityTier == "neutral".
+
+PolicyFamilyReliability()
+| where ReliabilityTier == "risky"
+| project
+    InterventionFamily, SampleCount,
+    ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta
+| order by WorsenedRate desc   // most harmful first
+
+
+// ── Q4: Data velocity check ───────────────────────────────────
+// How quickly is each family accumulating evaluations?
+// Shows whether any family will ever graduate from "insufficient-data"
+// and estimates days remaining until the 30-evaluation minimum.
+//
+// Columns:
+//   TotalCount      — evaluations to date
+//   DaysOfData      — span from first to last evaluation
+//   AvgEvalsPerDay  — inferred ingestion rate
+//   DaysToMinSample — estimated days until TotalCount >= 30
+//                     (0 if already there; negative means exceeded)
+//
+// How to interpret:
+//   A family with AvgEvalsPerDay < 0.1 (roughly 1 per 10 days) is
+//   unlikely to reach reliable tiers in the near term.
+//   If a key family like difficulty-increase has DaysToMinSample > 90,
+//   consider whether the policy fires frequently enough, or whether
+//   the session volume is sufficient to generate evaluations.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    TotalCount   = count(),
+    EarliestEval = min(CreatedAtUtc),
+    LatestEval   = max(CreatedAtUtc)
+  by InterventionFamily = tostring(family)
+| extend DaysOfData = max_of(datetime_diff("day", LatestEval, EarliestEval), 1)
+| extend AvgEvalsPerDay = round(todouble(TotalCount) / DaysOfData, 2)
+| extend DaysToMinSample = case(
+    TotalCount >= 30, 0,
+    AvgEvalsPerDay <= 0, -1,   // no rate to extrapolate
+    toint(ceiling((30.0 - TotalCount) / AvgEvalsPerDay))
+  )
+| project InterventionFamily, TotalCount, DaysOfData, AvgEvalsPerDay,
+          DaysToMinSample, EarliestEval, LatestEval
+| order by DaysToMinSample asc, TotalCount desc
+
+
+// ============================================================
+// Section 2: Segmented Reliability by Learner State
+// ============================================================
+// The tier logic is applied independently within each learner-
+// state segment.  A segment with fewer than 10 evaluations for
+// a given family gets "insufficient-data" at the segment level
+// even if the family is "promising" overall.
+//
+// Join key:
+//   AdaptationEffectiveness.SessionId + AppliedAtWindowIndex
+//   BehaviorStateTrainingRows.SessionId + WindowIndex
+//
+// This retrieves the guardrail state AT THE MOMENT the adaptation
+// was applied — the context in which the decision was made.
+// ============================================================
+
+// ── Q5: Reliability tier by GuardrailOverallBehaviorState ────
+// Broadest learner-state segmentation.
+//
+// How to interpret:
+//   Look for families where the tier flips between segments.
+//   Example: difficulty-increase is "promising" in "stable_mastery"
+//   but "risky" in "confused" → add a state-conditional guardrail
+//   rather than promoting the family unconditionally.
+//
+//   Rows where GuardrailOverallBehaviorState is blank mean the
+//   adaptation was recorded before Phase 7C guardrail was active.
+//   These rows carry no state label and should be treated as
+//   an unclassified segment.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailOverallBehaviorState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == "improved"),
+    NeutralCount  = countif(Outcome == "neutral"),
+    WorsenedCount = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       "insufficient-data",
+    WorsenedRate >= 0.35,                                   "risky",
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+    "neutral"
+  )
+| project
+    InterventionFamily, GuardrailOverallBehaviorState,
+    SampleCount, ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, ReliabilityTier
+| order by InterventionFamily asc, GuardrailOverallBehaviorState asc
+
+
+// ── Q6: Reliability tier by PredictedConfusionRisk ───────────
+// Segments: "low", "moderate", "high" (from Phase 7A shadow model).
+//
+// How to interpret:
+//   Support families should have better tiers at "high" confusion risk.
+//   Challenge families (difficulty-increase) should NOT be "promising"
+//   at "high" confusion risk — if they are, the Phase 8A guardrail
+//   threshold may be too loose.
+//   A family that is "risky" only at "low" confusion risk is being
+//   applied to learners who do not need it.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        PredictedConfusionRisk;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == "improved"),
+    NeutralCount  = countif(Outcome == "neutral"),
+    WorsenedCount = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), PredictedConfusionRisk
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       "insufficient-data",
+    WorsenedRate >= 0.35,                                   "risky",
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+    "neutral"
+  )
+| project
+    InterventionFamily, PredictedConfusionRisk,
+    SampleCount, ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, ReliabilityTier
+| order by InterventionFamily asc,
+           case(PredictedConfusionRisk, "high", 0, "moderate", 1, "low", 2, 3) asc
+
+
+// ── Q7: Reliability tier by PredictedStableMasteryState ──────
+// Segments: "stable_mastery", "not_mastery" (from Phase 7B model).
+//
+// How to interpret:
+//   The critical check for challenge families:
+//     difficulty-increase and hint-fade/hint-remove should have
+//     "promising" tier in "stable_mastery" and "risky" or "neutral"
+//     in "not_mastery".
+//   If difficulty-increase is "promising" in both segments, the
+//   mastery signal may be over-triggering — the policy fires even
+//   when mastery is not confirmed.
+//   If difficulty-increase is "risky" in "stable_mastery", the
+//   mastery prediction is unreliable — do not promote.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        PredictedStableMasteryState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == "improved"),
+    NeutralCount  = countif(Outcome == "neutral"),
+    WorsenedCount = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), PredictedStableMasteryState
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       "insufficient-data",
+    WorsenedRate >= 0.35,                                   "risky",
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+    "neutral"
+  )
+| project
+    InterventionFamily, PredictedStableMasteryState,
+    SampleCount, ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, ReliabilityTier
+| order by InterventionFamily asc, PredictedStableMasteryState asc
+
+
+// ── Q8: Reliability tier by GuardrailHintDependenceRiskLevel ─
+// Filtered to hint-related families only.
+// Segments: "high", "moderate", "low" (from Phase 7C guardrail).
+//
+// How to interpret:
+//   The key safety check for hint-reduction families:
+//     hint-fade and hint-remove should be "risky" at "high"
+//     dependence risk (the guardrail is working if it blocks them).
+//     If they show "promising" at "high" risk, the threshold is
+//     too conservative — revisit the guardrail level.
+//   scaffold-hints and hint-restore-minimal should be "promising"
+//   at "high" dependence risk (support arrives when needed).
+//   If they are "risky" at "low" dependence risk, they are
+//   being applied when the learner does not need scaffolding.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailHintDependenceRiskLevel;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| where tostring(family) in (
+    "hint-fade", "hint-remove", "hint-reduction",
+    "hint-restore-minimal", "scaffold-hints"
+  )
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == "improved"),
+    NeutralCount  = countif(Outcome == "neutral"),
+    WorsenedCount = countif(Outcome == "worsened"),
+    AvgConfusionDelta      = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta = round(avg(HintDependenceDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailHintDependenceRiskLevel
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       "insufficient-data",
+    WorsenedRate >= 0.35,                                   "risky",
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+    "neutral"
+  )
+| project
+    InterventionFamily, GuardrailHintDependenceRiskLevel,
+    SampleCount, ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, ReliabilityTier
+| order by InterventionFamily asc,
+           case(GuardrailHintDependenceRiskLevel, "high", 0, "moderate", 1, "low", 2, 3) asc
+
+
+// ============================================================
+// Section 3: Parameter-Change Reliability
+// ============================================================
+
+// ── Q9: Reliability tier by parameter + operation ────────────
+// Bridges intervention-family tier to the actual sim knobs.
+// ParameterChanges is a dynamic JSON array; mv-expand produces
+// one row per knob change per evaluation.
+//
+// How to interpret:
+//   "difficulty / decrease" and "difficulty / increase" are the
+//   two most consequential knobs.  Check that "decrease" is
+//   "promising" (reducing confusion when applied) and "increase"
+//   is not "risky" (escalating when learner is not ready).
+//   "hintMode / set" covers all hint transitions — the tier here
+//   reflects the aggregate of all hintMode changes regardless of
+//   target value.  Use Q8 for hint-family-level segmentation.
+
+AdaptationEffectiveness
+| mv-expand pc = ParameterChanges
+| extend
+    Parameter = tostring(pc.Parameter),
+    Operation = tostring(pc.Operation)
+| summarize
+    SampleCount               = count(),
+    ImprovedCount             = countif(Outcome == "improved"),
+    NeutralCount              = countif(Outcome == "neutral"),
+    WorsenedCount             = countif(Outcome == "worsened"),
+    AvgConfusionDelta         = round(avg(ConfusionDelta), 4),
+    AvgHintDependenceDelta    = round(avg(HintDependenceDelta), 4),
+    AvgGoalUnderstandingDelta = round(avg(GoalUnderstandingDelta), 4)
+  by Parameter, Operation
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       "insufficient-data",
+    WorsenedRate >= 0.35,                                   "risky",
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+    "neutral"
+  )
+| project
+    Parameter, Operation, SampleCount,
+    ImprovedRate, WorsenedRate,
+    AvgConfusionDelta, AvgHintDependenceDelta, AvgGoalUnderstandingDelta,
+    ReliabilityTier
+| order by
+    case(ReliabilityTier, "promising", 0, "neutral", 1, "risky", 2, "insufficient-data", 3, 4) asc,
+    ImprovedRate desc
+
+
+// ── Q10: Parameter-change reliability by GuardrailBehaviorState
+// Cross-tabulates sim knob changes with the learner's overall
+// behavior state at the time of the adaptation.
+//
+// How to interpret:
+//   Shows the "safe envelope" for each parameter change:
+//   the specific learner states where a given knob movement
+//   has a promising tier vs. those where it is risky.
+//   This is the most granular input available before Phase 8E —
+//   use it to define state-conditional parameter constraints.
+//   Filter on Parameter = "difficulty" to focus the analysis.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailOverallBehaviorState;
+AdaptationEffectiveness
+| mv-expand pc = ParameterChanges
+| extend
+    Parameter = tostring(pc.Parameter),
+    Operation = tostring(pc.Operation)
+| join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == "improved"),
+    WorsenedCount = countif(Outcome == "worsened"),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by Parameter, Operation, GuardrailOverallBehaviorState
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       "insufficient-data",
+    WorsenedRate >= 0.35,                                   "risky",
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          "promising",
+    "neutral"
+  )
+| project
+    Parameter, Operation, GuardrailOverallBehaviorState,
+    SampleCount, ImprovedRate, WorsenedRate, AvgConfusionDelta,
+    ReliabilityTier
+| order by Parameter asc, Operation asc, GuardrailOverallBehaviorState asc
+
+
+// ============================================================
+// Section 4: Cross-Segment Consistency
+// ============================================================
+// A family may be "promising" overall but "risky" in one specific
+// learner-state segment.  These queries identify whether a
+// family's tier is stable across segments (consistent) or varies
+// by learner state (state-conditional).
+//
+// ConsistencyLabel values:
+//   "consistently-promising"  — promising in every qualified segment (>=2)
+//   "consistently-risky"      — risky in every qualified segment (>=2)
+//   "state-conditional"       — has at least one promising AND one risky segment
+//   "leaning-promising"       — some promising, no risky segments
+//   "leaning-risky"           — some risky, no promising segments
+//   "neutral-across-segments" — all qualified segments are neutral
+//   "no-qualified-segments"   — all segments have insufficient data
+//
+// A "qualified segment" has SampleCount >= 10 at the segment level.
+// ============================================================
+
+// ── Q11: Tier distribution across GuardrailOverallBehaviorState
+// Primary consistency check.  Shows how many learner-state
+// segments classify each family as promising, risky, or neutral.
+//
+// How to interpret:
+//   "consistently-promising" with QualifiedSegments >= 3 is the
+//   strongest signal that a family is genuinely reliable.
+//   "state-conditional" means the family is safe in some contexts
+//   but harmful in others — a state-conditional guardrail is needed
+//   before promoting.
+//   "leaning-promising" with only 1 qualified segment is weak
+//   evidence — more data across more states is needed.
+
+let SegmentedTiers =
+    materialize(
+        let PreState =
+            BehaviorStateTrainingRows
+            | project
+                SessionId,
+                AppliedAtWindowIndex = WindowIndex,
+                GuardrailOverallBehaviorState;
+        AdaptationEffectiveness
+        | mv-expand family = InterventionFamilies
+        | join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+        | where isnotempty(GuardrailOverallBehaviorState)
+        | summarize
+            SampleCount   = count(),
+            ImprovedCount = countif(Outcome == "improved"),
+            WorsenedCount = countif(Outcome == "worsened")
+          by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+        | extend
+            ImprovedRate = todouble(ImprovedCount) / SampleCount,
+            WorsenedRate = todouble(WorsenedCount) / SampleCount
+        | extend SegmentTier = case(
+            SampleCount < 10,                                   "insufficient-data",
+            WorsenedRate >= 0.35,                               "risky",
+            ImprovedRate >= 0.60 and WorsenedRate <= 0.20,      "promising",
+            "neutral"
+          )
+    );
+SegmentedTiers
+| summarize
+    TotalSegments        = count(),
+    QualifiedSegments    = countif(SegmentTier != "insufficient-data"),
+    PromisingSegments    = countif(SegmentTier == "promising"),
+    RiskySegments        = countif(SegmentTier == "risky"),
+    NeutralSegments      = countif(SegmentTier == "neutral"),
+    InsufficientSegments = countif(SegmentTier == "insufficient-data")
+  by InterventionFamily
+| extend ConsistencyLabel = case(
+    QualifiedSegments == 0,
+        "no-qualified-segments",
+    PromisingSegments == QualifiedSegments and QualifiedSegments >= 2,
+        "consistently-promising",
+    RiskySegments     == QualifiedSegments and QualifiedSegments >= 2,
+        "consistently-risky",
+    PromisingSegments >= 1 and RiskySegments >= 1,
+        "state-conditional",
+    PromisingSegments >= 1 and RiskySegments == 0,
+        "leaning-promising",
+    RiskySegments     >= 1 and PromisingSegments == 0,
+        "leaning-risky",
+    "neutral-across-segments"
+  )
+| project
+    InterventionFamily,
+    ConsistencyLabel,
+    QualifiedSegments, PromisingSegments, RiskySegments,
+    NeutralSegments, InsufficientSegments, TotalSegments
+| order by
+    case(ConsistencyLabel,
+        "consistently-promising", 0,
+        "leaning-promising",      1,
+        "neutral-across-segments",2,
+        "leaning-risky",          3,
+        "state-conditional",      4,
+        "consistently-risky",     5,
+        "no-qualified-segments",  6, 7) asc,
+    PromisingSegments desc
+
+
+// ── Q12: Families consistently promising across segments ──────
+// Strongest promotion candidates: promising overall AND
+// promising in every qualified behavior-state segment.
+//
+// How to interpret:
+//   These families are reliable without state-conditional guards.
+//   They are the safest candidates for Phase 8E policy promotion.
+//   Cross-reference with Q4 (data velocity) to confirm the sample
+//   count is stable and not the result of a brief burst of data.
+
+let SegmentConsistency =
+    materialize(
+        let PreState =
+            BehaviorStateTrainingRows
+            | project
+                SessionId,
+                AppliedAtWindowIndex = WindowIndex,
+                GuardrailOverallBehaviorState;
+        AdaptationEffectiveness
+        | mv-expand family = InterventionFamilies
+        | join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+        | where isnotempty(GuardrailOverallBehaviorState)
+        | summarize
+            SampleCount   = count(),
+            ImprovedCount = countif(Outcome == "improved"),
+            WorsenedCount = countif(Outcome == "worsened")
+          by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+        | extend
+            ImprovedRate = todouble(ImprovedCount) / SampleCount,
+            WorsenedRate = todouble(WorsenedCount) / SampleCount
+        | extend SegmentTier = case(
+            SampleCount < 10,                                   "insufficient-data",
+            WorsenedRate >= 0.35,                               "risky",
+            ImprovedRate >= 0.60 and WorsenedRate <= 0.20,      "promising",
+            "neutral"
+          )
+        | summarize
+            QualifiedSegments = countif(SegmentTier != "insufficient-data"),
+            PromisingSegments = countif(SegmentTier == "promising"),
+            RiskySegments     = countif(SegmentTier == "risky")
+          by InterventionFamily
+    );
+let OverallTiers = PolicyFamilyReliability();
+OverallTiers
+| join kind=inner SegmentConsistency on InterventionFamily
+| where ReliabilityTier == "promising"
+| where PromisingSegments == QualifiedSegments
+| where QualifiedSegments >= 2
+| project
+    InterventionFamily, SampleCount, ReliabilityTier,
+    QualifiedSegments, PromisingSegments,
+    ImprovedRate, WorsenedRate, AvgConfusionDelta
+| order by QualifiedSegments desc, ImprovedRate desc
+
+
+// ── Q13: Families with state-conditional reliability ─────────
+// Families that are "promising" in at least one behavior-state
+// segment AND "risky" in at least one other segment.
+//
+// How to interpret:
+//   These families should NOT be promoted unconditionally.
+//   Each row represents a family that needs a state-specific
+//   guardrail: apply it only when the learner is in the segments
+//   where the tier is "promising", and block or reduce it when
+//   the learner is in the segments where the tier is "risky".
+//
+//   The detail query (Q5 filtered to these families) shows
+//   exactly which states are safe vs. harmful.
+//   This is the primary input for Phase 8E conditional weights.
+
+let SegmentedTiers2 =
+    materialize(
+        let PreState =
+            BehaviorStateTrainingRows
+            | project
+                SessionId,
+                AppliedAtWindowIndex = WindowIndex,
+                GuardrailOverallBehaviorState;
+        AdaptationEffectiveness
+        | mv-expand family = InterventionFamilies
+        | join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+        | where isnotempty(GuardrailOverallBehaviorState)
+        | summarize
+            SampleCount   = count(),
+            ImprovedCount = countif(Outcome == "improved"),
+            WorsenedCount = countif(Outcome == "worsened")
+          by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+        | extend
+            ImprovedRate = todouble(ImprovedCount) / SampleCount,
+            WorsenedRate = todouble(WorsenedCount) / SampleCount
+        | extend SegmentTier = case(
+            SampleCount < 10,                                   "insufficient-data",
+            WorsenedRate >= 0.35,                               "risky",
+            ImprovedRate >= 0.60 and WorsenedRate <= 0.20,      "promising",
+            "neutral"
+          )
+    );
+let FamiliesWithBothTiers =
+    SegmentedTiers2
+    | summarize
+        PromisingSegments = countif(SegmentTier == "promising"),
+        RiskySegments     = countif(SegmentTier == "risky")
+      by InterventionFamily
+    | where PromisingSegments >= 1 and RiskySegments >= 1
+    | project InterventionFamily;
+SegmentedTiers2
+| join kind=inner FamiliesWithBothTiers on InterventionFamily
+| where SegmentTier in ("promising", "risky")
+| project
+    InterventionFamily, GuardrailOverallBehaviorState,
+    SampleCount, SegmentTier,
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| order by InterventionFamily asc, SegmentTier asc
+
+
+// ============================================================
+// Section 5: Phase 8E Readiness Report
+// ============================================================
+
+// ── Q14: Combined reliability + consistency → Phase8ERecommendation
+// The primary Phase 8E input.  Combines the overall reliability
+// tier (from PolicyFamilyReliability) with the cross-segment
+// consistency label (from Q11) to produce one recommendation
+// label per family.
+//
+// Requires PolicyFamilyReliability() to be created (Section 0).
+//
+// Phase8ERecommendation values:
+//   "promote"
+//       Overall tier is "promising" AND consistently-promising
+//       across all qualified behavior-state segments.
+//       Safe to add this family to Phase 8E policy weights
+//       without segment-specific conditions.
+//
+//   "conditional-promote"
+//       Overall tier is "promising" but tier varies by segment
+//       (state-conditional or leaning-promising with mixed results).
+//       Safe to promote ONLY with an explicit state condition:
+//       e.g., "apply difficulty-increase only when
+//       GuardrailOverallBehaviorState == 'stable_mastery'".
+//
+//   "hold"
+//       Overall tier is "neutral" with stable segments.
+//       Not harmful enough to suppress; not reliable enough to
+//       promote.  Continue collecting data.
+//
+//   "suppress"
+//       Overall tier is "risky" OR consistently-risky across
+//       segments.  Do not increase this family's policy weight.
+//       Consider adding an explicit guardrail condition.
+//
+//   "gather-more-data"
+//       Overall tier is "insufficient-data" (SampleCount < 10).
+//       No reliable conclusion can be drawn.
+//
+// How to interpret:
+//   "promote" and "conditional-promote" are Phase 8E inputs —
+//   they do not automatically change policy.  A human review
+//   of Q5–Q8 detail is required before any policy change.
+//   "suppress" does not automatically add a guardrail; it is a
+//   recommendation to add one in a future phase.
+
+let OverallTiers = PolicyFamilyReliability();
+let SegmentConsistency2 =
+    materialize(
+        let PreState =
+            BehaviorStateTrainingRows
+            | project
+                SessionId,
+                AppliedAtWindowIndex = WindowIndex,
+                GuardrailOverallBehaviorState;
+        AdaptationEffectiveness
+        | mv-expand family = InterventionFamilies
+        | join kind=leftouter PreState on SessionId, AppliedAtWindowIndex
+        | where isnotempty(GuardrailOverallBehaviorState)
+        | summarize
+            SampleCount   = count(),
+            ImprovedCount = countif(Outcome == "improved"),
+            WorsenedCount = countif(Outcome == "worsened")
+          by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+        | extend
+            ImprovedRate = todouble(ImprovedCount) / SampleCount,
+            WorsenedRate = todouble(WorsenedCount) / SampleCount
+        | extend SegmentTier = case(
+            SampleCount < 10,                                   "insufficient-data",
+            WorsenedRate >= 0.35,                               "risky",
+            ImprovedRate >= 0.60 and WorsenedRate <= 0.20,      "promising",
+            "neutral"
+          )
+        | summarize
+            QualifiedSegments = countif(SegmentTier != "insufficient-data"),
+            PromisingSegments = countif(SegmentTier == "promising"),
+            RiskySegments     = countif(SegmentTier == "risky")
+          by InterventionFamily
+        | extend ConsistencyLabel = case(
+            QualifiedSegments == 0,
+                "no-qualified-segments",
+            PromisingSegments == QualifiedSegments and QualifiedSegments >= 2,
+                "consistently-promising",
+            RiskySegments     == QualifiedSegments and QualifiedSegments >= 2,
+                "consistently-risky",
+            PromisingSegments >= 1 and RiskySegments >= 1,
+                "state-conditional",
+            PromisingSegments >= 1 and RiskySegments == 0,
+                "leaning-promising",
+            RiskySegments     >= 1 and PromisingSegments == 0,
+                "leaning-risky",
+            "neutral-across-segments"
+          )
+    );
+OverallTiers
+| join kind=leftouter SegmentConsistency2 on InterventionFamily
+| extend Phase8ERecommendation = case(
+    ReliabilityTier == "insufficient-data",
+        "gather-more-data",
+    ReliabilityTier == "risky" or ConsistencyLabel == "consistently-risky",
+        "suppress",
+    ReliabilityTier == "promising" and ConsistencyLabel == "consistently-promising",
+        "promote",
+    ReliabilityTier == "promising",
+        "conditional-promote",
+    "hold"
+  )
+| project
+    InterventionFamily,
+    SampleCount,
+    ReliabilityTier,
+    ConsistencyLabel,
+    ImprovedRate,
+    WorsenedRate,
+    NeutralRate,
+    AvgConfusionDelta,
+    AvgHintDependenceDelta,
+    AvgGoalUnderstandingDelta,
+    Phase8ERecommendation
+| order by
+    case(Phase8ERecommendation,
+        "promote",              0,
+        "conditional-promote",  1,
+        "hold",                 2,
+        "suppress",             3,
+        "gather-more-data",     4, 5) asc,
+    ImprovedRate desc

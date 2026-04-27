@@ -2,7 +2,8 @@
 // Recursor Engine — ADX Table Setup
 // ============================================================
 // Run this script once against the target ADX database to
-// create the Recursor telemetry tables.
+// create all Recursor telemetry tables and their CSV ingestion
+// mappings.
 //
 // Prerequisites:
 //   - An ADX cluster and a database named "RecursorDb"
@@ -13,37 +14,49 @@
 //   Paste into the ADX Web UI query pane and run each block
 //   individually, or run the full script via the Kusto CLI.
 //
-// Schema source: docs/recursor-adx-plan.txt
-// No ingestion mappings or update policies are included here.
+// Schema source: AdxIngestionService.cs DataTable builders.
+// Column order in every mapping matches the exact column-add
+// sequence in the corresponding Build*Table method.
 //
 // NOTE: AdaptationDecisions_v2 is the live table used by the server.
-//       The original AdaptationDecisions table is retained here for reference
-//       but is not used by the current ingestion pipeline.
+//       The original AdaptationDecisions table (not shown here)
+//       is not used by the current ingestion pipeline.
+//
+// Upgrade path for existing databases:
+//   Run the .alter-merge statements in the "Migration" section
+//   to add columns that were introduced after your initial setup.
+//   .create table blocks are for fresh installs only — they will
+//   fail on an existing table.  Use ".create table ifnotexists"
+//   if you are unsure whether the table already exists.
 // ============================================================
 
+
+// ============================================================
+// Table creates — fresh install
+// ============================================================
 
 // ── RawEvents ────────────────────────────────────────────────
 // One row per individual event within a batch.
 // Metrics, Context, and Payload are stored as dynamic (JSON).
 
 .create table RawEvents (
-    SessionId:       string,
-    UserId:          string,
-    SimId:           string,
-    SimVersion:      string,
-    ScenarioId:      string,
-    BatchId:         string,
-    BatchSequence:   int,
-    EventId:         string,
-    SequenceNumber:  long,
-    TimestampUtc:    datetime,
-    EventType:       string,
-    Category:        string,
-    Actor:           string,
-    Target:          string,
-    Metrics:         dynamic,
-    Context:         dynamic,
-    Payload:         dynamic
+    SessionId:      string,
+    UserId:         string,
+    SimId:          string,
+    SimVersion:     string,
+    ScenarioId:     string,
+    BatchId:        string,
+    BatchSequence:  int,
+    EventId:        string,
+    SequenceNumber: long,
+    TimestampUtc:   datetime,
+    EventType:      string,
+    Category:       string,
+    Actor:          string,
+    Target:         string,
+    Metrics:        dynamic,
+    Context:        dynamic,
+    Payload:        dynamic
 )
 
 
@@ -69,7 +82,7 @@
 
 // ── BehaviorProfiles ─────────────────────────────────────────
 // One row per behavior profile built from a feature window.
-// DimensionScores and BehaviorScores are dynamic objects.
+// DimensionScores and BehaviorScores are dynamic JSON objects.
 
 .create table BehaviorProfiles (
     SessionId:             string,
@@ -102,202 +115,370 @@
 // ── AdaptationDecisions_v2 ───────────────────────────────────
 // One row per adaptation decision produced by the policy layer.
 // InterventionFamilies and ParameterChanges are dynamic arrays.
-// ReasoningSummary is a plain string.
-// Guardrail fields are nullable (null for rows predating the guardrail feature).
+// Guardrail and phase-audit fields are nullable for backward compat.
+// Column order matches BuildAdaptationDecisionsTable (17 columns).
 
 .create table AdaptationDecisions_v2 (
-    SessionId:                           string,
-    UserId:                              string,
-    DecisionIndex:                       int,
-    SourceHypothesisSetId:               string,
-    PolicyVersion:                       string,
-    InterventionFamilies:                dynamic,
-    ParameterChanges:                    dynamic,
-    ReasoningSummary:                    string,
-    ExpiresAfterWindow:                  int,
-    CreatedAtUtc:                        datetime,
-    HintDependenceNextProbability:       real,
+    SessionId:                            string,
+    UserId:                               string,
+    AdaptationDecisionId:                 string,
+    DecisionIndex:                        int,
+    SourceHypothesisSetId:                string,
+    PolicyVersion:                        string,
+    InterventionFamilies:                 dynamic,
+    ParameterChanges:                     dynamic,
+    ReasoningSummary:                     string,
+    ExpiresAfterWindow:                   int,
+    CreatedAtUtc:                         datetime,
+    HintDependenceNextProbability:        real,
     NextHintDependenceGuardrailTriggered: bool,
-    NextHintDependenceGuardrailLevel:    string
+    NextHintDependenceGuardrailLevel:     string,
+    Phase8AGuardrailNotes:                string,
+    Phase8EReliabilityNotes:              string,
+    Phase8EReliabilityMode:               string
 )
 
 
 // ── BehaviorStateTrainingRows ────────────────────────────────
-// One row per feature window; used for shadow ML model training/evaluation.
-// Contains behavioral dimension scores, trajectory features, adaptive state,
-// weak labels derived from hypothesis labels, and shadow model predictions.
+// One row per feature window; used for shadow ML model training
+// and evaluation.  Includes all columns added through Phase 7C.
+// Column order matches BuildBehaviorStateTrainingRowsTable (53 columns).
 
 .create table BehaviorStateTrainingRows (
-    SessionId:                       string,
-    UserId:                          string,
-    SimId:                           string,
-    ScenarioId:                      string,
-    WindowIndex:                     int,
-    TaskType:                        string,
-    CreatedAtUtc:                    datetime,
-    AttentionDetection:              real,
-    GoalUnderstanding:               real,
-    ProcedureSequencing:             real,
-    PaceRegulation:                  real,
-    SelfCorrection:                  real,
-    FeedbackResponsiveness:          real,
-    SafetyCompliance:                real,
-    TaskContinuity:                  real,
-    ConfusionScore:                  real,
-    HesitationScore:                 real,
-    ImpulsivityScore:                real,
-    HintDependenceScore:             real,
-    GoalTrend:                       real,
-    AttentionTrend:                  real,
-    ConfusionTrend:                  real,
-    HintDependenceTrend:             real,
-    CurrentHintMode:                 string,
-    CurrentDifficulty:               real,
-    CurrentTimePressure:             real,
-    CurrentErrorTolerance:           real,
-    ConsecutiveStableMasteryWindows: int,
-    ConsecutiveRelapseWindows:       int,
-    EventCountInWindow:              int,
-    ErrorCountInWindow:              int,
-    HintCountInWindow:               int,
-    StepCompleteCountInWindow:       int,
-    LabelConfusion:                  int,
-    LabelHintDependence:             int,
-    LabelStableMastery:              int,
-    PredConfusionProbability:        real,
-    PredHintDependenceProbability:   real,
-    PredStableMasteryProbability:    real,
-    ModelVersion:                    string,
-    InferenceMode:                   string
+    // Identity / metadata
+    SessionId:                        string,
+    UserId:                           string,
+    SimId:                            string,
+    ScenarioId:                       string,
+    WindowIndex:                      int,
+    TaskType:                         string,
+    CreatedAtUtc:                     datetime,
+
+    // Dimension scores
+    AttentionDetection:               real,
+    GoalUnderstanding:                real,
+    ProcedureSequencing:              real,
+    PaceRegulation:                   real,
+    SelfCorrection:                   real,
+    FeedbackResponsiveness:           real,
+    SafetyCompliance:                 real,
+    TaskContinuity:                   real,
+
+    // Higher-order behavior scores
+    ConfusionScore:                   real,
+    HesitationScore:                  real,
+    ImpulsivityScore:                 real,
+    HintDependenceScore:              real,
+
+    // Trajectory
+    GoalTrend:                        real,
+    AttentionTrend:                   real,
+    ConfusionTrend:                   real,
+    HintDependenceTrend:              real,
+
+    // Adaptive state
+    CurrentHintMode:                  string,
+    CurrentDifficulty:                real,
+    CurrentTimePressure:              real,
+    CurrentErrorTolerance:            real,
+
+    // Counters
+    ConsecutiveStableMasteryWindows:  int,
+    ConsecutiveRelapseWindows:        int,
+
+    // Window summary
+    EventCountInWindow:               int,
+    ErrorCountInWindow:               int,
+    HintCountInWindow:                int,
+    StepCompleteCountInWindow:        int,
+
+    // Weak labels
+    LabelConfusion:                   int,
+    LabelHintDependence:              int,
+    LabelStableMastery:               int,
+
+    // Shadow predictions
+    PredConfusionProbability:         real,
+    PredHintDependenceProbability:    real,
+    PredStableMasteryProbability:     real,
+    ModelVersion:                     string,
+    InferenceMode:                    string,
+
+    // Phase 7A — confusion shadow prediction detail
+    PredictedConfusionRisk:           string,
+    ConfusionModelVersion:            string,
+    ConfusionPredictionUtc:           datetime,
+
+    // Phase 7B — stable mastery shadow prediction detail
+    PredictedStableMasteryState:      string,
+    StableMasteryModelVersion:        string,
+    StableMasteryPredictionUtc:       datetime,
+
+    // Phase 7C — multi-signal guardrail summary
+    GuardrailOverallBehaviorState:         string,
+    GuardrailConfusionSignalAgreement:     bool,
+    GuardrailStableMasterySignalAgreement: bool,
+    GuardrailHintDependenceRiskLevel:      string,
+    GuardrailConflictCount:                int,
+    GuardrailWarnings:                     string
+)
+
+
+// ── UserBehaviorProfiles ─────────────────────────────────────
+// Full per-user profile snapshot (append-only).
+// Use arg_max(UpdatedAtUtc, *) to retrieve the current profile.
+// Nullable threshold columns are null when using global defaults.
+// Column order matches BuildUserBehaviorProfilesTable (27 columns).
+
+.create table UserBehaviorProfiles (
+    UserId:                                           string,
+    CreatedAtUtc:                                     datetime,
+    UpdatedAtUtc:                                     datetime,
+    LastSessionId:                                    string,
+    TotalSessions:                                    int,
+    TotalWindows:                                     int,
+    AvgConfusionScore:                                real,
+    AvgHintDependenceScore:                           real,
+    AvgHesitationScore:                               real,
+    AvgGoalUnderstanding:                             real,
+    AvgAttentionDetection:                            real,
+    AvgProcedureSequencing:                           real,
+    AvgSelfCorrection:                                real,
+    AvgTaskContinuity:                                real,
+    StableMasteryRate:                                real,
+    ConfusionRate:                                    real,
+    HintDependenceRate:                               real,
+    ConfusionBlockDifficultyIncreaseThreshold:        real,
+    HintFadeConfusionDeltaThreshold:                  real,
+    HintFadeHintDependenceDeltaThreshold:             real,
+    HintFadeMaxCurrentConfusionScore:                 real,
+    HintFadeMinCurrentGoalUnderstanding:              real,
+    DifficultyAccelerationConfusionDeltaThreshold:    real,
+    DifficultyAccelerationHintDependenceDeltaThreshold: real,
+    DifficultyAccelerationMaxCurrentConfusionScore:   real,
+    DifficultyAccelerationMinCurrentGoalUnderstanding: real,
+    DifficultyAccelerationDelta:                      real
+)
+
+
+// ── UserBehaviorProfileUpdates ───────────────────────────────
+// Per-window behavioral observation; used to reconstruct profile
+// history and audit incremental mean updates.
+// Column order matches BuildUserBehaviorProfileUpdatesTable (15 columns).
+
+.create table UserBehaviorProfileUpdates (
+    UserId:                  string,
+    SessionId:               string,
+    WindowIndex:             int,
+    CreatedAtUtc:            datetime,
+    ConfusionScore:          real,
+    HintDependenceScore:     real,
+    HesitationScore:         real,
+    GoalUnderstanding:       real,
+    AttentionDetection:      real,
+    ProcedureSequencing:     real,
+    SelfCorrection:          real,
+    TaskContinuity:          real,
+    HasStableMastery:        bool,
+    HasConfusionPattern:     bool,
+    HasHintDependencePattern: bool
+)
+
+
+// ── AdaptationEffectiveness ──────────────────────────────────
+// Phase 8B — one row per evaluated window pair.
+// Written the window after an adaptation fires; never used to
+// influence adaptation decisions (observability only).
+// InterventionFamilies and ParameterChanges are dynamic arrays.
+// Column order matches BuildAdaptationEffectivenessTable (19 columns).
+
+.create table AdaptationEffectiveness (
+    SessionId:               string,
+    UserId:                  string,
+    AdaptationDecisionId:    string,
+    AdaptationDecisionIndex: int,
+    InterventionFamilies:    dynamic,
+    ParameterChanges:        dynamic,
+    AppliedAtWindowIndex:    int,
+    EvaluatedAtWindowIndex:  int,
+    PreConfusionScore:       real,
+    PreHintDependenceScore:  real,
+    PreGoalUnderstanding:    real,
+    NextConfusionScore:      real,
+    NextHintDependenceScore: real,
+    NextGoalUnderstanding:   real,
+    ConfusionDelta:          real,
+    HintDependenceDelta:     real,
+    GoalUnderstandingDelta:  real,
+    Outcome:                 string,
+    CreatedAtUtc:            datetime
 )
 
 
 // ============================================================
-// Migration: add UserId to existing tables
+// Migration: upgrade existing databases
 // ============================================================
 // Run these ALTER statements against any ADX database that was
-// provisioned before UserId was added to the downstream pipeline.
-// Safe to run on a table that already has the column (no-op).
-//
-// UserId enables the Longitudinal User Layer: cross-session
-// behavioral history, per-user analytics, and future baselines.
+// provisioned before the corresponding columns were added.
+// Safe to run when the column already exists (no-op).
+// Skip on a fresh install — the .create table blocks above
+// already include all columns.
 // ============================================================
 
+// Add UserId to tables that predate the Longitudinal User Layer.
 .alter-merge table FeatureWindows (UserId: string)
-
 .alter-merge table BehaviorProfiles (UserId: string)
-
 .alter-merge table HypothesisSets (UserId: string)
-
 .alter-merge table AdaptationDecisions_v2 (UserId: string)
-
 .alter-merge table BehaviorStateTrainingRows (UserId: string)
 
-// Phase 7A — confusion shadow prediction detail (add to any database provisioned before Phase 7A)
+// Phase 7A — confusion shadow prediction detail.
 .alter-merge table BehaviorStateTrainingRows (
     PredictedConfusionRisk: string,
     ConfusionModelVersion:  string,
     ConfusionPredictionUtc: datetime
 )
 
-// Phase 7B — stable mastery shadow prediction detail (add to any database provisioned before Phase 7B)
+// Phase 7B — stable mastery shadow prediction detail.
 .alter-merge table BehaviorStateTrainingRows (
     PredictedStableMasteryState: string,
     StableMasteryModelVersion:   string,
     StableMasteryPredictionUtc:  datetime
 )
 
-// Phase 7C — multi-signal guardrail summary (add to any database provisioned before Phase 7C)
+// Phase 7C — multi-signal guardrail summary.
 .alter-merge table BehaviorStateTrainingRows (
-    GuardrailOverallBehaviorState:        string,
-    GuardrailConfusionSignalAgreement:    bool,
+    GuardrailOverallBehaviorState:         string,
+    GuardrailConfusionSignalAgreement:     bool,
     GuardrailStableMasterySignalAgreement: bool,
-    GuardrailHintDependenceRiskLevel:     string,
-    GuardrailConflictCount:               int,
-    GuardrailWarnings:                    string
+    GuardrailHintDependenceRiskLevel:      string,
+    GuardrailConflictCount:                int,
+    GuardrailWarnings:                     string
 )
 
-// Phase 8A — ML-assisted gated guardrail modifier (add to any database provisioned before Phase 8A)
+// Phase 8A — ML-assisted gated guardrail modifier.
 // Null for adaptation decisions produced before Phase 8A was enabled.
 .alter-merge table AdaptationDecisions_v2 (
     Phase8AGuardrailNotes: string
+)
+
+// Phase 8A — AdaptationDecisionId back-fill for databases
+// provisioned before AdaptationDecisionId was added to the row.
+.alter-merge table AdaptationDecisions_v2 (
+    AdaptationDecisionId: string
+)
+
+// Phase 8E — policy reliability weighting audit columns.
+// Null for adaptation decisions produced before Phase 8E was enabled.
+.alter-merge table AdaptationDecisions_v2 (
+    Phase8EReliabilityNotes: string,
+    Phase8EReliabilityMode:  string
 )
 
 
 // ============================================================
 // Named CSV ingestion mappings
 // ============================================================
-// Three tables use named CSV mappings referenced by AdxIngestionService:
-//
-//   RawEvents              → RawEventsCsvMapping         (positional, no change needed)
-//   BehaviorProfiles       → BehaviorProfilesCsvMapping  (8 columns, positional)
-//   BehaviorStateTrainingRows → BehaviorStateTrainingRowsCsvMapping (47 columns — see below)
-//
-// The mapping below covers all 53 columns in the exact order produced by
-// BuildBehaviorStateTrainingRowsTable in AdxIngestionService.cs.
-// Ordinals 41-43 are the Phase 7A addition.
-// Ordinals 44-46 are the Phase 7B addition.
-// Ordinals 47-52 are the Phase 7C addition; run this to update a stale mapping.
+// Every table has a named CSV mapping referenced by name in
+// AdxIngestionService.  Column ordinals must exactly match the
+// column-add order in the corresponding Build*Table method.
+// Run .create-or-alter to update a stale mapping in place.
 // ============================================================
 
-.create-or-alter table BehaviorStateTrainingRows ingestion csv mapping 'BehaviorStateTrainingRowsCsvMapping'
+// ── RawEventsCsvMapping (17 columns) ─────────────────────────
+// Matches BuildRawEventsTable in AdxIngestionService.cs.
+
+.create-or-alter table RawEvents ingestion csv mapping 'RawEventsCsvMapping'
 '['
-'  {"Name":"SessionId",                       "Ordinal":0},'
-'  {"Name":"UserId",                          "Ordinal":1},'
-'  {"Name":"SimId",                           "Ordinal":2},'
-'  {"Name":"ScenarioId",                      "Ordinal":3},'
-'  {"Name":"WindowIndex",                     "Ordinal":4},'
-'  {"Name":"TaskType",                        "Ordinal":5},'
-'  {"Name":"CreatedAtUtc",                    "Ordinal":6},'
-'  {"Name":"AttentionDetection",              "Ordinal":7},'
-'  {"Name":"GoalUnderstanding",               "Ordinal":8},'
-'  {"Name":"ProcedureSequencing",             "Ordinal":9},'
-'  {"Name":"PaceRegulation",                  "Ordinal":10},'
-'  {"Name":"SelfCorrection",                  "Ordinal":11},'
-'  {"Name":"FeedbackResponsiveness",          "Ordinal":12},'
-'  {"Name":"SafetyCompliance",                "Ordinal":13},'
-'  {"Name":"TaskContinuity",                  "Ordinal":14},'
-'  {"Name":"ConfusionScore",                  "Ordinal":15},'
-'  {"Name":"HesitationScore",                 "Ordinal":16},'
-'  {"Name":"ImpulsivityScore",                "Ordinal":17},'
-'  {"Name":"HintDependenceScore",             "Ordinal":18},'
-'  {"Name":"GoalTrend",                       "Ordinal":19},'
-'  {"Name":"AttentionTrend",                  "Ordinal":20},'
-'  {"Name":"ConfusionTrend",                  "Ordinal":21},'
-'  {"Name":"HintDependenceTrend",             "Ordinal":22},'
-'  {"Name":"CurrentHintMode",                 "Ordinal":23},'
-'  {"Name":"CurrentDifficulty",               "Ordinal":24},'
-'  {"Name":"CurrentTimePressure",             "Ordinal":25},'
-'  {"Name":"CurrentErrorTolerance",           "Ordinal":26},'
-'  {"Name":"ConsecutiveStableMasteryWindows", "Ordinal":27},'
-'  {"Name":"ConsecutiveRelapseWindows",       "Ordinal":28},'
-'  {"Name":"EventCountInWindow",              "Ordinal":29},'
-'  {"Name":"ErrorCountInWindow",              "Ordinal":30},'
-'  {"Name":"HintCountInWindow",               "Ordinal":31},'
-'  {"Name":"StepCompleteCountInWindow",       "Ordinal":32},'
-'  {"Name":"LabelConfusion",                  "Ordinal":33},'
-'  {"Name":"LabelHintDependence",             "Ordinal":34},'
-'  {"Name":"LabelStableMastery",              "Ordinal":35},'
-'  {"Name":"PredConfusionProbability",        "Ordinal":36},'
-'  {"Name":"PredHintDependenceProbability",   "Ordinal":37},'
-'  {"Name":"PredStableMasteryProbability",    "Ordinal":38},'
-'  {"Name":"ModelVersion",                    "Ordinal":39},'
-'  {"Name":"InferenceMode",                   "Ordinal":40},'
-'  {"Name":"PredictedConfusionRisk",          "Ordinal":41},'
-'  {"Name":"ConfusionModelVersion",           "Ordinal":42},'
-'  {"Name":"ConfusionPredictionUtc",          "Ordinal":43},'
-'  {"Name":"PredictedStableMasteryState",          "Ordinal":44},'
-'  {"Name":"StableMasteryModelVersion",            "Ordinal":45},'
-'  {"Name":"StableMasteryPredictionUtc",           "Ordinal":46},'
-'  {"Name":"GuardrailOverallBehaviorState",        "Ordinal":47},'
-'  {"Name":"GuardrailConfusionSignalAgreement",    "Ordinal":48},'
-'  {"Name":"GuardrailStableMasterySignalAgreement","Ordinal":49},'
-'  {"Name":"GuardrailHintDependenceRiskLevel",     "Ordinal":50},'
-'  {"Name":"GuardrailConflictCount",               "Ordinal":51},'
-'  {"Name":"GuardrailWarnings",                    "Ordinal":52}'
+'  {"Name":"SessionId",      "Ordinal":0},'
+'  {"Name":"UserId",         "Ordinal":1},'
+'  {"Name":"SimId",          "Ordinal":2},'
+'  {"Name":"SimVersion",     "Ordinal":3},'
+'  {"Name":"ScenarioId",     "Ordinal":4},'
+'  {"Name":"BatchId",        "Ordinal":5},'
+'  {"Name":"BatchSequence",  "Ordinal":6},'
+'  {"Name":"EventId",        "Ordinal":7},'
+'  {"Name":"SequenceNumber", "Ordinal":8},'
+'  {"Name":"TimestampUtc",   "Ordinal":9},'
+'  {"Name":"EventType",      "Ordinal":10},'
+'  {"Name":"Category",       "Ordinal":11},'
+'  {"Name":"Actor",          "Ordinal":12},'
+'  {"Name":"Target",         "Ordinal":13},'
+'  {"Name":"Metrics",        "Ordinal":14},'
+'  {"Name":"Context",        "Ordinal":15},'
+'  {"Name":"Payload",        "Ordinal":16}'
 ']'
 
-// BehaviorProfiles mapping (8 columns)
+
+// ── FeatureWindowsCsvMapping (12 columns) ────────────────────
+// Matches BuildFeatureWindowsTable in AdxIngestionService.cs.
+
+.create-or-alter table FeatureWindows ingestion csv mapping 'FeatureWindowsCsvMapping'
+'['
+'  {"Name":"SessionId",               "Ordinal":0},'
+'  {"Name":"UserId",                  "Ordinal":1},'
+'  {"Name":"WindowIndex",             "Ordinal":2},'
+'  {"Name":"WindowType",              "Ordinal":3},'
+'  {"Name":"WindowStartSequence",     "Ordinal":4},'
+'  {"Name":"WindowEndSequence",       "Ordinal":5},'
+'  {"Name":"WindowStartUtc",          "Ordinal":6},'
+'  {"Name":"WindowEndUtc",            "Ordinal":7},'
+'  {"Name":"SimId",                   "Ordinal":8},'
+'  {"Name":"ScenarioId",              "Ordinal":9},'
+'  {"Name":"FeatureExtractorVersion", "Ordinal":10},'
+'  {"Name":"Features",                "Ordinal":11}'
+']'
+
+
+// ── HypothesisSetsCsvMapping (8 columns) ─────────────────────
+// Matches BuildHypothesisSetsTable in AdxIngestionService.cs.
+
+.create-or-alter table HypothesisSets ingestion csv mapping 'HypothesisSetsCsvMapping'
+'['
+'  {"Name":"SessionId",               "Ordinal":0},'
+'  {"Name":"UserId",                  "Ordinal":1},'
+'  {"Name":"WindowIndex",             "Ordinal":2},'
+'  {"Name":"SourceBehaviorProfileId", "Ordinal":3},'
+'  {"Name":"InterpreterMode",         "Ordinal":4},'
+'  {"Name":"InterpreterVersion",      "Ordinal":5},'
+'  {"Name":"Hypotheses",              "Ordinal":6},'
+'  {"Name":"CreatedAtUtc",            "Ordinal":7}'
+']'
+
+
+// ── AdaptationDecisionsV2CsvMapping (17 columns) ─────────────
+// Matches BuildAdaptationDecisionsTable in AdxIngestionService.cs.
+// AdaptationDecisionId is at ordinal 2.
+// DecisionIndex is at ordinal 3.
+// Phase8AGuardrailNotes is at ordinal 14.
+// Phase8EReliabilityNotes is at ordinal 15.
+// Phase8EReliabilityMode is at ordinal 16.
+
+.create-or-alter table AdaptationDecisions_v2 ingestion csv mapping 'AdaptationDecisionsV2CsvMapping'
+'['
+'  {"Name":"SessionId",                            "Ordinal":0},'
+'  {"Name":"UserId",                               "Ordinal":1},'
+'  {"Name":"AdaptationDecisionId",                 "Ordinal":2},'
+'  {"Name":"DecisionIndex",                        "Ordinal":3},'
+'  {"Name":"SourceHypothesisSetId",                "Ordinal":4},'
+'  {"Name":"PolicyVersion",                        "Ordinal":5},'
+'  {"Name":"InterventionFamilies",                 "Ordinal":6},'
+'  {"Name":"ParameterChanges",                     "Ordinal":7},'
+'  {"Name":"ReasoningSummary",                     "Ordinal":8},'
+'  {"Name":"ExpiresAfterWindow",                   "Ordinal":9},'
+'  {"Name":"CreatedAtUtc",                         "Ordinal":10},'
+'  {"Name":"HintDependenceNextProbability",        "Ordinal":11},'
+'  {"Name":"NextHintDependenceGuardrailTriggered", "Ordinal":12},'
+'  {"Name":"NextHintDependenceGuardrailLevel",     "Ordinal":13},'
+'  {"Name":"Phase8AGuardrailNotes",                "Ordinal":14},'
+'  {"Name":"Phase8EReliabilityNotes",              "Ordinal":15},'
+'  {"Name":"Phase8EReliabilityMode",               "Ordinal":16}'
+']'
+
+
+// ── BehaviorProfilesCsvMapping (8 columns) ───────────────────
+// Matches BuildBehaviorProfilesTable in AdxIngestionService.cs.
+
 .create-or-alter table BehaviorProfiles ingestion csv mapping 'BehaviorProfilesCsvMapping'
 '['
 '  {"Name":"SessionId",             "Ordinal":0},'
@@ -308,4 +489,157 @@
 '  {"Name":"DimensionScores",       "Ordinal":5},'
 '  {"Name":"BehaviorScores",        "Ordinal":6},'
 '  {"Name":"CreatedAtUtc",          "Ordinal":7}'
+']'
+
+
+// ── BehaviorStateTrainingRowsCsvMapping (53 columns) ─────────
+// Matches BuildBehaviorStateTrainingRowsTable in AdxIngestionService.cs.
+// Ordinals 0-40:  base columns (identity, features, labels, shadow)
+// Ordinals 41-43: Phase 7A — confusion shadow prediction detail
+// Ordinals 44-46: Phase 7B — stable mastery shadow prediction detail
+// Ordinals 47-52: Phase 7C — multi-signal guardrail summary
+
+.create-or-alter table BehaviorStateTrainingRows ingestion csv mapping 'BehaviorStateTrainingRowsCsvMapping'
+'['
+'  {"Name":"SessionId",                        "Ordinal":0},'
+'  {"Name":"UserId",                           "Ordinal":1},'
+'  {"Name":"SimId",                            "Ordinal":2},'
+'  {"Name":"ScenarioId",                       "Ordinal":3},'
+'  {"Name":"WindowIndex",                      "Ordinal":4},'
+'  {"Name":"TaskType",                         "Ordinal":5},'
+'  {"Name":"CreatedAtUtc",                     "Ordinal":6},'
+'  {"Name":"AttentionDetection",               "Ordinal":7},'
+'  {"Name":"GoalUnderstanding",                "Ordinal":8},'
+'  {"Name":"ProcedureSequencing",              "Ordinal":9},'
+'  {"Name":"PaceRegulation",                   "Ordinal":10},'
+'  {"Name":"SelfCorrection",                   "Ordinal":11},'
+'  {"Name":"FeedbackResponsiveness",           "Ordinal":12},'
+'  {"Name":"SafetyCompliance",                 "Ordinal":13},'
+'  {"Name":"TaskContinuity",                   "Ordinal":14},'
+'  {"Name":"ConfusionScore",                   "Ordinal":15},'
+'  {"Name":"HesitationScore",                  "Ordinal":16},'
+'  {"Name":"ImpulsivityScore",                 "Ordinal":17},'
+'  {"Name":"HintDependenceScore",              "Ordinal":18},'
+'  {"Name":"GoalTrend",                        "Ordinal":19},'
+'  {"Name":"AttentionTrend",                   "Ordinal":20},'
+'  {"Name":"ConfusionTrend",                   "Ordinal":21},'
+'  {"Name":"HintDependenceTrend",              "Ordinal":22},'
+'  {"Name":"CurrentHintMode",                  "Ordinal":23},'
+'  {"Name":"CurrentDifficulty",                "Ordinal":24},'
+'  {"Name":"CurrentTimePressure",              "Ordinal":25},'
+'  {"Name":"CurrentErrorTolerance",            "Ordinal":26},'
+'  {"Name":"ConsecutiveStableMasteryWindows",  "Ordinal":27},'
+'  {"Name":"ConsecutiveRelapseWindows",        "Ordinal":28},'
+'  {"Name":"EventCountInWindow",               "Ordinal":29},'
+'  {"Name":"ErrorCountInWindow",               "Ordinal":30},'
+'  {"Name":"HintCountInWindow",                "Ordinal":31},'
+'  {"Name":"StepCompleteCountInWindow",        "Ordinal":32},'
+'  {"Name":"LabelConfusion",                   "Ordinal":33},'
+'  {"Name":"LabelHintDependence",              "Ordinal":34},'
+'  {"Name":"LabelStableMastery",               "Ordinal":35},'
+'  {"Name":"PredConfusionProbability",         "Ordinal":36},'
+'  {"Name":"PredHintDependenceProbability",    "Ordinal":37},'
+'  {"Name":"PredStableMasteryProbability",     "Ordinal":38},'
+'  {"Name":"ModelVersion",                     "Ordinal":39},'
+'  {"Name":"InferenceMode",                    "Ordinal":40},'
+'  {"Name":"PredictedConfusionRisk",           "Ordinal":41},'
+'  {"Name":"ConfusionModelVersion",            "Ordinal":42},'
+'  {"Name":"ConfusionPredictionUtc",           "Ordinal":43},'
+'  {"Name":"PredictedStableMasteryState",      "Ordinal":44},'
+'  {"Name":"StableMasteryModelVersion",        "Ordinal":45},'
+'  {"Name":"StableMasteryPredictionUtc",       "Ordinal":46},'
+'  {"Name":"GuardrailOverallBehaviorState",         "Ordinal":47},'
+'  {"Name":"GuardrailConfusionSignalAgreement",     "Ordinal":48},'
+'  {"Name":"GuardrailStableMasterySignalAgreement", "Ordinal":49},'
+'  {"Name":"GuardrailHintDependenceRiskLevel",      "Ordinal":50},'
+'  {"Name":"GuardrailConflictCount",                "Ordinal":51},'
+'  {"Name":"GuardrailWarnings",                     "Ordinal":52}'
+']'
+
+
+// ── UserBehaviorProfilesCsvMapping (27 columns) ──────────────
+// Matches BuildUserBehaviorProfilesTable in AdxIngestionService.cs.
+// Nullable threshold columns use DBNull when the user relies on
+// the global default; ADX stores these as null.
+
+.create-or-alter table UserBehaviorProfiles ingestion csv mapping 'UserBehaviorProfilesCsvMapping'
+'['
+'  {"Name":"UserId",                                            "Ordinal":0},'
+'  {"Name":"CreatedAtUtc",                                      "Ordinal":1},'
+'  {"Name":"UpdatedAtUtc",                                      "Ordinal":2},'
+'  {"Name":"LastSessionId",                                     "Ordinal":3},'
+'  {"Name":"TotalSessions",                                     "Ordinal":4},'
+'  {"Name":"TotalWindows",                                      "Ordinal":5},'
+'  {"Name":"AvgConfusionScore",                                 "Ordinal":6},'
+'  {"Name":"AvgHintDependenceScore",                            "Ordinal":7},'
+'  {"Name":"AvgHesitationScore",                                "Ordinal":8},'
+'  {"Name":"AvgGoalUnderstanding",                              "Ordinal":9},'
+'  {"Name":"AvgAttentionDetection",                             "Ordinal":10},'
+'  {"Name":"AvgProcedureSequencing",                            "Ordinal":11},'
+'  {"Name":"AvgSelfCorrection",                                 "Ordinal":12},'
+'  {"Name":"AvgTaskContinuity",                                 "Ordinal":13},'
+'  {"Name":"StableMasteryRate",                                 "Ordinal":14},'
+'  {"Name":"ConfusionRate",                                     "Ordinal":15},'
+'  {"Name":"HintDependenceRate",                                "Ordinal":16},'
+'  {"Name":"ConfusionBlockDifficultyIncreaseThreshold",         "Ordinal":17},'
+'  {"Name":"HintFadeConfusionDeltaThreshold",                   "Ordinal":18},'
+'  {"Name":"HintFadeHintDependenceDeltaThreshold",              "Ordinal":19},'
+'  {"Name":"HintFadeMaxCurrentConfusionScore",                  "Ordinal":20},'
+'  {"Name":"HintFadeMinCurrentGoalUnderstanding",               "Ordinal":21},'
+'  {"Name":"DifficultyAccelerationConfusionDeltaThreshold",     "Ordinal":22},'
+'  {"Name":"DifficultyAccelerationHintDependenceDeltaThreshold","Ordinal":23},'
+'  {"Name":"DifficultyAccelerationMaxCurrentConfusionScore",    "Ordinal":24},'
+'  {"Name":"DifficultyAccelerationMinCurrentGoalUnderstanding", "Ordinal":25},'
+'  {"Name":"DifficultyAccelerationDelta",                       "Ordinal":26}'
+']'
+
+
+// ── UserBehaviorProfileUpdatesCsvMapping (15 columns) ────────
+// Matches BuildUserBehaviorProfileUpdatesTable in AdxIngestionService.cs.
+
+.create-or-alter table UserBehaviorProfileUpdates ingestion csv mapping 'UserBehaviorProfileUpdatesCsvMapping'
+'['
+'  {"Name":"UserId",                   "Ordinal":0},'
+'  {"Name":"SessionId",                "Ordinal":1},'
+'  {"Name":"WindowIndex",              "Ordinal":2},'
+'  {"Name":"CreatedAtUtc",             "Ordinal":3},'
+'  {"Name":"ConfusionScore",           "Ordinal":4},'
+'  {"Name":"HintDependenceScore",      "Ordinal":5},'
+'  {"Name":"HesitationScore",          "Ordinal":6},'
+'  {"Name":"GoalUnderstanding",        "Ordinal":7},'
+'  {"Name":"AttentionDetection",       "Ordinal":8},'
+'  {"Name":"ProcedureSequencing",      "Ordinal":9},'
+'  {"Name":"SelfCorrection",           "Ordinal":10},'
+'  {"Name":"TaskContinuity",           "Ordinal":11},'
+'  {"Name":"HasStableMastery",         "Ordinal":12},'
+'  {"Name":"HasConfusionPattern",      "Ordinal":13},'
+'  {"Name":"HasHintDependencePattern", "Ordinal":14}'
+']'
+
+
+// ── AdaptationEffectivenessCsvMapping (19 columns) ───────────
+// Phase 8B — matches BuildAdaptationEffectivenessTable in AdxIngestionService.cs.
+// ParameterChanges is at ordinal 5.
+
+.create-or-alter table AdaptationEffectiveness ingestion csv mapping 'AdaptationEffectivenessCsvMapping'
+'['
+'  {"Name":"SessionId",               "Ordinal":0},'
+'  {"Name":"UserId",                  "Ordinal":1},'
+'  {"Name":"AdaptationDecisionId",    "Ordinal":2},'
+'  {"Name":"AdaptationDecisionIndex", "Ordinal":3},'
+'  {"Name":"InterventionFamilies",    "Ordinal":4},'
+'  {"Name":"ParameterChanges",        "Ordinal":5},'
+'  {"Name":"AppliedAtWindowIndex",    "Ordinal":6},'
+'  {"Name":"EvaluatedAtWindowIndex",  "Ordinal":7},'
+'  {"Name":"PreConfusionScore",       "Ordinal":8},'
+'  {"Name":"PreHintDependenceScore",  "Ordinal":9},'
+'  {"Name":"PreGoalUnderstanding",    "Ordinal":10},'
+'  {"Name":"NextConfusionScore",      "Ordinal":11},'
+'  {"Name":"NextHintDependenceScore", "Ordinal":12},'
+'  {"Name":"NextGoalUnderstanding",   "Ordinal":13},'
+'  {"Name":"ConfusionDelta",          "Ordinal":14},'
+'  {"Name":"HintDependenceDelta",     "Ordinal":15},'
+'  {"Name":"GoalUnderstandingDelta",  "Ordinal":16},'
+'  {"Name":"Outcome",                 "Ordinal":17},'
+'  {"Name":"CreatedAtUtc",            "Ordinal":18}'
 ']'
