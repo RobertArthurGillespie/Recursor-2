@@ -29,3 +29,30 @@ public class ParameterChange
     public string Operation { get; set; } = "";
     public object? Value { get; set; }
 }
+
+// Phase 8B — adaptation effectiveness record.
+// Persisted to ADX after the window immediately following an applied adaptation.
+// Observability only; never read back to influence adaptation decisions.
+public class AdaptationEffectivenessDocument
+{
+    public string Id { get; set; } = "";
+    public string DocumentType { get; set; } = "AdaptationEffectiveness";
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public string AdaptationDecisionId { get; set; } = "";
+    public int AdaptationDecisionIndex { get; set; }
+    public List<string> InterventionFamilies { get; set; } = new();
+    public List<ParameterChange> ParameterChanges { get; set; } = new();
+    public int AppliedAtWindowIndex { get; set; }
+    public int EvaluatedAtWindowIndex { get; set; }
+    public double PreConfusionScore { get; set; }
+    public double PreHintDependenceScore { get; set; }
+    public double PreGoalUnderstanding { get; set; }
+    public double NextConfusionScore { get; set; }
+    public double NextHintDependenceScore { get; set; }
+    public double NextGoalUnderstanding { get; set; }
+    public double ConfusionDelta { get; set; }
+    public double HintDependenceDelta { get; set; }
+    public double GoalUnderstandingDelta { get; set; }
+    public string Outcome { get; set; } = ""; // "improved" | "neutral" | "worsened"
+}

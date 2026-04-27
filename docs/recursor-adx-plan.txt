@@ -77,6 +77,7 @@ Note: the live table is AdaptationDecisions_v2 (not AdaptationDecisions).
 Columns:
 - SessionId: string
 - UserId: string
+- AdaptationDecisionId: string
 - DecisionIndex: int
 - SourceHypothesisSetId: string
 - PolicyVersion: string
@@ -88,6 +89,31 @@ Columns:
 - HintDependenceNextProbability: real (nullable)
 - NextHintDependenceGuardrailTriggered: bool
 - NextHintDependenceGuardrailLevel: string (nullable)
+- Phase8AGuardrailNotes: string (nullable)
+
+### AdaptationEffectiveness
+One row per evaluated adaptation window pair. Written the window after an adaptation fires.
+Observability only; never read back to influence adaptation decisions.
+Columns:
+- SessionId: string
+- UserId: string
+- AdaptationDecisionId: string
+- AdaptationDecisionIndex: int
+- InterventionFamilies: dynamic
+- ParameterChanges: dynamic
+- AppliedAtWindowIndex: int
+- EvaluatedAtWindowIndex: int
+- PreConfusionScore: real
+- PreHintDependenceScore: real
+- PreGoalUnderstanding: real
+- NextConfusionScore: real
+- NextHintDependenceScore: real
+- NextGoalUnderstanding: real
+- ConfusionDelta: real
+- HintDependenceDelta: real
+- GoalUnderstandingDelta: real
+- Outcome: string  // "improved" | "neutral" | "worsened"
+- CreatedAtUtc: datetime
 
 ### BehaviorStateTrainingRows
 One row per feature window. Used for shadow ML model training and evaluation.

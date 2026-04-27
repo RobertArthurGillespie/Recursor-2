@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NCATAIBlazorFrontendTest.Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7fda0f8f7a2bf76837a1ceb7bba4f33c29729f10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+63a026ba728f80d389180cc4a661646aeb306647")]
 [assembly: System.Reflection.AssemblyProductAttribute("NCATAIBlazorFrontendTest.Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NCATAIBlazorFrontendTest.Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

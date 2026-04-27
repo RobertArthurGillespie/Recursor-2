@@ -44,6 +44,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IUserProfileUpdateService _userProfileUpdateService;
     private readonly IMultiSignalGuardrailService _multiSignalGuardrail;
     private readonly IPhase8AGuardrailModifierService _phase8aModifier;
+    private readonly IAdaptationEffectivenessService _adaptationEffectiveness;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -64,6 +65,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     IUserProfileUpdateService userProfileUpdateService,
     IMultiSignalGuardrailService multiSignalGuardrail,
     IPhase8AGuardrailModifierService phase8aModifier,
+    IAdaptationEffectivenessService adaptationEffectiveness,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -83,6 +85,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _userProfileUpdateService = userProfileUpdateService;
         _multiSignalGuardrail = multiSignalGuardrail;
         _phase8aModifier = phase8aModifier;
+        _adaptationEffectiveness = adaptationEffectiveness;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -350,6 +353,39 @@ public class RecursorIngestionService : IRecursorIngestionService
             }
         }
 
+        // Phase 8B: adaptation effectiveness evaluation — observability only, never blocks pipeline.
+        // Checks whether the previous window's adaptation improved learner behavior in this window.
+        if (featureVector is not null)
+        {
+            try
+            {
+                var effectivenessDoc = _adaptationEffectiveness.EvaluateNextWindow(session.SessionId, featureVector);
+                if (effectivenessDoc is not null)
+                {
+                    await _adxIngestion.IngestAdaptationEffectivenessAsync(
+                        AdxRowMapper.MapAdaptationEffectiveness(effectivenessDoc));
+                    _logger.LogInformation(
+                        "Adaptation effectiveness evaluated. SessionId={SessionId} " +
+                        "DecisionIndex={DecisionIndex} AppliedAtWindow={AppliedAt} " +
+                        "EvaluatedAtWindow={EvaluatedAt} ConfusionDelta={ConfusionDelta:0.000} " +
+                        "Outcome={Outcome} Families=[{Families}]",
+                        session.SessionId,
+                        effectivenessDoc.AdaptationDecisionIndex,
+                        effectivenessDoc.AppliedAtWindowIndex,
+                        effectivenessDoc.EvaluatedAtWindowIndex,
+                        effectivenessDoc.ConfusionDelta,
+                        effectivenessDoc.Outcome,
+                        string.Join(", ", effectivenessDoc.InterventionFamilies));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Adaptation effectiveness evaluation failed for session {SessionId}. Continuing pipeline.",
+                    session.SessionId);
+            }
+        }
+
         // Step 12: Ingest hypothesis set into ADX.
         await _adxIngestion.IngestHypothesisSetAsync(AdxRowMapper.MapHypothesisSet(hypothesisSet));
         session.LatestHypothesisSetId = hypothesisSet.Id;
@@ -491,6 +527,12 @@ public class RecursorIngestionService : IRecursorIngestionService
         session.LastSeenAtUtc = DateTime.UtcNow;
 
         _sessionRepository.Update(session);
+
+        // Phase 8B: record this adaptation so the next window can evaluate its effectiveness.
+        if (featureVector is not null)
+        {
+            _adaptationEffectiveness.RecordAppliedAdaptation(session.SessionId, adaptation, featureVector);
+        }
 
         _logger.LogInformation(
             "Adaptation produced for session {SessionId}: {Summary}. CurrentDifficultyProfile hintMode={HintMode}",

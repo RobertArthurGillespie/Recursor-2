@@ -125,6 +125,8 @@ builder.Services.AddScoped<IExplanationGenerationService, AzureOpenAiExplanation
 builder.Services.AddScoped<IBehaviorStateFeatureVectorBuilder, BehaviorStateFeatureVectorBuilder>();
 builder.Services.AddScoped<IMultiSignalGuardrailService, MultiSignalGuardrailService>();
 builder.Services.AddScoped<IPhase8AGuardrailModifierService, Phase8AGuardrailModifierService>();
+// Phase 8B: singleton — holds pending adaptation evaluations across requests.
+builder.Services.AddSingleton<IAdaptationEffectivenessService, AdaptationEffectivenessService>();
 // Recursor ML prediction: use real ML.NET service if at least one model file is configured
 // and present; otherwise fall back to the no-op shadow service so the app starts without
 // any trained models.

@@ -98,6 +98,7 @@ public static class AdxRowMapper
         {
             SessionId = doc.SessionId,
             UserId = doc.UserId,
+            AdaptationDecisionId = doc.Id,
             DecisionIndex = doc.DecisionIndex,
             SourceHypothesisSetId = doc.SourceHypothesisSetId,
             PolicyVersion = "1.0",
@@ -203,6 +204,32 @@ public static class AdxRowMapper
                 : "",
         };
     }
+
+    // ── Phase 8B: adaptation effectiveness row mapping ───────────────────────
+
+    public static AdaptationEffectivenessRow MapAdaptationEffectiveness(AdaptationEffectivenessDocument doc) =>
+        new()
+        {
+            SessionId               = doc.SessionId,
+            UserId                  = doc.UserId,
+            AdaptationDecisionId    = doc.AdaptationDecisionId,
+            AdaptationDecisionIndex = doc.AdaptationDecisionIndex,
+            InterventionFamilies    = JsonSerializer.SerializeToElement(doc.InterventionFamilies, JsonOpts),
+            ParameterChanges        = JsonSerializer.SerializeToElement(doc.ParameterChanges, JsonOpts),
+            AppliedAtWindowIndex    = doc.AppliedAtWindowIndex,
+            EvaluatedAtWindowIndex  = doc.EvaluatedAtWindowIndex,
+            PreConfusionScore       = doc.PreConfusionScore,
+            PreHintDependenceScore  = doc.PreHintDependenceScore,
+            PreGoalUnderstanding    = doc.PreGoalUnderstanding,
+            NextConfusionScore      = doc.NextConfusionScore,
+            NextHintDependenceScore = doc.NextHintDependenceScore,
+            NextGoalUnderstanding   = doc.NextGoalUnderstanding,
+            ConfusionDelta          = doc.ConfusionDelta,
+            HintDependenceDelta     = doc.HintDependenceDelta,
+            GoalUnderstandingDelta  = doc.GoalUnderstandingDelta,
+            Outcome                 = doc.Outcome,
+            CreatedAtUtc            = DateTime.UtcNow,
+        };
 
     // ── Phase 6B: user profile row mappings ──────────────────────────────────
 

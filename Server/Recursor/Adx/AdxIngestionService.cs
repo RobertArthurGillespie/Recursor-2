@@ -17,6 +17,7 @@ public interface IAdxIngestionService
     Task IngestBehaviorStateTrainingRowAsync(BehaviorStateTrainingRow row);
     Task IngestUserBehaviorProfileAsync(UserBehaviorProfileRow row);
     Task IngestUserBehaviorProfileUpdateAsync(UserBehaviorProfileUpdateRow row);
+    Task IngestAdaptationEffectivenessAsync(AdaptationEffectivenessRow row);
 }
 
 public class AdxIngestionService : IAdxIngestionService
@@ -191,6 +192,25 @@ public class AdxIngestionService : IAdxIngestionService
         await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
+    public async Task IngestAdaptationEffectivenessAsync(AdaptationEffectivenessRow row)
+    {
+        if (!CheckClient("AdaptationEffectiveness")) return;
+
+        var table = BuildAdaptationEffectivenessTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "AdaptationEffectiveness")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "AdaptationEffectivenessCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
     // ── DataTable builders ────────────────────────────────────────────────────
     // Each method defines columns that match the ADX table schema in recursor-adx-plan.txt.
     // Dynamic ADX columns are sent as JSON strings; ADX auto-parses them into dynamic values.
@@ -333,6 +353,7 @@ public class AdxIngestionService : IAdxIngestionService
         var table = new DataTable("AdaptationDecisions_v2");
         table.Columns.Add("SessionId",                            typeof(string));
         table.Columns.Add("UserId",                               typeof(string));
+        table.Columns.Add("AdaptationDecisionId",                 typeof(string));
         table.Columns.Add("DecisionIndex",                        typeof(int));
         table.Columns.Add("SourceHypothesisSetId",                typeof(string));
         table.Columns.Add("PolicyVersion",                        typeof(string));
@@ -349,6 +370,7 @@ public class AdxIngestionService : IAdxIngestionService
         table.Rows.Add(
             row.SessionId,
             row.UserId,
+            row.AdaptationDecisionId,
             row.DecisionIndex,
             row.SourceHypothesisSetId,
             row.PolicyVersion,
@@ -605,6 +627,54 @@ public class AdxIngestionService : IAdxIngestionService
             row.HasStableMastery,
             row.HasConfusionPattern,
             row.HasHintDependencePattern
+        );
+
+        return table;
+    }
+
+    private static DataTable BuildAdaptationEffectivenessTable(AdaptationEffectivenessRow row)
+    {
+        var table = new DataTable("AdaptationEffectiveness");
+        table.Columns.Add("SessionId",               typeof(string));
+        table.Columns.Add("UserId",                  typeof(string));
+        table.Columns.Add("AdaptationDecisionId",    typeof(string));
+        table.Columns.Add("AdaptationDecisionIndex", typeof(int));
+        table.Columns.Add("InterventionFamilies",    typeof(string)); // dynamic — JSON array
+        table.Columns.Add("ParameterChanges",        typeof(string)); // dynamic — JSON array
+        table.Columns.Add("AppliedAtWindowIndex",    typeof(int));
+        table.Columns.Add("EvaluatedAtWindowIndex",  typeof(int));
+        table.Columns.Add("PreConfusionScore",       typeof(double));
+        table.Columns.Add("PreHintDependenceScore",  typeof(double));
+        table.Columns.Add("PreGoalUnderstanding",    typeof(double));
+        table.Columns.Add("NextConfusionScore",      typeof(double));
+        table.Columns.Add("NextHintDependenceScore", typeof(double));
+        table.Columns.Add("NextGoalUnderstanding",   typeof(double));
+        table.Columns.Add("ConfusionDelta",          typeof(double));
+        table.Columns.Add("HintDependenceDelta",     typeof(double));
+        table.Columns.Add("GoalUnderstandingDelta",  typeof(double));
+        table.Columns.Add("Outcome",                 typeof(string));
+        table.Columns.Add("CreatedAtUtc",            typeof(DateTime));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.UserId,
+            row.AdaptationDecisionId,
+            row.AdaptationDecisionIndex,
+            row.InterventionFamilies.GetRawText(),
+            row.ParameterChanges.GetRawText(),
+            row.AppliedAtWindowIndex,
+            row.EvaluatedAtWindowIndex,
+            row.PreConfusionScore,
+            row.PreHintDependenceScore,
+            row.PreGoalUnderstanding,
+            row.NextConfusionScore,
+            row.NextHintDependenceScore,
+            row.NextGoalUnderstanding,
+            row.ConfusionDelta,
+            row.HintDependenceDelta,
+            row.GoalUnderstandingDelta,
+            row.Outcome,
+            row.CreatedAtUtc
         );
 
         return table;

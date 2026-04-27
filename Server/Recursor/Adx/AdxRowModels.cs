@@ -72,6 +72,7 @@ public class AdaptationDecisionRow
 {
     public string SessionId { get; set; } = "";
     public string UserId { get; set; } = "";
+    public string AdaptationDecisionId { get; set; } = "";
     public int DecisionIndex { get; set; }
     public string SourceHypothesisSetId { get; set; } = "";
     public string PolicyVersion { get; set; } = "1.0";
@@ -168,6 +169,32 @@ public class BehaviorStateTrainingRow
     public string GuardrailHintDependenceRiskLevel { get; set; } = "";
     public int GuardrailConflictCount { get; set; }
     public string GuardrailWarnings { get; set; } = "";  // pipe-separated; use split(" | ") in KQL
+}
+
+// ── AdaptationEffectiveness row — Phase 8B ────────────────────────────────────
+// One row per evaluated adaptation window pair.  Written the window after an
+// adaptation fires; never used to influence adaptation decisions.
+public class AdaptationEffectivenessRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public string AdaptationDecisionId { get; set; } = "";
+    public int AdaptationDecisionIndex { get; set; }
+    public JsonElement InterventionFamilies { get; set; }  // dynamic — JSON array
+    public JsonElement ParameterChanges { get; set; }      // dynamic — JSON array
+    public int AppliedAtWindowIndex { get; set; }
+    public int EvaluatedAtWindowIndex { get; set; }
+    public double PreConfusionScore { get; set; }
+    public double PreHintDependenceScore { get; set; }
+    public double PreGoalUnderstanding { get; set; }
+    public double NextConfusionScore { get; set; }
+    public double NextHintDependenceScore { get; set; }
+    public double NextGoalUnderstanding { get; set; }
+    public double ConfusionDelta { get; set; }
+    public double HintDependenceDelta { get; set; }
+    public double GoalUnderstandingDelta { get; set; }
+    public string Outcome { get; set; } = "";  // "improved" | "neutral" | "worsened"
+    public DateTime CreatedAtUtc { get; set; }
 }
 
 // ── UserBehaviorProfiles row ──────────────────────────────────────────────────
