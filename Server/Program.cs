@@ -108,6 +108,9 @@ builder.Services.AddSingleton<IAdxModelEvaluationQueryService, AdxModelEvaluatio
 builder.Services.AddSingleton<IAdxUserBaselineQueryService, AdxUserBaselineQueryService>();
 builder.Services.AddSingleton<IAdxUserProfileQueryService, AdxUserProfileQueryService>();
 builder.Services.AddSingleton<IAdxTrainingExportService, AdxTrainingExportService>();
+// Phase 9A: offline policy recommendation engine (analytics-only, never called on hot path).
+builder.Services.AddSingleton<IAdxPolicyRecommendationQueryService, AdxPolicyRecommendationQueryService>();
+builder.Services.AddSingleton<IPolicyRecommendationService, PolicyRecommendationService>();
 builder.Services.AddSingleton<IUserRelativeSignalService, UserRelativeSignalService>();
 builder.Services.AddSingleton<IUserRelativePolicyAdvisorService, UserRelativePolicyAdvisorService>();
 builder.Services.AddSingleton<IUserThresholdDerivationService, UserThresholdDerivationService>();

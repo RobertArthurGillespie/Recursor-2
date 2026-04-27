@@ -10,10 +10,14 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers;
 public class RecursorController : ControllerBase
 {
     private readonly IRecursorSessionService _sessionService;
+    private readonly IPolicyRecommendationService _policyRecommendationService;
 
-    public RecursorController(IRecursorSessionService sessionService)
+    public RecursorController(
+        IRecursorSessionService sessionService,
+        IPolicyRecommendationService policyRecommendationService)
     {
         _sessionService = sessionService;
+        _policyRecommendationService = policyRecommendationService;
     }
 
     /// <summary>POST /api/recursor/sessions/start</summary>
@@ -60,5 +64,19 @@ public class RecursorController : ControllerBase
     {
         await _sessionService.EndSessionAsync(sessionId);
         return Ok();
+    }
+
+    /// <summary>
+    /// GET /api/recursor/policy-recommendations
+    ///
+    /// Offline / analytics-only. Queries AdaptationEffectiveness in ADX and returns
+    /// per-family reliability tiers and segmented breakdown by learner state.
+    /// Not called during live adaptation decisions — safe to invoke at any time.
+    /// </summary>
+    [HttpGet("policy-recommendations")]
+    public async Task<IActionResult> GetPolicyRecommendations()
+    {
+        var result = await _policyRecommendationService.GenerateRecommendationsAsync();
+        return Ok(result);
     }
 }

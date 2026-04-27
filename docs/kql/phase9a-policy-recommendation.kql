@@ -1,0 +1,215 @@
+// ============================================================
+// Phase 9A — Offline Policy Recommendation Engine
+// ============================================================
+// These are the four KQL queries executed internally by
+// PolicyRecommendationService / AdxPolicyRecommendationQueryService.
+//
+// Run each block independently in the ADX Web UI for manual inspection.
+//
+// Output tier logic (mirrors Phase 8D PolicyFamilyReliability):
+//   "insufficient-data" — SampleCount < 10
+//   "risky"             — WorsenedRate >= 0.35  (harm rate vetoes gain rate)
+//   "promising"         — ImprovedRate >= 0.60 AND WorsenedRate <= 0.20
+//   "neutral"           — all other cases
+//
+// Additional tier assigned in C# (not by these KQL queries):
+//   "conditional" — family is "promising" in at least one behavior-state segment
+//                   AND "risky" in at least one other; do not apply unconditionally.
+//
+// Delta sign conventions:
+//   ConfusionDelta < 0 is good (confusion dropped)
+//
+// These queries are OFFLINE ONLY and never run during live adaptation decisions.
+// ============================================================
+
+
+// ── Q0: Total AdaptationEffectiveness row count ───────────────────────────
+// Used by: AdxPolicyRecommendationQueryService.GetTotalEffectivenessRowsAsync()
+//
+// This is the true denominator for coverage reporting.
+// TotalEffectivenessRowsAnalyzed in PolicyRecommendationResult reflects this count,
+// not the number of aggregated result rows.
+
+AdaptationEffectiveness | count
+
+
+// ── Q1: Global effectiveness — all rows, no learner-state join ────────────
+// Used by: AdxPolicyRecommendationQueryService.GetGlobalEffectivenessAsync()
+//
+// How to interpret:
+//   Each row in AdaptationEffectiveness may cover multiple families (mv-expand).
+//   SampleCount is the number of evaluated window pairs for that family.
+//   AvgConfusionDelta < 0 means the family is associated with confusion reduction on average.
+//   WorsenedRate > 0.30 is a warning signal even before the 0.35 threshold.
+//   This is the primary leaderboard before segmentation.
+
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == 'improved'),
+    NeutralCount  = countif(Outcome == 'neutral'),
+    WorsenedCount = countif(Outcome == 'worsened'),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family)
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3),
+    NeutralRate  = round(todouble(NeutralCount)  / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       'insufficient-data',
+    WorsenedRate >= 0.35,                                   'risky',
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          'promising',
+    'neutral'
+  )
+| project InterventionFamily, SampleCount, ImprovedRate, WorsenedRate, NeutralRate,
+          AvgConfusionDelta, ReliabilityTier
+| order by
+    case(ReliabilityTier, 'promising', 0, 'neutral', 1, 'risky', 2, 'insufficient-data', 3, 4) asc,
+    ImprovedRate desc
+
+
+// ── Q2: Segmented by GuardrailOverallBehaviorState ────────────────────────
+// Used by: AdxPolicyRecommendationQueryService.GetEffectivenessByBehaviorStateAsync()
+//
+// How to interpret:
+//   Join retrieves the learner's overall behavior state at the moment the adaptation
+//   was applied.  Rows without a state label (Phase 7C not yet active) are excluded.
+//
+//   Support families (difficulty-reduction, scaffold-hints) should show better tiers
+//   in "struggling" / "confused" states than in "stable" / "mastering" states.
+//   Challenge families (difficulty-increase, hint-fade) should show better tiers
+//   in "stable" / "mastering" states.
+//
+//   A family where the tier FLIPS between "promising" and "risky" across segments
+//   is classified as "conditional" by PolicyRecommendationService — do not promote
+//   it without a state-specific guardrail condition.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        UserId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailOverallBehaviorState;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, UserId, AppliedAtWindowIndex
+| where isnotempty(GuardrailOverallBehaviorState)
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == 'improved'),
+    NeutralCount  = countif(Outcome == 'neutral'),
+    WorsenedCount = countif(Outcome == 'worsened'),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailOverallBehaviorState
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       'insufficient-data',
+    WorsenedRate >= 0.35,                                   'risky',
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          'promising',
+    'neutral'
+  )
+| project InterventionFamily, GuardrailOverallBehaviorState,
+          SampleCount, ImprovedRate, WorsenedRate, AvgConfusionDelta, ReliabilityTier
+| order by InterventionFamily asc, GuardrailOverallBehaviorState asc
+
+
+// ── Q3: Segmented by PredictedConfusionRisk ──────────────────────────────
+// Used by: AdxPolicyRecommendationQueryService.GetEffectivenessByConfusionRiskAsync()
+//
+// How to interpret:
+//   Segments: "low", "moderate", "high" (from Phase 7A shadow confusion model).
+//
+//   Confusion-support families (scaffold-hints, difficulty-reduction) should show
+//   "promising" tiers at "high" confusion risk — this is the correct firing condition.
+//   If a support family is "risky" at "low" confusion risk, it is over-applied
+//   to learners who do not need support.
+//
+//   Challenge families (difficulty-increase) should NOT be "promising" when
+//   PredictedConfusionRisk = "high" — the Phase 8A guardrail is meant to block them
+//   in that state; if they still appear "promising" there, check Q11 (Phase 8D).
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        UserId,
+        AppliedAtWindowIndex = WindowIndex,
+        PredictedConfusionRisk;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, UserId, AppliedAtWindowIndex
+| where isnotempty(PredictedConfusionRisk)
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == 'improved'),
+    NeutralCount  = countif(Outcome == 'neutral'),
+    WorsenedCount = countif(Outcome == 'worsened'),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), PredictedConfusionRisk
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       'insufficient-data',
+    WorsenedRate >= 0.35,                                   'risky',
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          'promising',
+    'neutral'
+  )
+| project InterventionFamily, PredictedConfusionRisk,
+          SampleCount, ImprovedRate, WorsenedRate, AvgConfusionDelta, ReliabilityTier
+| order by InterventionFamily asc,
+           case(PredictedConfusionRisk, 'high', 0, 'moderate', 1, 'low', 2, 3) asc
+
+
+// ── Q4: Segmented by GuardrailHintDependenceRiskLevel ────────────────────
+// Used by: AdxPolicyRecommendationQueryService.GetEffectivenessByHintDependenceRiskAsync()
+//
+// How to interpret:
+//   Segments: "high", "moderate", "low", "none" (from Phase 7C guardrail).
+//
+//   Hint-reduction families (hint-fade, hint-remove, hint-reduction) should be "risky"
+//   at "high" dependence risk — confirming the Phase 7C/8A guardrails are protecting
+//   learners who need support rather than reduction.
+//
+//   Hint-support families (scaffold-hints, hint-restore-minimal) should be "promising"
+//   at "high" dependence risk — this is exactly the condition that warrants support.
+//
+//   If hint-fade shows "promising" at "high" dependence risk, the hint-dependence
+//   guardrail threshold is too conservative; if scaffold-hints shows "risky" at
+//   "low" dependence risk, it is over-applied to learners who do not need scaffolding.
+
+let PreState =
+    BehaviorStateTrainingRows
+    | project
+        SessionId,
+        UserId,
+        AppliedAtWindowIndex = WindowIndex,
+        GuardrailHintDependenceRiskLevel;
+AdaptationEffectiveness
+| mv-expand family = InterventionFamilies
+| join kind=leftouter PreState on SessionId, UserId, AppliedAtWindowIndex
+| where isnotempty(GuardrailHintDependenceRiskLevel)
+| summarize
+    SampleCount   = count(),
+    ImprovedCount = countif(Outcome == 'improved'),
+    NeutralCount  = countif(Outcome == 'neutral'),
+    WorsenedCount = countif(Outcome == 'worsened'),
+    AvgConfusionDelta = round(avg(ConfusionDelta), 4)
+  by InterventionFamily = tostring(family), GuardrailHintDependenceRiskLevel
+| extend
+    ImprovedRate = round(todouble(ImprovedCount) / SampleCount, 3),
+    WorsenedRate = round(todouble(WorsenedCount) / SampleCount, 3)
+| extend ReliabilityTier = case(
+    SampleCount < 10,                                       'insufficient-data',
+    WorsenedRate >= 0.35,                                   'risky',
+    ImprovedRate >= 0.60 and WorsenedRate <= 0.20,          'promising',
+    'neutral'
+  )
+| project InterventionFamily, GuardrailHintDependenceRiskLevel,
+          SampleCount, ImprovedRate, WorsenedRate, AvgConfusionDelta, ReliabilityTier
+| order by InterventionFamily asc,
+           case(GuardrailHintDependenceRiskLevel, 'high', 0, 'moderate', 1, 'low', 2, 'none', 3, 4) asc
