@@ -12,12 +12,19 @@ public class RecursorPolicyReliabilityOptions
     // Only "risky" entries are acted upon; others are ignored but recorded.
     public Dictionary<string, string> FamilyReliabilityTiers { get; set; } = new();
 
+    // Phase 9D: Allow conditional risky tiers to suppress families in active mode.
+    // When true AND Mode == "active", families whose matched conditional tier is "risky" are removed.
+    // Default is false. Set to true only after shadow-mode validation of conditional tiers.
+    // Has no effect when Mode == "shadow" or "disabled".
+    public bool EnableConditionalSuppression { get; set; } = false;
+
     // Phase 9C: State-conditional reliability tiers.
     // Maps family → condition-key → tier, where condition keys are:
-    //   "GuardrailOverallBehaviorState:<value>"   (e.g. "struggling", "conflicted", "stable")
-    //   "PredictedConfusionRisk:<value>"          (e.g. "none", "low", "moderate", "high")
-    //   "GuardrailHintDependenceRiskLevel:<value>" (e.g. "none", "low", "moderate", "high")
+    //   "GuardrailOverallBehaviorState=<value>"   (e.g. "struggling", "conflicted", "stable")
+    //   "PredictedConfusionRisk=<value>"          (e.g. "none", "low", "moderate", "high")
+    //   "GuardrailHintDependenceRiskLevel=<value>" (e.g. "none", "low", "moderate", "high")
+    // Note: keys use "=" not ":" because ":" is a .NET config section separator.
     // In shadow mode, matching conditions are recorded in Phase8EReliabilityNotes and logs only.
-    // Conditional rules never suppress or remove parameter changes without explicit future activation.
+    // In active mode with EnableConditionalSuppression=true, risky conditional matches suppress families.
     public Dictionary<string, Dictionary<string, string>> ConditionalFamilyReliabilityTiers { get; set; } = new();
 }

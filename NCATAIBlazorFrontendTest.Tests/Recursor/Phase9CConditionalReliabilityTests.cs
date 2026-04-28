@@ -19,9 +19,12 @@ namespace NCATAIBlazorFrontendTest.Tests.Recursor;
 ///   - Conditional notes are absent when no configured keys match the active learner state
 ///   - Global risky suppression (Phase 8E shadow) is unaffected by conditional config
 ///   - Global active-mode suppression still removes families and params correctly
-///   - Conditional rules never remove intervention families or parameter changes
+///   - Conditional rules never remove intervention families or parameter changes in shadow mode
 ///   - Notes from global risky detection and conditional matches are both present
 ///   - mode="disabled" skips everything including conditional evaluation
+///
+/// Note: condition keys use "=" as separator (not ":") because ":" is a .NET config section
+/// separator and would not survive appsettings.json binding as a flat dictionary key.
 /// </summary>
 public class Phase9CConditionalReliabilityTests
 {
@@ -81,17 +84,17 @@ public class Phase9CConditionalReliabilityTests
             Mode = "shadow",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" }
             }
         };
-        var svc     = Build(options);
+        var svc      = Build(options);
         var decision = MakeDecision("difficulty-reduction");
 
         var result = svc.Apply(decision, MakeSummary("struggling"), null);
 
         Assert.NotNull(result.Phase8EReliabilityNotes);
         Assert.Contains("conditional-matches", result.Phase8EReliabilityNotes);
-        Assert.Contains("difficulty-reduction=promising[GuardrailOverallBehaviorState:struggling]",
+        Assert.Contains("difficulty-reduction=promising[GuardrailOverallBehaviorState=struggling]",
             result.Phase8EReliabilityNotes);
     }
 
@@ -103,7 +106,7 @@ public class Phase9CConditionalReliabilityTests
             Mode = "shadow",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:mastering"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=mastering"] = "promising" }
             }
         };
         var svc      = Build(options);
@@ -125,8 +128,8 @@ public class Phase9CConditionalReliabilityTests
             {
                 ["pace-increase"] = new()
                 {
-                    ["PredictedConfusionRisk:high"] = "risky",
-                    ["GuardrailOverallBehaviorState:struggling"] = "risky"
+                    ["PredictedConfusionRisk=high"]              = "risky",
+                    ["GuardrailOverallBehaviorState=struggling"] = "risky"
                 }
             }
         };
@@ -136,8 +139,8 @@ public class Phase9CConditionalReliabilityTests
         var result = svc.Apply(decision, MakeSummary("struggling"), MakePrediction("high"));
 
         Assert.NotNull(result.Phase8EReliabilityNotes);
-        Assert.Contains("PredictedConfusionRisk:high", result.Phase8EReliabilityNotes);
-        Assert.Contains("GuardrailOverallBehaviorState:struggling", result.Phase8EReliabilityNotes);
+        Assert.Contains("PredictedConfusionRisk=high", result.Phase8EReliabilityNotes);
+        Assert.Contains("GuardrailOverallBehaviorState=struggling", result.Phase8EReliabilityNotes);
     }
 
     [Fact]
@@ -148,8 +151,8 @@ public class Phase9CConditionalReliabilityTests
             Mode = "shadow",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" },
-                ["pace-increase"]        = new() { ["PredictedConfusionRisk:high"] = "risky" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" },
+                ["pace-increase"]        = new() { ["PredictedConfusionRisk=high"] = "risky" }
             }
         };
         var svc      = Build(options);
@@ -170,7 +173,7 @@ public class Phase9CConditionalReliabilityTests
             Mode = "shadow",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["hint-fade"] = new() { ["GuardrailHintDependenceRiskLevel:high"] = "risky" }
+                ["hint-fade"] = new() { ["GuardrailHintDependenceRiskLevel=high"] = "risky" }
             }
         };
         var svc      = Build(options);
@@ -179,11 +182,11 @@ public class Phase9CConditionalReliabilityTests
         var result = svc.Apply(decision, MakeSummary(hintRisk: "high"), null);
 
         Assert.NotNull(result.Phase8EReliabilityNotes);
-        Assert.Contains("hint-fade=risky[GuardrailHintDependenceRiskLevel:high]",
+        Assert.Contains("hint-fade=risky[GuardrailHintDependenceRiskLevel=high]",
             result.Phase8EReliabilityNotes);
     }
 
-    // ── Conditional rules never suppress families or params ───────────────────
+    // ── Conditional rules never suppress families or params in shadow mode ────
 
     [Fact]
     public void Apply_ShadowMode_ConditionalRiskyMatch_DoesNotRemoveFamilyOrParams()
@@ -193,7 +196,7 @@ public class Phase9CConditionalReliabilityTests
             Mode = "shadow",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:conflicted"] = "risky" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=conflicted"] = "risky" }
             }
         };
         var svc      = Build(options);
@@ -218,7 +221,7 @@ public class Phase9CConditionalReliabilityTests
             Mode = "shadow",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" }
             }
         };
         var svc      = Build(options);
@@ -257,7 +260,7 @@ public class Phase9CConditionalReliabilityTests
             FamilyReliabilityTiers = new() { ["pace-increase"] = "risky" },
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" }
             }
         };
         var svc      = Build(options);
@@ -287,7 +290,7 @@ public class Phase9CConditionalReliabilityTests
             FamilyReliabilityTiers = new() { ["pace-increase"] = "risky" },
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" }
             }
         };
         var svc      = Build(options);
@@ -316,7 +319,7 @@ public class Phase9CConditionalReliabilityTests
             FamilyReliabilityTiers = new() { ["pace-increase"] = "risky" },
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" }
             }
         };
         var svc      = Build(options);
@@ -339,7 +342,7 @@ public class Phase9CConditionalReliabilityTests
             Mode = "disabled",
             ConditionalFamilyReliabilityTiers = new()
             {
-                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState:struggling"] = "promising" }
+                ["difficulty-reduction"] = new() { ["GuardrailOverallBehaviorState=struggling"] = "promising" }
             }
         };
         var svc      = Build(options);
@@ -362,7 +365,7 @@ public class Phase9CConditionalReliabilityTests
             ConditionalFamilyReliabilityTiers = new()
             {
                 // Configured for a family that is not in this adaptation's InterventionFamilies.
-                ["pace-increase"] = new() { ["PredictedConfusionRisk:high"] = "risky" }
+                ["pace-increase"] = new() { ["PredictedConfusionRisk=high"] = "risky" }
             }
         };
         var svc      = Build(options);
