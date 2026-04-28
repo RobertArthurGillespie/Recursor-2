@@ -368,6 +368,8 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("Phase8AGuardrailNotes",                typeof(string));
         table.Columns.Add("Phase8EReliabilityNotes",              typeof(string));
         table.Columns.Add("Phase8EReliabilityMode",               typeof(string));
+        // Phase 10A — ordinal 17
+        table.Columns.Add("Phase10TrajectoryNotes",               typeof(string));
 
         table.Rows.Add(
             row.SessionId,
@@ -386,7 +388,8 @@ public class AdxIngestionService : IAdxIngestionService
             row.NextHintDependenceGuardrailLevel ?? (object)DBNull.Value,
             row.Phase8AGuardrailNotes ?? (object)DBNull.Value,
             row.Phase8EReliabilityNotes ?? (object)DBNull.Value,
-            row.Phase8EReliabilityMode ?? (object)DBNull.Value
+            row.Phase8EReliabilityMode ?? (object)DBNull.Value,
+            row.Phase10TrajectoryNotes ?? (object)DBNull.Value
         );
 
         return table;
@@ -473,6 +476,17 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("GuardrailConflictCount",                typeof(int));
         table.Columns.Add("GuardrailWarnings",                     typeof(string));
 
+        // Phase 10A — sequence-aware features (ordinals 53–61)
+        table.Columns.Add("SequenceWindowCount",                   typeof(int));
+        table.Columns.Add("MeanConfusionScore",                    typeof(double));
+        table.Columns.Add("ConfusionTrendSlope",                   typeof(double));
+        table.Columns.Add("GoalTrendSlope",                        typeof(double));
+        table.Columns.Add("HintTrendSlope",                        typeof(double));
+        table.Columns.Add("VolatilityScore",                       typeof(double));
+        table.Columns.Add("MomentumScore",                         typeof(double));
+        table.Columns.Add("StabilityScore",                        typeof(double));
+        table.Columns.Add("PredictedNearTermRisk",                 typeof(string));
+
         table.Rows.Add(
             row.SessionId,
             row.UserId,
@@ -526,7 +540,17 @@ public class AdxIngestionService : IAdxIngestionService
             row.GuardrailStableMasterySignalAgreement,
             row.GuardrailHintDependenceRiskLevel,
             row.GuardrailConflictCount,
-            row.GuardrailWarnings
+            row.GuardrailWarnings,
+            // Phase 10A
+            row.SequenceWindowCount,
+            row.MeanConfusionScore,
+            row.ConfusionTrendSlope,
+            row.GoalTrendSlope,
+            row.HintTrendSlope,
+            row.VolatilityScore,
+            row.MomentumScore,
+            row.StabilityScore,
+            row.PredictedNearTermRisk
         );
 
         return table;

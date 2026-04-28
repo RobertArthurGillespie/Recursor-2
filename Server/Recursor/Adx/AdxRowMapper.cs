@@ -113,6 +113,7 @@ public static class AdxRowMapper
             Phase8AGuardrailNotes = doc.Phase8AGuardrailNotes,
             Phase8EReliabilityNotes = doc.Phase8EReliabilityNotes,
             Phase8EReliabilityMode = doc.Phase8EReliabilityMode,
+            Phase10TrajectoryNotes = doc.Phase10TrajectoryNotes,
         };
     }
 
@@ -120,7 +121,9 @@ public static class AdxRowMapper
         BehaviorStateFeatureVector featureVector,
         HypothesisSetDocument hypothesisSet,
         BehaviorStatePrediction? prediction,
-        MultiSignalGuardrailSummary? guardrail = null)
+        MultiSignalGuardrailSummary? guardrail = null,
+        SequenceFeatureSummary? sequenceSummary = null,
+        TrajectorySummary? trajectorySummary = null)
     {
         var labels = hypothesisSet.Hypotheses.Select(h => h.Label).ToHashSet();
 
@@ -204,6 +207,17 @@ public static class AdxRowMapper
             GuardrailWarnings                     = guardrail is not null
                 ? string.Join(" | ", guardrail.GuardrailWarnings)
                 : "",
+
+            // Phase 10A: sequence-aware features
+            SequenceWindowCount    = sequenceSummary?.WindowCount ?? 0,
+            MeanConfusionScore     = sequenceSummary?.MeanConfusionScore ?? 0.0,
+            ConfusionTrendSlope    = sequenceSummary?.ConfusionTrendSlope ?? 0.0,
+            GoalTrendSlope         = sequenceSummary?.GoalTrendSlope ?? 0.0,
+            HintTrendSlope         = sequenceSummary?.HintTrendSlope ?? 0.0,
+            VolatilityScore        = sequenceSummary?.VolatilityScore ?? 0.0,
+            MomentumScore          = sequenceSummary?.MomentumScore ?? 0.0,
+            StabilityScore         = trajectorySummary?.StabilityScore ?? 0.0,
+            PredictedNearTermRisk  = trajectorySummary?.PredictedNearTermRisk ?? "",
         };
     }
 

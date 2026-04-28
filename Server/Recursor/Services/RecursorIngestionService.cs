@@ -24,6 +24,10 @@ public class IngestionResult
     public string? AdaptationId { get; init; }
     public List<string> HypothesisLabels { get; init; } = new();
     public GptExplanationResult? Explanation { get; init; }
+
+    // Phase 10A: sequence-aware trajectory data — null when fewer than 2 windows available.
+    public SequenceFeatureSummary? SequenceSummary { get; init; }
+    public TrajectorySummary? TrajectorySummary { get; init; }
 }
 
 public class RecursorIngestionService : IRecursorIngestionService
@@ -46,6 +50,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IPhase8AGuardrailModifierService _phase8aModifier;
     private readonly IAdaptationEffectivenessService _adaptationEffectiveness;
     private readonly IPolicyReliabilityWeightingService _phase8eReliability;
+    private readonly ISequenceFeatureExtractor _sequenceFeatureExtractor;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -68,6 +73,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     IPhase8AGuardrailModifierService phase8aModifier,
     IAdaptationEffectivenessService adaptationEffectiveness,
     IPolicyReliabilityWeightingService phase8eReliability,
+    ISequenceFeatureExtractor sequenceFeatureExtractor,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -89,6 +95,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _phase8aModifier = phase8aModifier;
         _adaptationEffectiveness = adaptationEffectiveness;
         _phase8eReliability = phase8eReliability;
+        _sequenceFeatureExtractor = sequenceFeatureExtractor;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -334,12 +341,25 @@ public class RecursorIngestionService : IRecursorIngestionService
             _logger.LogWarning(ex, "Multi-signal guardrail evaluation failed for session {SessionId}. Continuing pipeline.", session.SessionId);
         }
 
+        // Phase 10A: stamp guardrail behavior state on the most recent snapshot, then compute
+        // sequence features from the updated window. Both are observability-only and non-blocking.
+        if (guardrailSummary is not null && session.RecentSnapshots.Count > 0)
+        {
+            session.RecentSnapshots[^1].OverallBehaviorState = guardrailSummary.OverallBehaviorState;
+            _sessionRepository.Update(session);
+        }
+
+        var sequenceSummary = _sequenceFeatureExtractor.Extract(session.RecentSnapshots);
+        var trajectoryClassification = sequenceSummary is not null
+            ? _sequenceFeatureExtractor.Classify(sequenceSummary)
+            : null;
+
         // Training-row ingestion — additive only, never blocks or changes adaptation.
         if (featureVector is not null)
         {
             try
             {
-                var trainingRow = AdxRowMapper.MapBehaviorStateTrainingRow(featureVector, hypothesisSet, shadowPrediction, guardrailSummary);
+                var trainingRow = AdxRowMapper.MapBehaviorStateTrainingRow(featureVector, hypothesisSet, shadowPrediction, guardrailSummary, sequenceSummary, trajectoryClassification);
                 await _adxIngestion.IngestBehaviorStateTrainingRowAsync(trainingRow);
                 _logger.LogInformation(
                     "Training row persisted to ADX. SessionId={SessionId} WindowIndex={WindowIndex} " +
@@ -402,7 +422,9 @@ public class RecursorIngestionService : IRecursorIngestionService
             return new IngestionResult
             {
                 AdaptationProduced = false,
-                HypothesisLabels = hypothesisLabels
+                HypothesisLabels = hypothesisLabels,
+                SequenceSummary = sequenceSummary,
+                TrajectorySummary = trajectoryClassification
             };
         }
 
@@ -470,9 +492,14 @@ public class RecursorIngestionService : IRecursorIngestionService
             {
                 AdaptationProduced = false,
                 HypothesisLabels = hypothesisLabels,
-                Explanation = explanationNoAdaptation
+                Explanation = explanationNoAdaptation,
+                SequenceSummary = sequenceSummary,
+                TrajectorySummary = trajectoryClassification
             };
         }
+
+        // Phase 10A: stamp trajectory notes on the adaptation document before any ingest path.
+        adaptation.Phase10TrajectoryNotes = BuildPhase10TrajectoryNotes(sequenceSummary, trajectoryClassification);
 
         // Phase 8A: post-policy safety modifier.
         // Reviews the proposed adaptation and removes parameter changes that violate
@@ -509,7 +536,9 @@ public class RecursorIngestionService : IRecursorIngestionService
             {
                 AdaptationProduced = false,
                 HypothesisLabels = hypothesisLabels,
-                Explanation = explanationVetoed
+                Explanation = explanationVetoed,
+                SequenceSummary = sequenceSummary,
+                TrajectorySummary = trajectoryClassification
             };
         }
 
@@ -545,7 +574,9 @@ public class RecursorIngestionService : IRecursorIngestionService
             {
                 AdaptationProduced = false,
                 HypothesisLabels = hypothesisLabels,
-                Explanation = explanationSuppressed
+                Explanation = explanationSuppressed,
+                SequenceSummary = sequenceSummary,
+                TrajectorySummary = trajectoryClassification
             };
         }
 
@@ -593,7 +624,22 @@ public class RecursorIngestionService : IRecursorIngestionService
             HypothesisLabels = hypothesisLabels,
             ReasoningSummary = adaptation.ReasoningSummary,
             AdaptationId = adaptation.Id,
-            Explanation = explanation
+            Explanation = explanation,
+            SequenceSummary = sequenceSummary,
+            TrajectorySummary = trajectoryClassification
         };
+    }
+
+    private static string? BuildPhase10TrajectoryNotes(SequenceFeatureSummary? seq, TrajectorySummary? traj)
+    {
+        if (seq is null || traj is null) return null;
+        var label = traj.IsImproving ? "improving"
+            : traj.IsDeteriorating ? "deteriorating"
+            : traj.IsVolatile ? "volatile"
+            : "stable";
+        var volatility = traj.IsVolatile ? "high" : "low";
+        return $"trajectory: {label}; volatility={volatility}; " +
+               $"predicted-risk={traj.PredictedNearTermRisk}; windows={seq.WindowCount}; " +
+               $"confusion-slope={seq.ConfusionTrendSlope:0.000}; stability={traj.StabilityScore:0.00}";
     }
 }

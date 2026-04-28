@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Shared;
+// SequenceFeatureSummary and TrajectorySummary live in the Models namespace (already imported).
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
@@ -36,6 +37,10 @@ public class ProcessBatchResult
     public List<string> HypothesisLabels { get; set; } = new();
     public GptExplanationResult? Explanation { get; init; }
     public string? Error { get; init; }
+
+    // Phase 10A: sequence-aware trajectory data — null when fewer than 2 windows available.
+    public SequenceFeatureSummary? SequenceSummary { get; init; }
+    public TrajectorySummary? TrajectorySummary { get; init; }
 }
 
 public class RecursorSessionService : IRecursorSessionService
@@ -105,7 +110,9 @@ public class RecursorSessionService : IRecursorSessionService
             ParameterChanges = result.ParameterChanges,
             HypothesisLabels = result.HypothesisLabels,
             ReasoningSummary = result.ReasoningSummary,
-            Explanation = result.Explanation
+            Explanation = result.Explanation,
+            SequenceSummary = result.SequenceSummary,
+            TrajectorySummary = result.TrajectorySummary
         };
     }
 

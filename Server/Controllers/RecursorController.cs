@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NCATAIBlazorFrontendTest.Server.Recursor.Api;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
+using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
 namespace NCATAIBlazorFrontendTest.Server.Controllers;
@@ -11,15 +12,21 @@ public class RecursorController : ControllerBase
 {
     private readonly IRecursorSessionService _sessionService;
     private readonly IPolicyRecommendationService _policyRecommendationService;
+    private readonly ISessionRepository _sessionRepository;
+    private readonly ISequenceFeatureExtractor _sequenceFeatureExtractor;
     private readonly IConfiguration _config;
 
     public RecursorController(
         IRecursorSessionService sessionService,
         IPolicyRecommendationService policyRecommendationService,
+        ISessionRepository sessionRepository,
+        ISequenceFeatureExtractor sequenceFeatureExtractor,
         IConfiguration config)
     {
         _sessionService = sessionService;
         _policyRecommendationService = policyRecommendationService;
+        _sessionRepository = sessionRepository;
+        _sequenceFeatureExtractor = sequenceFeatureExtractor;
         _config = config;
     }
 
@@ -57,7 +64,9 @@ public class RecursorController : ControllerBase
             ParameterChanges = result.ParameterChanges,
             HypothesisLabels = result.HypothesisLabels,
             ReasoningSummary = result.ReasoningSummary,
-            Explanation = result.Explanation
+            Explanation = result.Explanation,
+            SequenceSummary = result.SequenceSummary,
+            TrajectorySummary = result.TrajectorySummary
         });
     }
 
@@ -112,6 +121,44 @@ public class RecursorController : ControllerBase
     {
         var text = await _policyRecommendationService.ExportPolicyReliabilityConfigTextAsync();
         return Content(text, "text/plain");
+    }
+
+    /// <summary>
+    /// GET /api/recursor/session-timeline/{sessionId}
+    ///
+    /// Phase 10A: demo-friendly endpoint. Returns the recent trajectory snapshots for a session
+    /// with per-window confusion, goal, hint-dependence, and behavior state, plus the current
+    /// trajectory classification computed from those snapshots. Reads in-memory session state only.
+    /// </summary>
+    [HttpGet("session-timeline/{sessionId}")]
+    public IActionResult GetSessionTimeline(string sessionId)
+    {
+        var session = _sessionRepository.Get(sessionId);
+        if (session is null)
+            return NotFound(new { Error = $"Session '{sessionId}' not found." });
+
+        var sequenceSummary = _sequenceFeatureExtractor.Extract(session.RecentSnapshots);
+        var trajectoryClassification = sequenceSummary is not null
+            ? _sequenceFeatureExtractor.Classify(sequenceSummary)
+            : null;
+
+        var windows = session.RecentSnapshots.Select(s => new WindowTimelineEntry
+        {
+            WindowIndex = s.WindowIndex,
+            ConfusionScore = s.ConfusionScore,
+            GoalUnderstanding = s.GoalUnderstanding,
+            HintDependenceScore = s.HintDependenceScore,
+            BehaviorState = s.OverallBehaviorState,
+            CreatedAtUtc = s.CreatedAtUtc
+        }).ToList();
+
+        return Ok(new SessionTimelineResponse
+        {
+            SessionId = sessionId,
+            WindowCount = windows.Count,
+            Windows = windows,
+            CurrentTrajectory = trajectoryClassification
+        });
     }
 
     [HttpGet("testconfig")]

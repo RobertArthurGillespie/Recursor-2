@@ -165,6 +165,8 @@ builder.Services.Configure<RecursorPoliciesOptions>(
 builder.Services.Configure<RecursorPolicyReliabilityOptions>(
     builder.Configuration.GetSection("Recursor:PolicyReliability"));
 builder.Services.AddScoped<IPolicyReliabilityWeightingService, PolicyReliabilityWeightingService>();
+// Phase 10A: sequence-aware feature extraction and trajectory classification.
+builder.Services.AddScoped<ISequenceFeatureExtractor, SequenceFeatureExtractor>();
 
 bool anyModelPresent =
     (resolvedHintDependencePath            is not null && File.Exists(resolvedHintDependencePath))            ||

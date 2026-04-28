@@ -26,6 +26,10 @@ public class AdaptationDecisionDocument
     public string? Phase8EReliabilityNotes { get; set; }
     // Mirrors RecursorPolicyReliabilityOptions.Mode at decision time; null when disabled.
     public string? Phase8EReliabilityMode { get; set; }
+
+    // Phase 10A trajectory intelligence — null when fewer than 2 windows available.
+    // Example: "trajectory: improving; volatility=low; predicted-risk=low; windows=4; confusion-slope=-0.082; stability=0.87"
+    public string? Phase10TrajectoryNotes { get; set; }
 }
 
 public class ParameterChange

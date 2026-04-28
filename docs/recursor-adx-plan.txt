@@ -74,22 +74,25 @@ Columns:
 
 ### AdaptationDecisions_v2
 Note: the live table is AdaptationDecisions_v2 (not AdaptationDecisions).
-Columns:
-- SessionId: string
-- UserId: string
-- AdaptationDecisionId: string
-- DecisionIndex: int
-- SourceHypothesisSetId: string
-- PolicyVersion: string
-- InterventionFamilies: dynamic
-- ParameterChanges: dynamic
-- ReasoningSummary: string
-- ExpiresAfterWindow: int
-- CreatedAtUtc: datetime
-- HintDependenceNextProbability: real (nullable)
-- NextHintDependenceGuardrailTriggered: bool
-- NextHintDependenceGuardrailLevel: string (nullable)
-- Phase8AGuardrailNotes: string (nullable)
+Columns (ordinals 0–17):
+- [0]  SessionId: string
+- [1]  UserId: string
+- [2]  AdaptationDecisionId: string
+- [3]  DecisionIndex: int
+- [4]  SourceHypothesisSetId: string
+- [5]  PolicyVersion: string
+- [6]  InterventionFamilies: dynamic
+- [7]  ParameterChanges: dynamic
+- [8]  ReasoningSummary: string
+- [9]  ExpiresAfterWindow: int
+- [10] CreatedAtUtc: datetime
+- [11] HintDependenceNextProbability: real (nullable)
+- [12] NextHintDependenceGuardrailTriggered: bool
+- [13] NextHintDependenceGuardrailLevel: string (nullable)
+- [14] Phase8AGuardrailNotes: string (nullable)         — added Phase 8A
+- [15] Phase8EReliabilityNotes: string (nullable)       — added Phase 8E
+- [16] Phase8EReliabilityMode: string (nullable)        — added Phase 8E
+- [17] Phase10TrajectoryNotes: string (nullable)        — added Phase 10A
 
 ### AdaptationEffectiveness
 One row per evaluated adaptation window pair. Written the window after an adaptation fires.
@@ -117,48 +120,69 @@ Columns:
 
 ### BehaviorStateTrainingRows
 One row per feature window. Used for shadow ML model training and evaluation.
-Columns:
-- SessionId: string
-- UserId: string
-- SimId: string
-- ScenarioId: string
-- WindowIndex: int
-- TaskType: string
-- CreatedAtUtc: datetime
-- AttentionDetection: real
-- GoalUnderstanding: real
-- ProcedureSequencing: real
-- PaceRegulation: real
-- SelfCorrection: real
-- FeedbackResponsiveness: real
-- SafetyCompliance: real
-- TaskContinuity: real
-- ConfusionScore: real
-- HesitationScore: real
-- ImpulsivityScore: real
-- HintDependenceScore: real
-- GoalTrend: real
-- AttentionTrend: real
-- ConfusionTrend: real
-- HintDependenceTrend: real
-- CurrentHintMode: string
-- CurrentDifficulty: real
-- CurrentTimePressure: real
-- CurrentErrorTolerance: real
-- ConsecutiveStableMasteryWindows: int
-- ConsecutiveRelapseWindows: int
-- EventCountInWindow: int
-- ErrorCountInWindow: int
-- HintCountInWindow: int
-- StepCompleteCountInWindow: int
-- LabelConfusion: int
-- LabelHintDependence: int
-- LabelStableMastery: int
-- PredConfusionProbability: real
-- PredHintDependenceProbability: real
-- PredStableMasteryProbability: real
-- ModelVersion: string
-- InferenceMode: string
+Columns (ordinals 0–61):
+- [0]  SessionId: string
+- [1]  UserId: string
+- [2]  SimId: string
+- [3]  ScenarioId: string
+- [4]  WindowIndex: int
+- [5]  TaskType: string
+- [6]  CreatedAtUtc: datetime
+- [7]  AttentionDetection: real
+- [8]  GoalUnderstanding: real
+- [9]  ProcedureSequencing: real
+- [10] PaceRegulation: real
+- [11] SelfCorrection: real
+- [12] FeedbackResponsiveness: real
+- [13] SafetyCompliance: real
+- [14] TaskContinuity: real
+- [15] ConfusionScore: real
+- [16] HesitationScore: real
+- [17] ImpulsivityScore: real
+- [18] HintDependenceScore: real
+- [19] GoalTrend: real
+- [20] AttentionTrend: real
+- [21] ConfusionTrend: real
+- [22] HintDependenceTrend: real
+- [23] CurrentHintMode: string
+- [24] CurrentDifficulty: real
+- [25] CurrentTimePressure: real
+- [26] CurrentErrorTolerance: real
+- [27] ConsecutiveStableMasteryWindows: int
+- [28] ConsecutiveRelapseWindows: int
+- [29] EventCountInWindow: int
+- [30] ErrorCountInWindow: int
+- [31] HintCountInWindow: int
+- [32] StepCompleteCountInWindow: int
+- [33] LabelConfusion: int
+- [34] LabelHintDependence: int
+- [35] LabelStableMastery: int
+- [36] PredConfusionProbability: real
+- [37] PredHintDependenceProbability: real
+- [38] PredStableMasteryProbability: real
+- [39] ModelVersion: string
+- [40] InferenceMode: string
+- [41] PredictedConfusionRisk: string            — added Phase 7A
+- [42] ConfusionModelVersion: string             — added Phase 7A
+- [43] ConfusionPredictionUtc: datetime          — added Phase 7A
+- [44] PredictedStableMasteryState: string       — added Phase 7B
+- [45] StableMasteryModelVersion: string         — added Phase 7B
+- [46] StableMasteryPredictionUtc: datetime      — added Phase 7B
+- [47] GuardrailOverallBehaviorState: string     — added Phase 7C
+- [48] GuardrailConfusionSignalAgreement: bool   — added Phase 7C
+- [49] GuardrailStableMasterySignalAgreement: bool — added Phase 7C
+- [50] GuardrailHintDependenceRiskLevel: string  — added Phase 7C
+- [51] GuardrailConflictCount: int               — added Phase 7C
+- [52] GuardrailWarnings: string                 — added Phase 7C (pipe-separated)
+- [53] SequenceWindowCount: int                  — added Phase 10A
+- [54] MeanConfusionScore: real                  — added Phase 10A
+- [55] ConfusionTrendSlope: real                 — added Phase 10A
+- [56] GoalTrendSlope: real                      — added Phase 10A
+- [57] HintTrendSlope: real                      — added Phase 10A
+- [58] VolatilityScore: real                     — added Phase 10A
+- [59] MomentumScore: real                       — added Phase 10A
+- [60] StabilityScore: real                      — added Phase 10A
+- [61] PredictedNearTermRisk: string             — added Phase 10A
 
 ## ADX-facing services
 

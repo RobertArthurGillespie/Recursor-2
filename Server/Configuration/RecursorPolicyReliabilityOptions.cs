@@ -18,6 +18,15 @@ public class RecursorPolicyReliabilityOptions
     // Has no effect when Mode == "shadow" or "disabled".
     public bool EnableConditionalSuppression { get; set; } = false;
 
+    // Phase 9E: Protect globally-risky families from suppression when a conditional "promising" tier matches.
+    // When true AND Mode == "active", a globally-risky family whose matched conditional tier is "promising"
+    // (and NOT also "risky") is preserved rather than removed by global reliability suppression.
+    // "Risky" always wins: if both a promising and risky conditional tier match the same family, the family
+    // is suppressed. Protection does not apply to Phase 8A guardrail vetoes, conditional risky suppression,
+    // or hard safety rules. Protection never creates new families or parameter changes.
+    // Default is false. Has no effect when Mode != "active".
+    public bool EnableConditionalPromotionProtection { get; set; } = false;
+
     // Phase 9C: State-conditional reliability tiers.
     // Maps family → condition-key → tier, where condition keys are:
     //   "GuardrailOverallBehaviorState=<value>"   (e.g. "struggling", "conflicted", "stable")

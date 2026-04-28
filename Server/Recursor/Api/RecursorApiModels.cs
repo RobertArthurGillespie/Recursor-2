@@ -27,4 +27,27 @@ public class BatchApiResponse
     public string? ReasoningSummary { get; set; }
     public GptExplanationResult? Explanation { get; set; }
     public string? Error { get; set; }
+
+    // Phase 10A: sequence-aware trajectory data — null when fewer than 2 windows available.
+    public SequenceFeatureSummary? SequenceSummary { get; set; }
+    public TrajectorySummary? TrajectorySummary { get; set; }
+}
+
+// Phase 10A: session timeline for the demo endpoint.
+public class SessionTimelineResponse
+{
+    public string SessionId { get; set; } = "";
+    public int WindowCount { get; set; }
+    public List<WindowTimelineEntry> Windows { get; set; } = [];
+    public TrajectorySummary? CurrentTrajectory { get; set; }
+}
+
+public class WindowTimelineEntry
+{
+    public int WindowIndex { get; set; }
+    public double ConfusionScore { get; set; }
+    public double GoalUnderstanding { get; set; }
+    public double HintDependenceScore { get; set; }
+    public string BehaviorState { get; set; } = "";
+    public DateTime CreatedAtUtc { get; set; }
 }

@@ -93,6 +93,9 @@ public class AdaptationDecisionRow
     // Phase 8E reliability weighting — null when mode is "disabled".
     public string? Phase8EReliabilityNotes { get; set; }
     public string? Phase8EReliabilityMode { get; set; }
+
+    // Phase 10A trajectory intelligence — null when fewer than 2 windows available.
+    public string? Phase10TrajectoryNotes { get; set; }
 }
 
 public class BehaviorStateTrainingRow
@@ -173,6 +176,17 @@ public class BehaviorStateTrainingRow
     public string GuardrailHintDependenceRiskLevel { get; set; } = "";
     public int GuardrailConflictCount { get; set; }
     public string GuardrailWarnings { get; set; } = "";  // pipe-separated; use split(" | ") in KQL
+
+    // Phase 10A: sequence-aware features — zero/empty when fewer than 2 snapshots available.
+    public int SequenceWindowCount { get; set; }
+    public double MeanConfusionScore { get; set; }
+    public double ConfusionTrendSlope { get; set; }
+    public double GoalTrendSlope { get; set; }
+    public double HintTrendSlope { get; set; }
+    public double VolatilityScore { get; set; }
+    public double MomentumScore { get; set; }
+    public double StabilityScore { get; set; }
+    public string PredictedNearTermRisk { get; set; } = "";
 }
 
 // ── AdaptationEffectiveness row — Phase 8B ────────────────────────────────────

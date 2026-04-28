@@ -72,7 +72,13 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
 
         if (_options.Mode == "shadow")
         {
-            decision.Phase8EReliabilityNotes = BuildShadowNotes(globalRiskyFamilies, conditionalEval, conditionalCandidates);
+            // Phase 9E: observe globally-risky families that have a conditional promising match.
+            var promisingObservedCandidates = globalRiskyFamilies
+                .Where(f => conditionalEval.PromisingFamilies.Contains(f, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            decision.Phase8EReliabilityNotes = BuildShadowNotes(
+                globalRiskyFamilies, conditionalEval, conditionalCandidates, promisingObservedCandidates);
             if (decision.Phase8EReliabilityNotes is not null)
             {
                 _logger.LogInformation(
@@ -86,8 +92,10 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
         return ApplyActiveMode(decision, globalRiskyFamilies, conditionalEval, conditionalCandidates);
     }
 
-    // Phase 9D active-mode suppression. Global risky families are always removed.
-    // Conditional risky candidates are additionally removed when EnableConditionalSuppression is true.
+    // Phase 9D/9E active-mode suppression.
+    // Global risky families are suppressed unless protected by a matching conditional promising tier (Phase 9E).
+    // Conditional risky candidates are additionally suppressed when EnableConditionalSuppression is true.
+    // Risky always wins: a family with both conditional risky and promising matches is suppressed.
     private AdaptationDecisionDocument ApplyActiveMode(
         AdaptationDecisionDocument decision,
         List<string> globalRiskyFamilies,
@@ -98,15 +106,46 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
             ? conditionalCandidates
             : new List<string>();
 
-        var allFamiliesToRemove = globalRiskyFamilies
+        // Phase 9E: protection candidates = globally risky families that also have a conditional promising match.
+        var promisingCandidates = globalRiskyFamilies
+            .Where(f => conditionalEval.PromisingFamilies.Contains(f, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        List<string> protectedFamilies;
+        List<string> riskyOverridesFamilies;
+
+        if (_options.EnableConditionalPromotionProtection && promisingCandidates.Count > 0)
+        {
+            // Risky always wins: a candidate that also has a conditional risky match is not protected.
+            riskyOverridesFamilies = promisingCandidates
+                .Where(f => conditionalEval.RiskyFamilies.Contains(f, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            protectedFamilies = promisingCandidates
+                .Where(f => !conditionalEval.RiskyFamilies.Contains(f, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+        }
+        else
+        {
+            riskyOverridesFamilies = new();
+            protectedFamilies = new();
+        }
+
+        // Effective global risky set: protected families are excluded from suppression.
+        var effectiveGlobalRiskyFamilies = globalRiskyFamilies
+            .Where(f => !protectedFamilies.Contains(f, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        var allFamiliesToRemove = effectiveGlobalRiskyFamilies
             .Concat(conditionalSuppressedFamilies)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         if (allFamiliesToRemove.Count == 0)
         {
-            // Nothing to suppress — record observations only (conditional matches, candidates).
+            // Nothing to suppress — record observations and protection notes only.
             decision.Phase8EReliabilityNotes = BuildActiveModeNotes(
-                new(), new(), conditionalEval, conditionalCandidates, new(), new());
+                globalRiskyFamilies, new(), conditionalEval, conditionalCandidates, new(), new(),
+                promisingCandidates, protectedFamilies, riskyOverridesFamilies);
             return decision;
         }
 
@@ -116,9 +155,9 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
 
         bool hintSupportSurvives = remainingFamilies.Any(f => HintSupportFamilies.Contains(f));
 
-        // Collect params owned by globally risky families.
+        // Collect params owned by effectively suppressed global risky families (protected families excluded).
         var globalToRemove = new HashSet<ParameterChange>(ReferenceEqualityComparer.Instance);
-        foreach (var family in globalRiskyFamilies)
+        foreach (var family in effectiveGlobalRiskyFamilies)
             CollectOwnedParams(family, decision, hintSupportSurvives, globalToRemove, skipSet: null);
 
         // Collect params owned by conditionally suppressed families (skip already globally claimed).
@@ -144,12 +183,13 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
         decision.Phase8EReliabilityNotes = BuildActiveModeNotes(
             globalRiskyFamilies, removedGlobalParams,
             conditionalEval, conditionalCandidates,
-            conditionalSuppressedFamilies, removedConditionalParams);
+            conditionalSuppressedFamilies, removedConditionalParams,
+            promisingCandidates, protectedFamilies, riskyOverridesFamilies);
 
         _logger.LogInformation(
-            "Phase 8E/9D active: suppressed {GlobalCount} globally risky, {CondCount} conditionally risky families " +
-            "for session {SessionId}. Notes={Notes}",
-            globalRiskyFamilies.Count, conditionalSuppressedFamilies.Count,
+            "Phase 8E/9D/9E active: suppressed {GlobalCount} globally risky, {CondCount} conditionally risky, " +
+            "protected {ProtCount} families for session {SessionId}. Notes={Notes}",
+            effectiveGlobalRiskyFamilies.Count, conditionalSuppressedFamilies.Count, protectedFamilies.Count,
             decision.SessionId, decision.Phase8EReliabilityNotes);
 
         return decision;
@@ -184,12 +224,13 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
     }
 
     // Builds the Phase8EReliabilityNotes string for shadow mode.
-    // Includes global risky detection, conditional matches, and conditional suppression candidates.
+    // Includes global risky detection, conditional matches, suppression candidates, and promising observations.
     // Returns null when there is nothing to record.
     private static string? BuildShadowNotes(
         List<string> globalRiskyFamilies,
         ConditionalEvalResult conditionalEval,
-        List<string> conditionalCandidates)
+        List<string> conditionalCandidates,
+        List<string> promisingObservedCandidates)
     {
         var parts = new List<string>();
 
@@ -202,11 +243,15 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
         if (conditionalCandidates.Count > 0)
             parts.Add($"conditional-risky-suppression-candidates: [{string.Join(", ", conditionalCandidates)}]");
 
+        // Phase 9E: globally risky families that have a conditional promising match are noted for observability.
+        if (promisingObservedCandidates.Count > 0)
+            parts.Add($"conditional-promising-observed: [{string.Join(", ", promisingObservedCandidates)}]");
+
         return parts.Count > 0 ? string.Join(" | ", parts) : null;
     }
 
     // Builds the Phase8EReliabilityNotes string for active mode.
-    // Records both global and conditional suppression results.
+    // Records global suppression, conditional suppression, and Phase 9E promising protection results.
     // Returns null when nothing was recorded.
     private static string? BuildActiveModeNotes(
         List<string> globalRiskyFamilies,
@@ -214,14 +259,19 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
         ConditionalEvalResult conditionalEval,
         List<string> conditionalCandidates,
         List<string> conditionalSuppressedFamilies,
-        List<string> removedConditionalParams)
+        List<string> removedConditionalParams,
+        List<string> promisingCandidates,
+        List<string> protectedFamilies,
+        List<string> riskyOverridesFamilies)
     {
         var parts = new List<string>();
 
         if (globalRiskyFamilies.Count > 0)
         {
             parts.Add($"risky-families-detected: [{string.Join(", ", globalRiskyFamilies)}]");
-            parts.Add($"suppressed-params: [{string.Join(", ", removedGlobalParams)}]");
+            // Only show suppressed-params when something was actually removed.
+            if (removedGlobalParams.Count > 0)
+                parts.Add($"suppressed-params: [{string.Join(", ", removedGlobalParams)}]");
         }
 
         if (conditionalEval.MatchesNote is not null)
@@ -236,9 +286,31 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
             parts.Add($"conditional-suppressed-params: [{string.Join(", ", removedConditionalParams)}]");
         }
 
-        // mode=active is added whenever any suppression was applied (global or conditional).
-        bool anySuppressionApplied = globalRiskyFamilies.Count > 0 || conditionalSuppressedFamilies.Count > 0;
-        if (anySuppressionApplied)
+        // Phase 9E: promising protection notes.
+        if (promisingCandidates.Count > 0)
+        {
+            bool protectionActive = protectedFamilies.Count > 0 || riskyOverridesFamilies.Count > 0;
+            if (protectionActive)
+            {
+                // EnableConditionalPromotionProtection=true: show candidates and outcome.
+                parts.Add($"conditional-promising-protection-candidates: [{string.Join(", ", promisingCandidates)}]");
+                if (protectedFamilies.Count > 0)
+                    parts.Add($"conditional-promising-protected-families: [{string.Join(", ", protectedFamilies)}]");
+                if (riskyOverridesFamilies.Count > 0)
+                    parts.Add($"risky-overrides-promising: [{string.Join(", ", riskyOverridesFamilies)}]");
+            }
+            else
+            {
+                // EnableConditionalPromotionProtection=false: observed but not acted upon.
+                parts.Add($"conditional-promising-observed: [{string.Join(", ", promisingCandidates)}]");
+            }
+        }
+
+        // mode=active is stamped whenever any suppression, protection, or global risky detection occurred.
+        bool anyActivityApplied = globalRiskyFamilies.Count > 0
+            || conditionalSuppressedFamilies.Count > 0
+            || protectedFamilies.Count > 0;
+        if (anyActivityApplied)
             parts.Add("mode=active");
 
         return parts.Count > 0 ? string.Join(" | ", parts) : null;
@@ -262,6 +334,7 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
 
         var matches = new List<string>();
         var riskyFamilies = new List<string>();
+        var promisingFamilies = new List<string>();
 
         foreach (var family in decision.InterventionFamilies)
         {
@@ -281,6 +354,12 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
                     riskyFamilies.Add(family);
                 }
 
+                if (string.Equals(conditionalTier, "promising", StringComparison.OrdinalIgnoreCase)
+                    && !promisingFamilies.Contains(family, StringComparer.OrdinalIgnoreCase))
+                {
+                    promisingFamilies.Add(family);
+                }
+
                 _logger.LogInformation(
                     "Phase 9C conditional match: family '{Family}' matched condition '{Key}' → tier '{Tier}' " +
                     "for session {SessionId}.",
@@ -294,6 +373,7 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
         return new ConditionalEvalResult(
             matches,
             riskyFamilies,
+            promisingFamilies,
             $"conditional-matches: {string.Join(", ", matches)}");
     }
 
@@ -323,9 +403,10 @@ public class PolicyReliabilityWeightingService : IPolicyReliabilityWeightingServ
     private record ConditionalEvalResult(
         IReadOnlyList<string> Matches,
         IReadOnlyList<string> RiskyFamilies,
+        IReadOnlyList<string> PromisingFamilies,
         string? MatchesNote)
     {
         public static readonly ConditionalEvalResult Empty =
-            new(Array.Empty<string>(), Array.Empty<string>(), null);
+            new(Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>(), null);
     }
 }
