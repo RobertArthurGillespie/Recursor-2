@@ -11,13 +11,16 @@ public class RecursorController : ControllerBase
 {
     private readonly IRecursorSessionService _sessionService;
     private readonly IPolicyRecommendationService _policyRecommendationService;
+    private readonly IConfiguration _config;
 
     public RecursorController(
         IRecursorSessionService sessionService,
-        IPolicyRecommendationService policyRecommendationService)
+        IPolicyRecommendationService policyRecommendationService,
+        IConfiguration config)
     {
         _sessionService = sessionService;
         _policyRecommendationService = policyRecommendationService;
+        _config = config;
     }
 
     /// <summary>POST /api/recursor/sessions/start</summary>
@@ -78,5 +81,61 @@ public class RecursorController : ControllerBase
     {
         var result = await _policyRecommendationService.GenerateRecommendationsAsync();
         return Ok(result);
+    }
+
+    /// <summary>
+    /// GET /api/recursor/policy-recommendations/export-config
+    ///
+    /// Phase 9B/9C: Returns a PolicyReliabilityConfigExport shaped for manual insertion into
+    /// Recursor:PolicyReliability in appsettings.json after human review.
+    /// Includes global tiers (Phase 9B) and conditional tiers (Phase 9C).
+    /// Mode is always "shadow" — reviewer must promote to "active" explicitly.
+    /// Offline only — never influences live adaptation decisions.
+    /// </summary>
+    [HttpGet("policy-recommendations/export-config")]
+    public async Task<IActionResult> ExportPolicyReliabilityConfig()
+    {
+        var json = await _policyRecommendationService.ExportPolicyReliabilityConfigAsync();
+        return Content(json, "application/json");
+    }
+
+    /// <summary>
+    /// GET /api/recursor/policy-recommendations/export-config-text
+    ///
+    /// Phase 9B/9C: Returns a human-readable summary with a JSON snippet ready to paste
+    /// under "Recursor" → "PolicyReliability" in appsettings.json, including Phase 9C
+    /// conditional tiers and guidance on the safe manual review workflow.
+    /// Offline only — never influences live adaptation decisions.
+    /// </summary>
+    [HttpGet("policy-recommendations/export-config-text")]
+    public async Task<IActionResult> ExportPolicyReliabilityConfigText()
+    {
+        var text = await _policyRecommendationService.ExportPolicyReliabilityConfigTextAsync();
+        return Content(text, "text/plain");
+    }
+
+    [HttpGet("testconfig")]
+    public async Task<IActionResult> testconfig()
+    {
+        var value = _config["TestConfig:TestValue"];
+
+        return Ok(new
+        {
+            TestValue = value,
+            Timestamp = DateTime.UtcNow
+        });
+
+    }
+
+    [HttpGet("testconfig/full")]
+    public IActionResult GetFullPolicyConfig()
+    {
+        return Ok(new
+        {
+            Mode = _config["Recursor:PolicyReliability:Mode"],
+            DifficultyReductionGlobal = _config["Recursor:PolicyReliability:FamilyReliabilityTiers:difficulty-reduction"],
+            ConditionalStruggling =
+    _config["Recursor:PolicyReliability:ConditionalFamilyReliabilityTiers:difficulty-reduction:GuardrailOverallBehaviorState=struggling"]
+        });
     }
 }

@@ -519,7 +519,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         // Mode "disabled" (default) — no effect.
         // Mode "shadow"   — logs what would be suppressed; adaptation is not modified.
         // Mode "active"   — removes risky families and their parameter changes.
-        adaptation = _phase8eReliability.Apply(adaptation);
+        adaptation = _phase8eReliability.Apply(adaptation, guardrailSummary, shadowPrediction);
 
         // If Phase 8E active-mode suppressed every parameter change, ingest the audit record
         // but return "no adaptation" so the sim receives no instructions.

@@ -77,6 +77,7 @@ public class UserProfilePhase6BTests
         public Task IngestBehaviorStateTrainingRowAsync(BehaviorStateTrainingRow row) => Task.CompletedTask;
         public Task IngestUserBehaviorProfileAsync(UserBehaviorProfileRow row) => Task.CompletedTask;
         public Task IngestUserBehaviorProfileUpdateAsync(UserBehaviorProfileUpdateRow row) => Task.CompletedTask;
+        public Task IngestAdaptationEffectivenessAsync(AdaptationEffectivenessRow row) => Task.CompletedTask;
     }
 
     // ── New profile creation ──────────────────────────────────────────────────
