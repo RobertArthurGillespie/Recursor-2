@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\adx\\adxingestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\adx\\adxingestionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -58,10 +62,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\recursor\\models\\trajectorymodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\recursor\\models\\trajectorymodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|solutionrelative:server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1729DDE0-EBBA-4221-B159-5D3E813790F4}|Server\\NCATAIBlazorFrontendTest.Server.csproj|c:\\users\\rober\\source\\repos\\recursor_engine_vers2\\ncataiblazorfrontendtest\\server\\ncataiblazorfrontendtest.server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -658,7 +658,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -666,33 +666,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "index.html",
-              "DocumentMoniker": "C:\\Users\\Rober\\OneDrive\\Documents\\Dash\\index.html",
-              "RelativeDocumentMoniker": "..\\..\\..\\..\\OneDrive\\Documents\\Dash\\index.html",
-              "ToolTip": "C:\\Users\\Rober\\OneDrive\\Documents\\Dash\\index.html",
-              "RelativeToolTip": "..\\..\\..\\..\\OneDrive\\Documents\\Dash\\index.html",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-04-28T20:58:44.654Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "index.html",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
-              "RelativeDocumentMoniker": "..\\..\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
-              "RelativeToolTip": "..\\..\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
-              "ViewState": "AgIAAEUAAAAAAAAAAAAAACEBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-04-28T20:47:37.582Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "index (48).html",
               "DocumentMoniker": "C:\\Users\\Rober\\Downloads\\index (48).html",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\Downloads\\index (48).html",
@@ -700,12 +674,11 @@
               "RelativeToolTip": "..\\..\\..\\..\\Downloads\\index (48).html",
               "ViewState": "AgIAAIEAAAAAAAAAAAAAAGsAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-04-28T20:46:38.336Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-28T20:46:38.336Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Phase10ASequenceFeatureTests.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\NCATAIBlazorFrontendTest.Tests\\Recursor\\Phase10ASequenceFeatureTests.cs",
               "RelativeDocumentMoniker": "NCATAIBlazorFrontendTest.Tests\\Recursor\\Phase10ASequenceFeatureTests.cs",
@@ -713,12 +686,11 @@
               "RelativeToolTip": "NCATAIBlazorFrontendTest.Tests\\Recursor\\Phase10ASequenceFeatureTests.cs",
               "ViewState": "AgIAAFkBAAAAAAAAAAAgwHoBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-28T20:44:35.883Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-28T20:44:35.883Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "AdxRowModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRowModels.cs",
@@ -726,12 +698,11 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowModels.cs",
               "ViewState": "AgIAAAABAAAAAAAAAAAswBUBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T16:22:24.884Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T16:22:24.884Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "AdxRowMapper.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxRowMapper.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
@@ -739,12 +710,11 @@
               "RelativeToolTip": "Server\\Recursor\\Adx\\AdxRowMapper.cs",
               "ViewState": "AgIAADABAAAAAAAAAAAkwFIBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T14:34:07.941Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T14:34:07.941Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "RecursorIngestionService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
@@ -752,12 +722,36 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\RecursorIngestionService.cs",
               "ViewState": "AgIAAGMCAAAAAAAAAAAkwIUCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T15:44:13.205Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T15:44:13.205Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
+              "RelativeDocumentMoniker": "Server\\appsettings.json",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
+              "RelativeToolTip": "Server\\appsettings.json",
+              "ViewState": "AgIAADMAAAAAAAAAAAAAAEAAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-08-12T15:13:19.251Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
+              "RelativeDocumentMoniker": "..\\..\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
+              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
+              "RelativeToolTip": "..\\..\\Pump_App_Redux\\Pump_App_Redux_Builds\\Pump-Operation-Scenarios\\index.html",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAAACEBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-04-28T20:47:37.582Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "AdxIngestionService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Adx\\AdxIngestionService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Adx\\AdxIngestionService.cs",
@@ -770,7 +764,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 2,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\Rober\\OneDrive\\Documents\\Dash\\index.html",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\OneDrive\\Documents\\Dash\\index.html",
+              "ToolTip": "C:\\Users\\Rober\\OneDrive\\Documents\\Dash\\index.html",
+              "RelativeToolTip": "..\\..\\..\\..\\OneDrive\\Documents\\Dash\\index.html",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-04-28T20:58:44.654Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "RecursorApiModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Api\\RecursorApiModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Api\\RecursorApiModels.cs",
@@ -778,12 +784,11 @@
               "RelativeToolTip": "Server\\Recursor\\Api\\RecursorApiModels.cs",
               "ViewState": "AgIAAB8AAAAAAAAAAADwvzUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T16:52:42.678Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T16:52:42.678Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "RecursorSessionService.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\RecursorSessionService.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\RecursorSessionService.cs",
@@ -791,12 +796,11 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\RecursorSessionService.cs",
               "ViewState": "AgIAAGUAAAAAAAAAAAAkwIcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T16:54:41.523Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T16:54:41.523Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "RecursorController.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Controllers\\RecursorController.cs",
               "RelativeDocumentMoniker": "Server\\Controllers\\RecursorController.cs",
@@ -804,12 +808,11 @@
               "RelativeToolTip": "Server\\Controllers\\RecursorController.cs",
               "ViewState": "AgIAAJsAAAAAAAAAAAAgwLwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-02T02:17:36.886Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-02T02:17:36.886Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Program.cs",
               "RelativeDocumentMoniker": "Server\\Program.cs",
@@ -817,12 +820,11 @@
               "RelativeToolTip": "Server\\Program.cs",
               "ViewState": "AgIAAB0BAAAAAAAAAAAowEABAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-12T04:12:07.098Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T04:12:07.098Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "SequenceFeatureExtractor.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Services\\SequenceFeatureExtractor.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Services\\SequenceFeatureExtractor.cs",
@@ -830,21 +832,7 @@
               "RelativeToolTip": "Server\\Recursor\\Services\\SequenceFeatureExtractor.cs",
               "ViewState": "AgIAAIYAAAAAAAAAAAAgwKcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-28T20:40:18.299Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
-              "RelativeDocumentMoniker": "Server\\appsettings.json",
-              "ToolTip": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\appsettings.json",
-              "RelativeToolTip": "Server\\appsettings.json",
-              "ViewState": "AgIAACcAAAAAAAAAAAAAADQAAAA4AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-12T15:13:19.251Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-28T20:40:18.299Z"
             },
             {
               "$type": "Document",
@@ -896,7 +884,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "TrajectoryModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\TrajectoryModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\TrajectoryModels.cs",
@@ -904,12 +892,11 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\TrajectoryModels.cs",
               "ViewState": "AgIAACUAAAAAAAAAAAA/wDsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-04T02:38:15.344Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-04T02:38:15.344Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "AdaptationModels.cs",
               "DocumentMoniker": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Server\\Recursor\\Models\\AdaptationModels.cs",
               "RelativeDocumentMoniker": "Server\\Recursor\\Models\\AdaptationModels.cs",
@@ -917,8 +904,7 @@
               "RelativeToolTip": "Server\\Recursor\\Models\\AdaptationModels.cs",
               "ViewState": "AgIAADAAAAAAAAAAAAAkwEMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T20:42:31.148Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-14T20:42:31.148Z"
             },
             {
               "$type": "Document",

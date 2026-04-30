@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NCATAIBlazorFrontendTest.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6195d40d4f3f396e546a68934750ab9fc9a4e825")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d756f1e4ecc1b08d6316391d0abdefe2d8b6d208")]
 [assembly: System.Reflection.AssemblyProductAttribute("NCATAIBlazorFrontendTest.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NCATAIBlazorFrontendTest.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

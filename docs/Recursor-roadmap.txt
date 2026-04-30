@@ -1,256 +1,184 @@
+RECURSOR ENGINE — DEVELOPMENT ROADMAP (CURRENT STATE)
 
-🧠 Recursor System Architecture & Development Roadmap
+OVERVIEW
+Recursor is an adaptive training engine that:
+- captures user telemetry from simulations
+- builds behavioral state representations
+- applies adaptive interventions
+- evaluates outcomes
+- learns which interventions work, under which conditions, over time
 
-I. System Definition
-Recursor is a closed-loop adaptive behavioral calibration system designed to:
-observe user interaction behavior in real time
-interpret that behavior through shared behavioral constructs
-adapt the environment dynamically
-iteratively guide users toward target behavioral patterns
-This process operates:
-within a session (real-time shaping)
-across sessions (longitudinal calibration)
-The system is designed to be domain-agnostic, supporting applications including:
-industrial and OSHA safety training
-workforce development simulations
-educational environments
-vocational rehabilitation and cognitive retraining
+The system evolves in layers:
+1. Behavior understanding
+2. Adaptation control
+3. Policy learning
+4. Temporal intelligence (in progress)
+5. Continuous learning (future)
 
-II. Core System Layers
-Recursor is composed of four primary layers.
+--------------------------------------------------
+PHASE 1 — CORE ADAPTIVE LOOP (COMPLETE)
+--------------------------------------------------
+Telemetry → Feature Windows → Behavior Profiles → Hypotheses → Adaptation
 
-1. Event Layer (Sim-Specific)
-Purpose
-Capture raw interaction data from simulations.
-Characteristics
-Domain-specific
-Flexible schema
-Defined per simulation
-Examples
-action (correct-object / wrong-object)
-error
-hint_request
-safety_violation
-step_out_of_sequence
-Key Principle
-Event types are not standardized across sims—they are mapped upward.
+- Unity emits telemetry events
+- .NET backend builds feature windows
+- Behavior interpreter produces dimension scores
+- Adaptation policy generates interventions
+- Adaptations returned to Unity
 
-2. Behavioral Abstraction Layer (Core Generalization Layer)
-Purpose
-Translate raw events into shared behavioral constructs.
-Core Behavioral Dimensions (examples)
-Attention Detection
-Goal Understanding
-Procedure Sequencing
-Pace Regulation
-Self Correction
-Feedback Responsiveness
-Safety Compliance
-Task Continuity
-Derived Behavioral Scores
-Confusion
-Hesitation
-Impulsivity
-Hint Dependence
-Mastery Stability
-Temporal Features
-Trends (e.g., ConfusionTrend, HintDependenceTrend)
-Window-based summaries
-Stability counters
-Key Principle
-This layer decouples domain-specific events from adaptive logic.
+--------------------------------------------------
+PHASE 2 — CURRENT-WINDOW ML (COMPLETE)
+--------------------------------------------------
+- BehaviorStateTrainingRows created
+- Shadow ML inference for:
+  - confusion
+  - hint dependence
+  - stable mastery
 
-3. Adaptive Intelligence Layer
-Purpose
-Interpret behavior and determine adaptive interventions.
+--------------------------------------------------
+PHASE 3 — NEXT-WINDOW PREDICTION (COMPLETE)
+--------------------------------------------------
+- Predict next-window hint dependence
+- Guardrail logic added based on prediction
 
-A. Hypothesis Generation
-Detect emergent behavioral patterns:
-confusion patterns
-stable mastery
-relapse patterns
-pacing instability
-support dependence
+--------------------------------------------------
+PHASE 4 — REPRESENTATION LEARNING (PARTIAL)
+--------------------------------------------------
+- Feature engineering layer established
+- Prepared for future embedding-based models
 
-B. Machine Learning Models
-Current (Implemented)
-Hint Dependence (current-window)
-Hint Dependence (next-window prediction)
-Planned
-Confusion models
-Stable mastery models
-Embedding-based models
-Sequence-aware models (future)
+--------------------------------------------------
+PHASE 5 — EVALUATION & CALIBRATION (ONGOING)
+--------------------------------------------------
+- KQL validation queries
+- threshold tuning
+- sanity checks for ML outputs
 
-C. Policy & Guardrails
-Determine how the system adapts:
-difficulty adjustments
-hint mode transitions
-pacing / time pressure changes
-error tolerance adjustments
-scaffold preservation / fade
-Next-Window Guardrail (Implemented)
-predicts future hint dependence
-prevents premature support removal
+--------------------------------------------------
+PHASE 6 — LONGITUDINAL USER STATE (COMPLETE)
+--------------------------------------------------
+- User history persistence
+- Derived thresholds
+- session-to-session continuity
 
-Key Principle
-Adaptation is driven by behavioral interpretation, not raw events.
+--------------------------------------------------
+PHASE 7 — ML EXPANSION (COMPLETE)
+--------------------------------------------------
+7A: Confusion model
+7B: Stable mastery model
+7C: Multi-signal guardrail summary
 
-4. Longitudinal User Layer (Personalization Layer)
-Purpose
-Enable cross-session behavioral calibration.
-Core Capabilities
-User identity (UserId)
-Session aggregation
-Behavioral history
-Personal baselines
-Recovery and relapse patterns
-Future Extensions
-per-user thresholds
-adaptive learning rates
-clustering and segmentation
-personalized policy adjustments
-Key Principle
-Calibration becomes user-specific, not session-specific.
+--------------------------------------------------
+PHASE 8 — POLICY EFFECTIVENESS & RELIABILITY (COMPLETE)
+--------------------------------------------------
+8A: Guardrail modifier (rule-based veto)
+8B: Adaptation effectiveness tracking (ADX)
+8C: Policy effectiveness analytics
+8D: Policy reliability scoring
+8E: Global reliability filtering (risky/promising/neutral)
 
-III. System Loop (Recursive Behavioral Calibration)
-The system operates as a continuous loop:
-User interacts with simulation
-Events are captured
-Behavior is inferred
-Hypotheses are generated
-ML predictions refine interpretation
-Policy determines interventions
-Simulation parameters are adjusted
-User behavior responds
-Loop repeats
-Across sessions:
-patterns accumulate
-adaptation becomes personalized
+--------------------------------------------------
+PHASE 9 — POLICY LEARNING & CONDITIONAL CONTROL (COMPLETE)
+--------------------------------------------------
+9A: Policy recommendation engine (from ADX data)
+9B: Human-reviewed config export
+9C: Conditional reliability awareness (state-based)
+9D: Conditional suppression (risky-only)
+9E: Conditional protection (promising-only, preservation not creation)
 
-IV. Development Phases
+System now supports:
+- suppress unsafe interventions
+- preserve contextually beneficial ones
+- resolve conflicts (risky overrides promising)
+- full audit logging
 
-Phase 1 — Core Adaptive Loop 
-telemetry ingestion
-feature extraction
-hypothesis generation
-policy-based adaptation
+--------------------------------------------------
+PHASE 10 — TEMPORAL INTELLIGENCE (IN PROGRESS)
+--------------------------------------------------
 
-Phase 2 — Current-Window ML Integration 
-ML.NET models
-shadow inference
-policy integration
+PHASE 10A — SEQUENCE-AWARE FEATURES (COMPLETE)
+- Sliding window (last N windows)
+- Trend slopes (confusion, goal, hint)
+- Volatility detection
+- Momentum signals
+- Stability scoring
+- Near-term risk classification
+- ADX ingestion + API exposure
 
-Phase 3 — Next-Window Prediction 
-temporal labeling
-predictive model
-guardrail integration
-threshold calibration
+PHASE 10B — TEMPORAL EMBEDDINGS (NEXT)
+- Fixed-length embedding vector per window
+- Combines:
+  - current state
+  - sequence features
+  - trajectory signals
+  - guardrail state
+  - adaptation context
+- Stored in TemporalEmbeddings table
+- Training targets stored in TemporalPredictionTargets table
+- No deep learning yet
 
-Phase 4 — Representation Learning 
-autoencoder training
-embedding generation
-dataset integration
-(not yet deployed in production inference)
+PHASE 10C — TEMPORAL PREDICTION MODELS (FUTURE)
+- Train models on embedding + target tables
+- Predict:
+  - next behavior state
+  - next-N window trajectory
+- Potential models:
+  - LSTM / RNN
+  - Transformer encoder
+- Introduce trajectory-aware adaptation
 
-Phase 5 — Evaluation & Calibration FINISHED
-ADX analytics
-threshold tuning
-sim-based validation
-A/B comparisons (pending)
+--------------------------------------------------
+PHASE 11 — CONTINUOUS / ONLINE LEARNING (FUTURE)
+--------------------------------------------------
+- Periodic model retraining
+- automatic policy recommendation refresh
+- possible online learning (carefully gated)
 
-Phase 6 — Longitudinal User Layer 
-introduce UserId
-persist cross-session data
-build per-user analytics
-enable personalized adaptation
+--------------------------------------------------
+PHASE 12 — PRODUCTION HARDENING (FUTURE)
+--------------------------------------------------
+- authentication / authorization
+- monitoring and alerting
+- cost controls
+- fault tolerance
+- scaling
 
-Phase 7 — ML Expansion 
-confusion models
-stable mastery models
-additional guardrails
-multi-signal policy integration
+--------------------------------------------------
+PHASE 13 — DEMO / DASHBOARD / PRODUCTIZATION (FUTURE)
+--------------------------------------------------
+- session timeline visualization
+- policy decision explainability
+- trajectory visualization
+- admin dashboards
+- client-facing UI
 
-Phase 8 — Personalization Engine 
-per-user thresholds
-adaptive policies
-behavioral trajectory modeling
-user clustering
+--------------------------------------------------
+CURRENT STATUS
+--------------------------------------------------
+Completed through Phase 10A.
 
-Phase 9 — Deep Learning Expansion 
-sequence models (RNN / Transformer)
-temporal embeddings
-trajectory prediction
-online learning
+Next step:
+→ Phase 10B (Temporal Embeddings + Training Dataset)
 
-V. Sim Catalog Role
-The Sim Catalog defines:
-available adaptive parameters
-valid ranges and transitions
-intervention families
-sim-specific capabilities
-Key Principle
-Sims define how adaptation is expressed; Recursor defines when and why.
+--------------------------------------------------
+KEY SYSTEM CAPABILITIES (CURRENT)
+--------------------------------------------------
+- Behavior state inference (multi-signal)
+- Adaptive intervention generation
+- Policy effectiveness tracking
+- Reliability-based filtering
+- Conditional policy control (state-aware)
+- Sequence-aware behavioral analysis
+- Early trajectory prediction signals
 
-VI. System Flexibility Across Domains
-Recursor supports multiple domains through:
-event → behavior mapping
-shared behavioral abstraction
-parameterized adaptation
-Applications
-Safety Training
-compliance
-hazard detection
-procedural execution
-Workforce Training
-sequencing
-task execution
-pacing
-Rehabilitation (e.g., Brain Injury)
-attention regulation
-pacing recovery
-task continuity
-scaffolded re-learning
+--------------------------------------------------
+KEY PRINCIPLE
+--------------------------------------------------
+Recursor evolves from:
+“rule-based adaptation”
 
-VII. Key Design Principles
-Separation of concerns
-events ≠ behavior ≠ policy
-Behavior-first architecture
-adaptation is based on inferred behavior
-Temporal awareness
-prediction of future state
-Gradual shaping
-not binary pass/fail
-Domain independence
-sims plug into a shared system
-Personalization over time
-user-level calibration
-
-VIII. Current State Summary
-Recursor currently has:
-a working adaptive loop
-real-time ML integration
-temporal prediction capability
-production telemetry and analytics
-validated behavior across multiple sims
-It is now transitioning from:
-session-based adaptation system
 to:
-longitudinal personalized behavioral calibration system
+“data-driven, policy-learning adaptive system”
 
-IX. Immediate Next Step
-🎯 Implement the Longitudinal User Layer
-Specifically:
-Add UserId to:
-sessions
-behavior states
-adaptation decisions
-Persist cross-session data
-Build user-level queries and analytics
-This step unlocks:
-true recursive calibration across time
-personalization
-higher-order ML capabilities
-
-X. Summary Statement
-Recursor is a general-purpose adaptive behavioral calibration engine that uses real-time behavioral inference and predictive modeling to dynamically shape user behavior within and across sessions, with domain-specific simulations acting as configurable environments for expressing adaptation.
+and is now entering:
+“trajectory-aware, temporally intelligent system”
