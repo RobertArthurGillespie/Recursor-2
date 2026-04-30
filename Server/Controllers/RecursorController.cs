@@ -14,6 +14,7 @@ public class RecursorController : ControllerBase
     private readonly IPolicyRecommendationService _policyRecommendationService;
     private readonly ISessionRepository _sessionRepository;
     private readonly ISequenceFeatureExtractor _sequenceFeatureExtractor;
+    private readonly ITemporalEmbeddingService _temporalEmbedding;
     private readonly IConfiguration _config;
 
     public RecursorController(
@@ -21,12 +22,14 @@ public class RecursorController : ControllerBase
         IPolicyRecommendationService policyRecommendationService,
         ISessionRepository sessionRepository,
         ISequenceFeatureExtractor sequenceFeatureExtractor,
+        ITemporalEmbeddingService temporalEmbedding,
         IConfiguration config)
     {
         _sessionService = sessionService;
         _policyRecommendationService = policyRecommendationService;
         _sessionRepository = sessionRepository;
         _sequenceFeatureExtractor = sequenceFeatureExtractor;
+        _temporalEmbedding = temporalEmbedding;
         _config = config;
     }
 
@@ -158,6 +161,62 @@ public class RecursorController : ControllerBase
             WindowCount = windows.Count,
             Windows = windows,
             CurrentTrajectory = trajectoryClassification
+        });
+    }
+
+    /// <summary>
+    /// GET /api/recursor/session-timeline/{sessionId}/temporal
+    ///
+    /// Phase 10B: demo/debug endpoint. Returns the latest temporal embedding and available
+    /// prediction targets (horizons 1–3) built on-demand from in-memory session state.
+    /// Does not query ADX — purely reads snapshot data already held in memory.
+    /// </summary>
+    [HttpGet("session-timeline/{sessionId}/temporal")]
+    public IActionResult GetTemporalTimeline(string sessionId)
+    {
+        var session = _sessionRepository.Get(sessionId);
+        if (session is null)
+            return NotFound(new { Error = $"Session '{sessionId}' not found." });
+
+        var sequenceSummary = _sequenceFeatureExtractor.Extract(session.RecentSnapshots);
+        var trajectoryClassification = sequenceSummary is not null
+            ? _sequenceFeatureExtractor.Classify(sequenceSummary)
+            : null;
+
+        var windows = session.RecentSnapshots.Select(s => new WindowTimelineEntry
+        {
+            WindowIndex = s.WindowIndex,
+            ConfusionScore = s.ConfusionScore,
+            GoalUnderstanding = s.GoalUnderstanding,
+            HintDependenceScore = s.HintDependenceScore,
+            BehaviorState = s.OverallBehaviorState,
+            CreatedAtUtc = s.CreatedAtUtc
+        }).ToList();
+
+        TemporalEmbeddingVector? latestEmbedding = null;
+        List<TemporalPredictionTarget> predictionTargets = [];
+
+        if (session.RecentSnapshots.Count > 0)
+        {
+            var currentSnapshot = session.RecentSnapshots[^1];
+            latestEmbedding = _temporalEmbedding.BuildEmbedding(
+                session.SessionId, session.UserId, session.SimId, session.ScenarioId,
+                currentSnapshot, sequenceSummary, trajectoryClassification,
+                guardrail: null, featureVector: null);
+
+            predictionTargets = _temporalEmbedding.BuildPredictionTargets(
+                session.SessionId, session.UserId,
+                session.RecentSnapshots, trajectoryClassification);
+        }
+
+        return Ok(new TemporalTimelineResponse
+        {
+            SessionId = sessionId,
+            WindowCount = windows.Count,
+            Windows = windows,
+            LatestEmbedding = latestEmbedding,
+            PredictionTargets = predictionTargets,
+            CurrentTrajectory = trajectoryClassification,
         });
     }
 

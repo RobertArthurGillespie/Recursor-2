@@ -51,3 +51,14 @@ public class WindowTimelineEntry
     public string BehaviorState { get; set; } = "";
     public DateTime CreatedAtUtc { get; set; }
 }
+
+// Phase 10B: temporal embedding timeline — demo/debug endpoint.
+public class TemporalTimelineResponse
+{
+    public string SessionId { get; set; } = "";
+    public int WindowCount { get; set; }
+    public List<WindowTimelineEntry> Windows { get; set; } = [];
+    public TemporalEmbeddingVector? LatestEmbedding { get; set; }
+    public List<TemporalPredictionTarget> PredictionTargets { get; set; } = [];
+    public TrajectorySummary? CurrentTrajectory { get; set; }
+}

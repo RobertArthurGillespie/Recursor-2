@@ -18,6 +18,9 @@ public interface IAdxIngestionService
     Task IngestUserBehaviorProfileAsync(UserBehaviorProfileRow row);
     Task IngestUserBehaviorProfileUpdateAsync(UserBehaviorProfileUpdateRow row);
     Task IngestAdaptationEffectivenessAsync(AdaptationEffectivenessRow row);
+    // Phase 10B
+    Task IngestTemporalEmbeddingAsync(TemporalEmbeddingRow row);
+    Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row);
 }
 
 public class AdxIngestionService : IAdxIngestionService
@@ -204,6 +207,44 @@ public class AdxIngestionService : IAdxIngestionService
             {
                 IngestionMappingKind = IngestionMappingKind.Csv,
                 IngestionMappingReference = "AdaptationEffectivenessCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    public async Task IngestTemporalEmbeddingAsync(TemporalEmbeddingRow row)
+    {
+        if (!CheckClient("TemporalEmbeddings")) return;
+
+        var table = BuildTemporalEmbeddingsTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "TemporalEmbeddings")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "TemporalEmbeddingsCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    public async Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row)
+    {
+        if (!CheckClient("TemporalPredictionTargets")) return;
+
+        var table = BuildTemporalPredictionTargetsTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "TemporalPredictionTargets")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "TemporalPredictionTargetsCsvMapping"
             }
         };
 
@@ -704,6 +745,66 @@ public class AdxIngestionService : IAdxIngestionService
             row.Outcome,
             row.CreatedAtUtc
         );
+
+        return table;
+    }
+
+    private static DataTable BuildTemporalEmbeddingsTable(TemporalEmbeddingRow row)
+    {
+        var table = new DataTable("TemporalEmbeddings");
+        table.Columns.Add("SessionId",           typeof(string));
+        table.Columns.Add("UserId",              typeof(string));
+        table.Columns.Add("SimId",               typeof(string));
+        table.Columns.Add("ScenarioId",          typeof(string));
+        table.Columns.Add("WindowIndex",         typeof(int));
+        table.Columns.Add("SequenceWindowCount", typeof(int));
+        table.Columns.Add("EmbeddingVersion",    typeof(string));
+        table.Columns.Add("Values",              typeof(string)); // dynamic — JSON array of doubles
+        table.Columns.Add("FeatureNames",        typeof(string)); // dynamic — JSON array of strings
+        table.Columns.Add("CreatedAtUtc",        typeof(DateTime));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.UserId,
+            row.SimId,
+            row.ScenarioId,
+            row.WindowIndex,
+            row.SequenceWindowCount,
+            row.EmbeddingVersion,
+            row.Values,
+            row.FeatureNames,
+            row.CreatedAtUtc);
+
+        return table;
+    }
+
+    private static DataTable BuildTemporalPredictionTargetsTable(TemporalPredictionTargetRow row)
+    {
+        var table = new DataTable("TemporalPredictionTargets");
+        table.Columns.Add("SessionId",               typeof(string));
+        table.Columns.Add("UserId",                  typeof(string));
+        table.Columns.Add("SourceWindowIndex",       typeof(int));
+        table.Columns.Add("TargetWindowIndex",       typeof(int));
+        table.Columns.Add("Horizon",                 typeof(int));
+        table.Columns.Add("TargetBehaviorState",     typeof(string));
+        table.Columns.Add("TargetNearTermRisk",      typeof(string));
+        table.Columns.Add("TargetConfusionScore",    typeof(double));
+        table.Columns.Add("TargetGoalUnderstanding", typeof(double));
+        table.Columns.Add("TargetHintDependenceScore", typeof(double));
+        table.Columns.Add("CreatedAtUtc",            typeof(DateTime));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.UserId,
+            row.SourceWindowIndex,
+            row.TargetWindowIndex,
+            row.Horizon,
+            row.TargetBehaviorState,
+            row.TargetNearTermRisk,
+            row.TargetConfusionScore,
+            row.TargetGoalUnderstanding,
+            row.TargetHintDependenceScore,
+            row.CreatedAtUtc);
 
         return table;
     }

@@ -275,3 +275,38 @@ public class UserBehaviorProfileUpdateRow
     public bool HasConfusionPattern { get; set; }
     public bool HasHintDependencePattern { get; set; }
 }
+
+// ── Phase 10B rows ────────────────────────────────────────────────────────────
+
+// One row per window: fixed-length interpretable embedding.
+// Values and FeatureNames are JSON arrays stored as ADX dynamic columns.
+public class TemporalEmbeddingRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public string SimId { get; set; } = "";
+    public string ScenarioId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public int SequenceWindowCount { get; set; }
+    public string EmbeddingVersion { get; set; } = "";
+    public string Values { get; set; } = "";       // JSON array of doubles
+    public string FeatureNames { get; set; } = ""; // JSON array of strings
+    public DateTime CreatedAtUtc { get; set; }
+}
+
+// One row per (source window, target window, horizon) pair.
+// Written when window K is processed; source windows are K-1, K-2, K-3 when available.
+public class TemporalPredictionTargetRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public int SourceWindowIndex { get; set; }
+    public int TargetWindowIndex { get; set; }
+    public int Horizon { get; set; }
+    public string TargetBehaviorState { get; set; } = "";
+    public string TargetNearTermRisk { get; set; } = "";
+    public double TargetConfusionScore { get; set; }
+    public double TargetGoalUnderstanding { get; set; }
+    public double TargetHintDependenceScore { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+}

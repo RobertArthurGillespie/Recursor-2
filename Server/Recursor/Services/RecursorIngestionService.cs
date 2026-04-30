@@ -51,6 +51,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IAdaptationEffectivenessService _adaptationEffectiveness;
     private readonly IPolicyReliabilityWeightingService _phase8eReliability;
     private readonly ISequenceFeatureExtractor _sequenceFeatureExtractor;
+    private readonly ITemporalEmbeddingService _temporalEmbedding;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -74,6 +75,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     IAdaptationEffectivenessService adaptationEffectiveness,
     IPolicyReliabilityWeightingService phase8eReliability,
     ISequenceFeatureExtractor sequenceFeatureExtractor,
+    ITemporalEmbeddingService temporalEmbedding,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -96,6 +98,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _adaptationEffectiveness = adaptationEffectiveness;
         _phase8eReliability = phase8eReliability;
         _sequenceFeatureExtractor = sequenceFeatureExtractor;
+        _temporalEmbedding = temporalEmbedding;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -407,6 +410,26 @@ public class RecursorIngestionService : IRecursorIngestionService
                     "Adaptation effectiveness evaluation failed for session {SessionId}. Continuing pipeline.",
                     session.SessionId);
             }
+        }
+
+        // Phase 10B: temporal embedding + prediction targets — observability only, never blocks pipeline.
+        try
+        {
+            var embedding = _temporalEmbedding.BuildEmbedding(
+                session.SessionId, session.UserId, session.SimId, session.ScenarioId,
+                snapshot, sequenceSummary, trajectoryClassification, guardrailSummary, featureVector);
+            await _adxIngestion.IngestTemporalEmbeddingAsync(AdxRowMapper.MapTemporalEmbedding(embedding));
+
+            var targets = _temporalEmbedding.BuildPredictionTargets(
+                session.SessionId, session.UserId, session.RecentSnapshots, trajectoryClassification);
+            foreach (var target in targets)
+                await _adxIngestion.IngestTemporalPredictionTargetAsync(AdxRowMapper.MapTemporalPredictionTarget(target));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Temporal embedding/target generation failed for session {SessionId}. Continuing pipeline.",
+                session.SessionId);
         }
 
         // Step 12: Ingest hypothesis set into ADX.

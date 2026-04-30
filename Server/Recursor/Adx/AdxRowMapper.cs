@@ -311,6 +311,39 @@ public static class AdxRowMapper
             HasHintDependencePattern = hasHintDependencePattern,
         };
 
+    // ── Phase 10B: temporal embedding and prediction target row mappings ─────────
+
+    public static TemporalEmbeddingRow MapTemporalEmbedding(TemporalEmbeddingVector embedding) =>
+        new()
+        {
+            SessionId           = embedding.SessionId,
+            UserId              = embedding.UserId,
+            SimId               = embedding.SimId,
+            ScenarioId          = embedding.ScenarioId,
+            WindowIndex         = embedding.WindowIndex,
+            SequenceWindowCount = embedding.SequenceWindowCount,
+            EmbeddingVersion    = embedding.EmbeddingVersion,
+            Values              = JsonSerializer.Serialize(embedding.Values, JsonOpts),
+            FeatureNames        = embedding.FeatureNamesJson,
+            CreatedAtUtc        = embedding.CreatedAtUtc,
+        };
+
+    public static TemporalPredictionTargetRow MapTemporalPredictionTarget(TemporalPredictionTarget target) =>
+        new()
+        {
+            SessionId                = target.SessionId,
+            UserId                   = target.UserId,
+            SourceWindowIndex        = target.SourceWindowIndex,
+            TargetWindowIndex        = target.TargetWindowIndex,
+            Horizon                  = target.Horizon,
+            TargetBehaviorState      = target.TargetBehaviorState,
+            TargetNearTermRisk       = target.TargetNearTermRisk,
+            TargetConfusionScore     = target.TargetConfusionScore,
+            TargetGoalUnderstanding  = target.TargetGoalUnderstanding,
+            TargetHintDependenceScore = target.TargetHintDependenceScore,
+            CreatedAtUtc             = target.CreatedAtUtc,
+        };
+
     // ── Reverse mappings (ADX row → domain model) ─────────────────────────────
     // Used by debug query endpoints. Note: FeatureWindowDocument.Id is not stored
     // in ADX, so the returned document will have Id = "".

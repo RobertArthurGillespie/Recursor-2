@@ -167,6 +167,8 @@ builder.Services.Configure<RecursorPolicyReliabilityOptions>(
 builder.Services.AddScoped<IPolicyReliabilityWeightingService, PolicyReliabilityWeightingService>();
 // Phase 10A: sequence-aware feature extraction and trajectory classification.
 builder.Services.AddScoped<ISequenceFeatureExtractor, SequenceFeatureExtractor>();
+// Phase 10B: temporal embedding and prediction target generation.
+builder.Services.AddScoped<ITemporalEmbeddingService, TemporalEmbeddingService>();
 
 bool anyModelPresent =
     (resolvedHintDependencePath            is not null && File.Exists(resolvedHintDependencePath))            ||

@@ -59,6 +59,8 @@ public class UserProfilePhase6CTests
         public Task IngestUserBehaviorProfileAsync(UserBehaviorProfileRow row)             => Task.CompletedTask;
         public Task IngestUserBehaviorProfileUpdateAsync(UserBehaviorProfileUpdateRow row) => Task.CompletedTask;
         public Task IngestAdaptationEffectivenessAsync(AdaptationEffectivenessRow row)    => Task.CompletedTask;
+        public Task IngestTemporalEmbeddingAsync(TemporalEmbeddingRow row)               => Task.CompletedTask;
+        public Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row) => Task.CompletedTask;
     }
 
     private static UserProfileUpdateService CreateUpdateService(IUserProfileRepository repo)

@@ -1,0 +1,97 @@
+// ============================================================
+// Phase 10B — Temporal Embeddings ADX Setup
+// ============================================================
+// Run once against your RecursorDb to create the two new tables
+// and their CSV ingestion mappings.
+//
+// Tables use .create-merge so re-running is safe on existing clusters.
+// ============================================================
+
+// ── TemporalEmbeddings ────────────────────────────────────────────────────────
+// One row per window per session.
+// Values and FeatureNames are parallel dynamic arrays — join on array index.
+// EmbeddingVersion lets downstream queries detect schema changes.
+
+.create-merge table TemporalEmbeddings (
+    SessionId:           string,
+    UserId:              string,
+    SimId:               string,
+    ScenarioId:          string,
+    WindowIndex:         int,
+    SequenceWindowCount: int,
+    EmbeddingVersion:    string,
+    Values:              dynamic,
+    FeatureNames:        dynamic,
+    CreatedAtUtc:        datetime
+)
+
+.create-or-alter table TemporalEmbeddings ingestion csv mapping 'TemporalEmbeddingsCsvMapping'
+'[{"Column":"SessionId","Properties":{"Ordinal":0}},{"Column":"UserId","Properties":{"Ordinal":1}},{"Column":"SimId","Properties":{"Ordinal":2}},{"Column":"ScenarioId","Properties":{"Ordinal":3}},{"Column":"WindowIndex","Properties":{"Ordinal":4}},{"Column":"SequenceWindowCount","Properties":{"Ordinal":5}},{"Column":"EmbeddingVersion","Properties":{"Ordinal":6}},{"Column":"Values","Properties":{"Ordinal":7}},{"Column":"FeatureNames","Properties":{"Ordinal":8}},{"Column":"CreatedAtUtc","Properties":{"Ordinal":9}}]'
+
+
+// ── TemporalPredictionTargets ─────────────────────────────────────────────────
+// One row per (SourceWindowIndex, TargetWindowIndex, Horizon) triple.
+// Written when window K is processed; sources are K-1, K-2, K-3 when available.
+// Join with TemporalEmbeddings on (SessionId, SourceWindowIndex) to build training pairs.
+
+.create-merge table TemporalPredictionTargets (
+    SessionId:                string,
+    UserId:                   string,
+    SourceWindowIndex:        int,
+    TargetWindowIndex:        int,
+    Horizon:                  int,
+    TargetBehaviorState:      string,
+    TargetNearTermRisk:       string,
+    TargetConfusionScore:     real,
+    TargetGoalUnderstanding:  real,
+    TargetHintDependenceScore: real,
+    CreatedAtUtc:             datetime
+)
+
+.create-or-alter table TemporalPredictionTargets ingestion csv mapping 'TemporalPredictionTargetsCsvMapping'
+'[{"Column":"SessionId","Properties":{"Ordinal":0}},{"Column":"UserId","Properties":{"Ordinal":1}},{"Column":"SourceWindowIndex","Properties":{"Ordinal":2}},{"Column":"TargetWindowIndex","Properties":{"Ordinal":3}},{"Column":"Horizon","Properties":{"Ordinal":4}},{"Column":"TargetBehaviorState","Properties":{"Ordinal":5}},{"Column":"TargetNearTermRisk","Properties":{"Ordinal":6}},{"Column":"TargetConfusionScore","Properties":{"Ordinal":7}},{"Column":"TargetGoalUnderstanding","Properties":{"Ordinal":8}},{"Column":"TargetHintDependenceScore","Properties":{"Ordinal":9}},{"Column":"CreatedAtUtc","Properties":{"Ordinal":10}}]'
+
+
+// ── Verification queries ──────────────────────────────────────────────────────
+
+// Count embeddings per session
+TemporalEmbeddings
+| summarize WindowCount = count(), LatestWindow = max(WindowIndex) by SessionId
+| order by LatestWindow desc
+
+// Inspect feature values for the latest embedding
+TemporalEmbeddings
+| where SessionId == "<your-session-id>"
+| top 1 by CreatedAtUtc desc
+| project WindowIndex, EmbeddingVersion,
+          Feature0  = toreal(Values[0]),   // ConfusionScore
+          Feature1  = toreal(Values[1]),   // HintDependenceScore
+          Feature2  = toreal(Values[2]),   // GoalUnderstanding
+          Feature11 = toreal(Values[11]),  // IsImproving
+          Feature14 = toreal(Values[14]),  // PredictedRiskLow
+          Feature17 = toreal(Values[17])   // StateStruggling
+
+// Count prediction targets by horizon
+TemporalPredictionTargets
+| summarize count() by Horizon
+| order by Horizon asc
+
+// Build a training dataset: join source embedding → target labels (horizon 1)
+TemporalEmbeddings
+| join kind=inner (
+    TemporalPredictionTargets
+    | where Horizon == 1
+) on SessionId, $left.WindowIndex == $right.SourceWindowIndex
+| project
+    SessionId,
+    UserId,
+    SourceWindowIndex,
+    TargetWindowIndex,
+    EmbeddingVersion,
+    Values,
+    TargetBehaviorState,
+    TargetNearTermRisk,
+    TargetConfusionScore,
+    TargetGoalUnderstanding,
+    TargetHintDependenceScore
+| take 100
