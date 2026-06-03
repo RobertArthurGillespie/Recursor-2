@@ -30,6 +30,14 @@ public class AdaptationDecisionDocument
     // Phase 10A trajectory intelligence — null when fewer than 2 windows available.
     // Example: "trajectory: improving; volatility=low; predicted-risk=low; windows=4; confusion-slope=-0.082; stability=0.87"
     public string? Phase10TrajectoryNotes { get; set; }
+
+    // Explanation fields — populated before ADX ingestion; empty string when explanation was not generated.
+    public string HypothesisLabelsJson { get; set; } = "";
+    public string LearnerStateSummary { get; set; } = "";
+    public string WhySupportChanged { get; set; } = "";
+    public string CoachMessage { get; set; } = "";
+    public string ConfidenceNote { get; set; } = "";
+    public string ExplanationJson { get; set; } = "";
 }
 
 public class ParameterChange

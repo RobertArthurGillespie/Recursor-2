@@ -83,6 +83,13 @@ public class AdaptationDecisionTimelineDto
     public string? Phase8AGuardrailNotes { get; set; }
     public string? Phase8EReliabilityNotes { get; set; }
     public string? Phase10TrajectoryNotes { get; set; }
+
+    // Explanation fields — null for rows persisted before this phase.
+    public string? HypothesisLabelsJson { get; set; }
+    public string? LearnerStateSummary { get; set; }
+    public string? WhySupportChanged { get; set; }
+    public string? CoachMessage { get; set; }
+    public string? ConfidenceNote { get; set; }
 }
 
 public class TemporalRiskPredictionTimelineDto

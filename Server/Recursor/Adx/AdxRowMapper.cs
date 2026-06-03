@@ -114,6 +114,12 @@ public static class AdxRowMapper
             Phase8EReliabilityNotes = doc.Phase8EReliabilityNotes,
             Phase8EReliabilityMode = doc.Phase8EReliabilityMode,
             Phase10TrajectoryNotes = doc.Phase10TrajectoryNotes,
+            HypothesisLabelsJson   = string.IsNullOrEmpty(doc.HypothesisLabelsJson) ? null : doc.HypothesisLabelsJson,
+            LearnerStateSummary    = string.IsNullOrEmpty(doc.LearnerStateSummary)  ? null : doc.LearnerStateSummary,
+            WhySupportChanged      = string.IsNullOrEmpty(doc.WhySupportChanged)    ? null : doc.WhySupportChanged,
+            CoachMessage           = string.IsNullOrEmpty(doc.CoachMessage)         ? null : doc.CoachMessage,
+            ConfidenceNote         = string.IsNullOrEmpty(doc.ConfidenceNote)       ? null : doc.ConfidenceNote,
+            ExplanationJson        = string.IsNullOrEmpty(doc.ExplanationJson)      ? null : doc.ExplanationJson,
         };
     }
 

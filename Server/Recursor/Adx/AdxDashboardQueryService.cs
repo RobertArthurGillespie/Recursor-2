@@ -41,7 +41,12 @@ public record DashboardAdaptationResult(
     string ReasoningSummary,
     string? Phase8AGuardrailNotes,
     string? Phase8EReliabilityNotes,
-    string? Phase10TrajectoryNotes);
+    string? Phase10TrajectoryNotes,
+    string? HypothesisLabelsJson,
+    string? LearnerStateSummary,
+    string? WhySupportChanged,
+    string? CoachMessage,
+    string? ConfidenceNote);
 
 public record DashboardRiskPredictionResult(
     int WindowIndex,
@@ -213,13 +218,21 @@ sessions
         }
     }
 
-    private async Task<List<DashboardAdaptationResult>> QueryAdaptationsAsync(string sanitizedSessionId)
-    {
-        var kql = $@"AdaptationDecisions_v2
+    // Exposed as public static so tests can assert on the KQL text without ADX.
+    public static string BuildAdaptationsKql(string sanitizedSessionId) => $@"AdaptationDecisions_v2
 | where SessionId == '{sanitizedSessionId}'
 | order by CreatedAtUtc asc
 | project CreatedAtUtc, DecisionIndex, InterventionFamilies, ParameterChanges,
-          ReasoningSummary, Phase8AGuardrailNotes, Phase8EReliabilityNotes, Phase10TrajectoryNotes";
+          ReasoningSummary, Phase8AGuardrailNotes, Phase8EReliabilityNotes, Phase10TrajectoryNotes,
+          HypothesisLabelsJson = column_ifexists(""HypothesisLabelsJson"", """"),
+          LearnerStateSummary  = column_ifexists(""LearnerStateSummary"",  """"),
+          WhySupportChanged    = column_ifexists(""WhySupportChanged"",    """"),
+          CoachMessage         = column_ifexists(""CoachMessage"",         """"),
+          ConfidenceNote       = column_ifexists(""ConfidenceNote"",       """")";
+
+    private async Task<List<DashboardAdaptationResult>> QueryAdaptationsAsync(string sanitizedSessionId)
+    {
+        var kql = BuildAdaptationsKql(sanitizedSessionId);
 
         try
         {
@@ -228,14 +241,19 @@ sessions
             while (reader.Read())
             {
                 results.Add(new DashboardAdaptationResult(
-                    CreatedAtUtc:            reader.GetDateTime(0),
-                    DecisionIndex:           reader.GetInt32(1),
+                    CreatedAtUtc:             reader.GetDateTime(0),
+                    DecisionIndex:            reader.GetInt32(1),
                     InterventionFamiliesJson: ReadDynamicAsString(reader, 2),
-                    ParameterChangesJson:    ReadDynamicAsString(reader, 3),
-                    ReasoningSummary:        reader.IsDBNull(4) ? "" : reader.GetString(4),
-                    Phase8AGuardrailNotes:   reader.IsDBNull(5) ? null : reader.GetString(5),
-                    Phase8EReliabilityNotes: reader.IsDBNull(6) ? null : reader.GetString(6),
-                    Phase10TrajectoryNotes:  reader.IsDBNull(7) ? null : reader.GetString(7)));
+                    ParameterChangesJson:     ReadDynamicAsString(reader, 3),
+                    ReasoningSummary:         reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    Phase8AGuardrailNotes:    reader.IsDBNull(5) ? null : reader.GetString(5),
+                    Phase8EReliabilityNotes:  reader.IsDBNull(6) ? null : reader.GetString(6),
+                    Phase10TrajectoryNotes:   reader.IsDBNull(7) ? null : reader.GetString(7),
+                    HypothesisLabelsJson:     reader.IsDBNull(8)  ? null : reader.GetString(8),
+                    LearnerStateSummary:      reader.IsDBNull(9)  ? null : reader.GetString(9),
+                    WhySupportChanged:        reader.IsDBNull(10) ? null : reader.GetString(10),
+                    CoachMessage:             reader.IsDBNull(11) ? null : reader.GetString(11),
+                    ConfidenceNote:           reader.IsDBNull(12) ? null : reader.GetString(12)));
             }
             return results;
         }
@@ -555,14 +573,19 @@ public static class DashboardTimelineBuilder
     private static AdaptationDecisionTimelineDto MapAdaptation(DashboardAdaptationResult a) =>
         new()
         {
-            CreatedAtUtc           = a.CreatedAtUtc,
-            DecisionIndex          = a.DecisionIndex,
+            CreatedAtUtc            = a.CreatedAtUtc,
+            DecisionIndex           = a.DecisionIndex,
             InterventionFamiliesJson = a.InterventionFamiliesJson,
-            ParameterChangesJson   = a.ParameterChangesJson,
-            ReasoningSummary       = a.ReasoningSummary,
-            Phase8AGuardrailNotes  = a.Phase8AGuardrailNotes,
+            ParameterChangesJson    = a.ParameterChangesJson,
+            ReasoningSummary        = a.ReasoningSummary,
+            Phase8AGuardrailNotes   = a.Phase8AGuardrailNotes,
             Phase8EReliabilityNotes = a.Phase8EReliabilityNotes,
-            Phase10TrajectoryNotes = a.Phase10TrajectoryNotes,
+            Phase10TrajectoryNotes  = a.Phase10TrajectoryNotes,
+            HypothesisLabelsJson    = a.HypothesisLabelsJson,
+            LearnerStateSummary     = a.LearnerStateSummary,
+            WhySupportChanged       = a.WhySupportChanged,
+            CoachMessage            = a.CoachMessage,
+            ConfidenceNote          = a.ConfidenceNote,
         };
 
     private static DashboardAdaptationResult? FindNearestAdaptation(

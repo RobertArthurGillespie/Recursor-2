@@ -96,6 +96,14 @@ public class AdaptationDecisionRow
 
     // Phase 10A trajectory intelligence — null when fewer than 2 windows available.
     public string? Phase10TrajectoryNotes { get; set; }
+
+    // Explanation fields (ordinals 18-23) — null for rows written before this phase.
+    public string? HypothesisLabelsJson { get; set; }
+    public string? LearnerStateSummary { get; set; }
+    public string? WhySupportChanged { get; set; }
+    public string? CoachMessage { get; set; }
+    public string? ConfidenceNote { get; set; }
+    public string? ExplanationJson { get; set; }
 }
 
 public class BehaviorStateTrainingRow

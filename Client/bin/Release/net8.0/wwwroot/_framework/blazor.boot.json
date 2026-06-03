@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "NCATAIBlazorFrontendTest.Client",
   "resources": {
-    "hash": "sha256-XleR+jYa3fHBi/7rsXCbRBAze++/G4s0LmEJT1xbE4U=",
+    "hash": "sha256-hE3H+eBTPhQsGpGbnbPu3ZNPEx/PLQL9fNHLhqenqaY=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-ftpNqtARtVNE8ku5eB/jXoklb41UQ+EutUHfwmbNTBY="
     },
@@ -251,12 +251,12 @@
       "mscorlib.wasm": "sha256-BeLfFpg9iS3DkEdywsYY7sV6ML3knqkMaMq0JBEbWlw=",
       "netstandard.wasm": "sha256-VkjUtJ6DK5bFTc2JwwGHmQY3tBcNSC7zMSJXuiXcnJA=",
       "System.Private.CoreLib.wasm": "sha256-VIQEPUSb48N39LR+ncGDP5xU02xuRbyZU8MhMho26wQ=",
-      "NCATAIBlazorFrontendTest.Shared.wasm": "sha256-NAG51L+Gfgzdnd49/rQKtDyEGzPi9nsvkHExKsuSSaQ=",
-      "NCATAIBlazorFrontendTest.Client.wasm": "sha256-wOFzA5kv+5KfSRRspJYzamj7z2Ib48FAaEuhVLYiUpU="
+      "NCATAIBlazorFrontendTest.Shared.wasm": "sha256-wHdZgbZE1/qMoxAzHN+f/0iHpe0hqQYYaWTjlC2r1N0=",
+      "NCATAIBlazorFrontendTest.Client.wasm": "sha256-DVRr86cETbr4mVz0YynmonopD8/GIp8ldKlUBHpjz00="
     },
     "pdb": {
-      "NCATAIBlazorFrontendTest.Shared.pdb": "sha256-MlsCFdCwv7vse6nn3ztwnMpz3IANsDQ/t3aCaNYTJck=",
-      "NCATAIBlazorFrontendTest.Client.pdb": "sha256-F7CrzjfRfvQZ/xmLwW2W91GFOMP7YfhrrnKpDUrtpkE="
+      "NCATAIBlazorFrontendTest.Shared.pdb": "sha256-OZ/NCVy/NFocESNq0CWtQpB42+PRcSfgc8VSwuNmUcQ=",
+      "NCATAIBlazorFrontendTest.Client.pdb": "sha256-Lst05rlHrSGZfMsoljI7icscTqash/UikTgHikV/APg="
     }
   },
   "cacheBootResources": true,

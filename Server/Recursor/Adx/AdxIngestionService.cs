@@ -415,6 +415,13 @@ public class AdxIngestionService : IAdxIngestionService
         table.Columns.Add("Phase8EReliabilityMode",               typeof(string));
         // Phase 10A — ordinal 17
         table.Columns.Add("Phase10TrajectoryNotes",               typeof(string));
+        // Explanation fields — ordinals 18-23
+        table.Columns.Add("HypothesisLabelsJson",                 typeof(string));
+        table.Columns.Add("LearnerStateSummary",                  typeof(string));
+        table.Columns.Add("WhySupportChanged",                    typeof(string));
+        table.Columns.Add("CoachMessage",                         typeof(string));
+        table.Columns.Add("ConfidenceNote",                       typeof(string));
+        table.Columns.Add("ExplanationJson",                      typeof(string));
 
         table.Rows.Add(
             row.SessionId,
@@ -434,7 +441,13 @@ public class AdxIngestionService : IAdxIngestionService
             row.Phase8AGuardrailNotes ?? (object)DBNull.Value,
             row.Phase8EReliabilityNotes ?? (object)DBNull.Value,
             row.Phase8EReliabilityMode ?? (object)DBNull.Value,
-            row.Phase10TrajectoryNotes ?? (object)DBNull.Value
+            row.Phase10TrajectoryNotes ?? (object)DBNull.Value,
+            row.HypothesisLabelsJson   ?? (object)DBNull.Value,
+            row.LearnerStateSummary    ?? (object)DBNull.Value,
+            row.WhySupportChanged      ?? (object)DBNull.Value,
+            row.CoachMessage           ?? (object)DBNull.Value,
+            row.ConfidenceNote         ?? (object)DBNull.Value,
+            row.ExplanationJson        ?? (object)DBNull.Value
         );
 
         return table;

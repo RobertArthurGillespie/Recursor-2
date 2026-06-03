@@ -212,6 +212,7 @@ else if (_sessions is not null)
                             <th>Mom</th>
                             <th>Adaptation</th>
                             <th>Policy Notes</th>
+                            <th>Coach / Explanation</th>
                             <th>H1 Pred/Target</th>
                             <th>H2 Pred/Target</th>
                             <th>H3 Pred/Target</th>
@@ -263,6 +264,34 @@ else if (_sessions is not null)
                                         }
                                     }
                                 </td>
+                                <td style="font-size:0.75rem; max-width:220px">
+                                    @if (w.AdaptationDecision is not null)
+                                    {
+                                        var ad = w.AdaptationDecision;
+                                        @if (HasExplanation(ad))
+                                        {
+                                            <details>
+                                                <summary style="cursor:pointer">@FormatHypothesisBadges(ad.HypothesisLabelsJson)</summary>
+                                                @MaybeLineMarkup("State",  ad.LearnerStateSummary, 100)
+                                                @MaybeLineMarkup("Why",    ad.WhySupportChanged,   100)
+                                                @MaybeLineMarkup("Coach",  ad.CoachMessage,        100)
+                                                @MaybeLineMarkup("Conf",   ad.ConfidenceNote,      80)
+                                            </details>
+                                        }
+                                        else if (!string.IsNullOrEmpty(ad.ReasoningSummary))
+                                        {
+                                            <span class="text-muted">@TruncateStr(ad.ReasoningSummary, 60)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
                                 <td>@HorizonCell(w, 1)</td>
                                 <td>@HorizonCell(w, 2)</td>
                                 <td>@HorizonCell(w, 3)</td>
@@ -276,6 +305,7 @@ else if (_sessions is not null)
                 Win = window index &bull; State = guardrail behavior state &bull;
                 Risk = trajectory near-term risk &bull; Seq = sequence window count &bull;
                 Vol = volatility &bull; Mom = momentum &bull;
+                Coach / Explanation = click to expand detected patterns and GPT explanation (older rows may be blank) &bull;
                 H1/H2/H3 = temporal prediction horizon vs observed target (✓ correct / ✗ wrong / — not yet available)
             </p>
         }
@@ -470,5 +500,42 @@ else if (_sessions is not null)
         };
         var label = string.IsNullOrEmpty(risk) ? "?" : risk;
         return $"<span class=\"badge {cls}\">{label}</span>";
+    }
+
+    // ── Coach / Explanation helpers ───────────────────────────────────────────
+
+    private static bool HasExplanation(AdaptationDecisionTimelineDto ad) =>
+        !string.IsNullOrEmpty(ad.HypothesisLabelsJson) ||
+        !string.IsNullOrEmpty(ad.LearnerStateSummary)  ||
+        !string.IsNullOrEmpty(ad.CoachMessage);
+
+    private static MarkupString FormatHypothesisBadges(string? json)
+    {
+        if (string.IsNullOrEmpty(json) || json == "null" || json == "[]")
+            return (MarkupString)"<span class=\"text-muted\" style=\"font-size:0.72rem\">(no patterns)</span>";
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var badges = doc.RootElement
+                .EnumerateArray()
+                .Select(e => e.GetString() ?? "")
+                .Where(s => s.Length > 0)
+                .Select(s => $"<span class=\"badge bg-secondary me-1\" style=\"font-size:0.7rem\">{s}</span>")
+                .ToList();
+            return badges.Count > 0
+                ? (MarkupString)string.Concat(badges)
+                : (MarkupString)"<span class=\"text-muted\" style=\"font-size:0.72rem\">(no patterns)</span>";
+        }
+        catch
+        {
+            return (MarkupString)"<span class=\"text-muted\" style=\"font-size:0.72rem\">(parse error)</span>";
+        }
+    }
+
+    private static MarkupString MaybeLineMarkup(string label, string? value, int maxLen)
+    {
+        if (string.IsNullOrEmpty(value)) return (MarkupString)"";
+        var display = value.Length > maxLen ? value[..maxLen] + "…" : value;
+        return (MarkupString)$"<div class=\"mt-1\"><strong>{label}:</strong> {display}</div>";
     }
 }

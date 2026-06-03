@@ -62,6 +62,12 @@ public class Phase14ADashboardTests
         Assert.Null(dto.Phase8EReliabilityNotes);
         Assert.Null(dto.Phase10TrajectoryNotes);
         Assert.Equal("", dto.ReasoningSummary);
+        // Explanation fields default to null (older rows lack them)
+        Assert.Null(dto.HypothesisLabelsJson);
+        Assert.Null(dto.LearnerStateSummary);
+        Assert.Null(dto.WhySupportChanged);
+        Assert.Null(dto.CoachMessage);
+        Assert.Null(dto.ConfidenceNote);
     }
 
     // ── DashboardTimelineBuilder.ComputeCorrectness ───────────────────────────
@@ -199,7 +205,7 @@ public class Phase14ADashboardTests
         // DecisionIndex is 0 for both (as observed in live data); mapping relies on CreatedAtUtc.
         var adaptations = new List<DashboardAdaptationResult>
         {
-            new(baseTime.AddSeconds(30), 0, "[]", "[]", "test reasoning", null, null, null)
+            new(baseTime.AddSeconds(30), 0, "[]", "[]", "test reasoning", null, null, null, null, null, null, null, null)
         };
         var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
 
@@ -223,9 +229,9 @@ public class Phase14ADashboardTests
         };
         var adaptations = new List<DashboardAdaptationResult>
         {
-            new(baseTime.AddSeconds(1),  0, "[]", "[]", "reason-w0", null, null, null),
-            new(baseTime.AddSeconds(31), 0, "[]", "[]", "reason-w1", null, null, null),
-            new(baseTime.AddSeconds(61), 0, "[]", "[]", "reason-w2", null, null, null),
+            new(baseTime.AddSeconds(1),  0, "[]", "[]", "reason-w0", null, null, null, null, null, null, null, null),
+            new(baseTime.AddSeconds(31), 0, "[]", "[]", "reason-w1", null, null, null, null, null, null, null, null),
+            new(baseTime.AddSeconds(61), 0, "[]", "[]", "reason-w2", null, null, null, null, null, null, null, null),
         };
         var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
 
@@ -246,7 +252,7 @@ public class Phase14ADashboardTests
         var adaptations = new List<DashboardAdaptationResult>
         {
             // 10 s away — exceeds the 5 s tolerance
-            new(baseTime.AddSeconds(10), 0, "[]", "[]", "should-not-appear", null, null, null),
+            new(baseTime.AddSeconds(10), 0, "[]", "[]", "should-not-appear", null, null, null, null, null, null, null, null),
         };
         var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
 
@@ -265,8 +271,8 @@ public class Phase14ADashboardTests
         };
         var adaptations = new List<DashboardAdaptationResult>
         {
-            new(baseTime.AddSeconds(2),  0, "[]", "[]", "reason-for-w0", null, null, null),
-            new(baseTime.AddSeconds(28), 0, "[]", "[]", "reason-for-w1", null, null, null),
+            new(baseTime.AddSeconds(2),  0, "[]", "[]", "reason-for-w0", null, null, null, null, null, null, null, null),
+            new(baseTime.AddSeconds(28), 0, "[]", "[]", "reason-for-w1", null, null, null, null, null, null, null, null),
         };
         var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
 
@@ -363,7 +369,77 @@ public class Phase14ADashboardTests
         Assert.Null(result);
     }
 
+    // ── Explanation field mapping ─────────────────────────────────────────────
+
+    [Fact]
+    public void Build_ExplanationFieldsMappedFromAdaptationResult()
+    {
+        var baseTime = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var rows = new List<DashboardTrainingRowResult>
+        {
+            MakeTrainingRow("s1", 0, createdAt: baseTime),
+        };
+        var adaptations = new List<DashboardAdaptationResult>
+        {
+            new(baseTime.AddSeconds(1), 0, "[]", "[]", "reasoning",
+                null, null, null,
+                "[\"worsening_pattern\"]", "State summary.", "Why changed.", "Coach message.", "High confidence.")
+        };
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+
+        var ad = result.Windows[0].AdaptationDecision;
+        Assert.NotNull(ad);
+        Assert.Equal("[\"worsening_pattern\"]", ad!.HypothesisLabelsJson);
+        Assert.Equal("State summary.", ad.LearnerStateSummary);
+        Assert.Equal("Why changed.", ad.WhySupportChanged);
+        Assert.Equal("Coach message.", ad.CoachMessage);
+        Assert.Equal("High confidence.", ad.ConfidenceNote);
+    }
+
+    [Fact]
+    public void Build_NullExplanationFields_DoNotCrashTimeline()
+    {
+        var baseTime = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var rows = new List<DashboardTrainingRowResult>
+        {
+            MakeTrainingRow("s1", 0, createdAt: baseTime),
+        };
+        // Older row: all explanation fields null
+        var adaptations = new List<DashboardAdaptationResult>
+        {
+            new(baseTime.AddSeconds(1), 0, "[]", "[]", "old reasoning",
+                null, null, null, null, null, null, null, null)
+        };
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+
+        var ad = result.Windows[0].AdaptationDecision;
+        Assert.NotNull(ad);
+        Assert.Equal("old reasoning", ad!.ReasoningSummary);
+        Assert.Null(ad.HypothesisLabelsJson);
+        Assert.Null(ad.LearnerStateSummary);
+        Assert.Null(ad.CoachMessage);
+    }
+
     // ── KQL text regression guards ────────────────────────────────────────────
+
+    [Fact]
+    public void AdaptationsKql_ContainsColumnIfExists()
+    {
+        var kql = AdxDashboardQueryService.BuildAdaptationsKql("test-session");
+        Assert.Contains("column_ifexists(\"HypothesisLabelsJson\"", kql);
+        Assert.Contains("column_ifexists(\"LearnerStateSummary\"",  kql);
+        Assert.Contains("column_ifexists(\"WhySupportChanged\"",    kql);
+        Assert.Contains("column_ifexists(\"CoachMessage\"",         kql);
+        Assert.Contains("column_ifexists(\"ConfidenceNote\"",       kql);
+    }
+
+    [Fact]
+    public void AdaptationsKql_ContainsSessionIdFilter()
+    {
+        var kql = AdxDashboardQueryService.BuildAdaptationsKql("my-session-abc");
+        Assert.Contains("my-session-abc", kql);
+        Assert.Contains("AdaptationDecisions_v2", kql);
+    }
 
     [Fact]
     public void RecentSessionsKql_DoesNotContain0LLiteral()

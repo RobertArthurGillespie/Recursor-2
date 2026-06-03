@@ -7,6 +7,7 @@ using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Shared;
 using System.Linq;
+using System.Text.Json;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
@@ -617,6 +618,9 @@ public class RecursorIngestionService : IRecursorIngestionService
                 "Phase 8A vetoed all parameter changes for session {SessionId}. " +
                 "Ingesting audit record. Notes={Notes}",
                 session.SessionId, adaptation.Phase8AGuardrailNotes);
+            var explanationVetoed = await _explanationService.GenerateExplanationAsync(
+                session, behaviorProfile, hypothesisSet, null);
+            PopulateExplanationFields(adaptation, hypothesisLabels, explanationVetoed);
             try
             {
                 await _adxIngestion.IngestAdaptationDecisionAsync(AdxRowMapper.MapAdaptationDecision(adaptation));
@@ -627,8 +631,6 @@ public class RecursorIngestionService : IRecursorIngestionService
                     "Failed to ingest Phase 8A fully-vetoed adaptation for session {SessionId}.",
                     session.SessionId);
             }
-            var explanationVetoed = await _explanationService.GenerateExplanationAsync(
-                session, behaviorProfile, hypothesisSet, null);
             return new IngestionResult
             {
                 AdaptationProduced = false,
@@ -655,6 +657,9 @@ public class RecursorIngestionService : IRecursorIngestionService
                 "Phase 8E suppressed all parameter changes for session {SessionId}. " +
                 "Ingesting audit record. Notes={Notes}",
                 session.SessionId, adaptation.Phase8EReliabilityNotes);
+            var explanationSuppressed = await _explanationService.GenerateExplanationAsync(
+                session, behaviorProfile, hypothesisSet, null);
+            PopulateExplanationFields(adaptation, hypothesisLabels, explanationSuppressed);
             try
             {
                 await _adxIngestion.IngestAdaptationDecisionAsync(AdxRowMapper.MapAdaptationDecision(adaptation));
@@ -665,8 +670,6 @@ public class RecursorIngestionService : IRecursorIngestionService
                     "Failed to ingest Phase 8E fully-suppressed adaptation for session {SessionId}.",
                     session.SessionId);
             }
-            var explanationSuppressed = await _explanationService.GenerateExplanationAsync(
-                session, behaviorProfile, hypothesisSet, null);
             return new IngestionResult
             {
                 AdaptationProduced = false,
@@ -676,6 +679,12 @@ public class RecursorIngestionService : IRecursorIngestionService
                 TrajectorySummary = trajectoryClassification
             };
         }
+
+        // Generate explanation before ingestion so it can be persisted alongside the adaptation.
+        // The service catches all exceptions internally and returns null on failure.
+        var explanation = await _explanationService.GenerateExplanationAsync(
+            session, behaviorProfile, hypothesisSet, adaptation);
+        PopulateExplanationFields(adaptation, hypothesisLabels, explanation);
 
         // Step 14: Ingest adaptation decision into ADX.
         await _adxIngestion.IngestAdaptationDecisionAsync(AdxRowMapper.MapAdaptationDecision(adaptation));
@@ -707,12 +716,6 @@ public class RecursorIngestionService : IRecursorIngestionService
             adaptation.ReasoningSummary,
             session.CurrentDifficultyProfile.TryGetValue("hintMode", out var hintMode) ? hintMode : "(none)");
 
-        var explanation = await _explanationService.GenerateExplanationAsync(
-    session,
-    behaviorProfile,
-    hypothesisSet,
-    adaptation);
-
         // Step 15: Return bounded parameter changes.
         return new IngestionResult
         {
@@ -725,6 +728,22 @@ public class RecursorIngestionService : IRecursorIngestionService
             SequenceSummary = sequenceSummary,
             TrajectorySummary = trajectoryClassification
         };
+    }
+
+    private static void PopulateExplanationFields(
+        AdaptationDecisionDocument adaptation,
+        List<string> hypothesisLabels,
+        GptExplanationResult? explanation)
+    {
+        adaptation.HypothesisLabelsJson = JsonSerializer.Serialize(hypothesisLabels);
+        if (explanation is not null)
+        {
+            adaptation.LearnerStateSummary = explanation.LearnerStateSummary;
+            adaptation.WhySupportChanged   = explanation.WhySupportChanged;
+            adaptation.CoachMessage        = explanation.CoachMessage;
+            adaptation.ConfidenceNote      = explanation.ConfidenceNote;
+            adaptation.ExplanationJson     = JsonSerializer.Serialize(explanation);
+        }
     }
 
     private static string? BuildPhase10TrajectoryNotes(SequenceFeatureSummary? seq, TrajectorySummary? traj)
