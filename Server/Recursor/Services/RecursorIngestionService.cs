@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
+using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Shared;
@@ -52,6 +53,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly IPolicyReliabilityWeightingService _phase8eReliability;
     private readonly ISequenceFeatureExtractor _sequenceFeatureExtractor;
     private readonly ITemporalEmbeddingService _temporalEmbedding;
+    private readonly ITemporalRiskPredictionService _temporalRiskPrediction;
+    private readonly ITemporalElevatedRiskPredictionService _temporalElevatedRiskPrediction;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
 
@@ -76,6 +79,8 @@ public class RecursorIngestionService : IRecursorIngestionService
     IPolicyReliabilityWeightingService phase8eReliability,
     ISequenceFeatureExtractor sequenceFeatureExtractor,
     ITemporalEmbeddingService temporalEmbedding,
+    ITemporalRiskPredictionService temporalRiskPrediction,
+    ITemporalElevatedRiskPredictionService temporalElevatedRiskPrediction,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -99,6 +104,8 @@ public class RecursorIngestionService : IRecursorIngestionService
         _phase8eReliability = phase8eReliability;
         _sequenceFeatureExtractor = sequenceFeatureExtractor;
         _temporalEmbedding = temporalEmbedding;
+        _temporalRiskPrediction = temporalRiskPrediction;
+        _temporalElevatedRiskPrediction = temporalElevatedRiskPrediction;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -413,9 +420,10 @@ public class RecursorIngestionService : IRecursorIngestionService
         }
 
         // Phase 10B: temporal embedding + prediction targets — observability only, never blocks pipeline.
+        TemporalEmbeddingVector? embedding = null;
         try
         {
-            var embedding = _temporalEmbedding.BuildEmbedding(
+            embedding = _temporalEmbedding.BuildEmbedding(
                 session.SessionId, session.UserId, session.SimId, session.ScenarioId,
                 snapshot, sequenceSummary, trajectoryClassification, guardrailSummary, featureVector);
             await _adxIngestion.IngestTemporalEmbeddingAsync(AdxRowMapper.MapTemporalEmbedding(embedding));
@@ -430,6 +438,72 @@ public class RecursorIngestionService : IRecursorIngestionService
             _logger.LogWarning(ex,
                 "Temporal embedding/target generation failed for session {SessionId}. Continuing pipeline.",
                 session.SessionId);
+        }
+
+        // Phase 10C-2: shadow temporal risk prediction — never modifies adaptation decisions.
+        if (embedding is not null)
+        {
+            try
+            {
+                var riskResult = _temporalRiskPrediction.Predict(embedding);
+                var predNow = DateTime.UtcNow;
+
+                foreach (var (pred, h) in new[]
+                {
+                    (riskResult.Horizon1, 1),
+                    (riskResult.Horizon2, 2),
+                    (riskResult.Horizon3, 3),
+                })
+                {
+                    if (pred is null) continue;
+                    _logger.LogInformation(
+                        "Temporal risk shadow prediction. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                        "Horizon={Horizon} PredictedRisk={Risk} Confidence={Confidence:0.000} ModelVersion={ModelVersion}",
+                        session.SessionId, snapshot.WindowIndex, h,
+                        pred.PredictedNearTermRisk, pred.Confidence, pred.ModelVersion);
+                    await _adxIngestion.IngestTemporalRiskPredictionAsync(
+                        AdxRowMapper.MapTemporalRiskPrediction(embedding, pred, h, predNow));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Temporal risk shadow prediction failed for session {SessionId}. Continuing pipeline.",
+                    session.SessionId);
+            }
+        }
+
+        // Phase 10D-1: shadow elevated-risk prediction — never modifies adaptation decisions.
+        if (embedding is not null)
+        {
+            try
+            {
+                var elevatedResult = _temporalElevatedRiskPrediction.Predict(embedding);
+                var elevatedNow = DateTime.UtcNow;
+
+                foreach (var (pred, h) in new[]
+                {
+                    (elevatedResult.Horizon1, 1),
+                    (elevatedResult.Horizon2, 2),
+                    (elevatedResult.Horizon3, 3),
+                })
+                {
+                    if (pred is null) continue;
+                    _logger.LogInformation(
+                        "Elevated-risk shadow prediction. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                        "Horizon={Horizon} PredictedElevatedRisk={Risk} Confidence={Confidence:0.000} ModelVersion={ModelVersion}",
+                        session.SessionId, snapshot.WindowIndex, h,
+                        pred.PredictedElevatedRisk, pred.Confidence, pred.ModelVersion);
+                    await _adxIngestion.IngestTemporalElevatedRiskPredictionAsync(
+                        AdxRowMapper.MapTemporalElevatedRiskPrediction(embedding, pred, h, elevatedNow));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Elevated-risk shadow prediction failed for session {SessionId}. Continuing pipeline.",
+                    session.SessionId);
+            }
         }
 
         // Step 12: Ingest hypothesis set into ADX.

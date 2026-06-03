@@ -128,6 +128,43 @@ PHASE 10C — TEMPORAL PREDICTION MODELS (FUTURE)
 - Introduce trajectory-aware adaptation
 
 --------------------------------------------------
+PHASE 10S — SECOND-SIMULATION ADAPTER INTEGRATION
+--------------------------------------------------
+
+Goal: make Recursor reusable across simulations without hardcoding any sim domain
+logic into the core engine. First target: medical-supply stocking sim.
+
+PHASE 10S-1 — SIM ADAPTER CONTRACT (COMPLETE)
+- Defined sim adapter contract (docs/recursor-sim-adapter-contract.md)
+- Defined medical-supply stocking adapter spec (docs/medical-supply-stocking-recursor-adapter.md)
+- Added shared constants: RecursorEventCategories, RecursorCommonMetricKeys,
+  RecursorCommonContextKeys, MedicalSupplyEventTypes, MedicalSupplyPayloadKeys,
+  RecursorAdaptationParameterNames (Shared/RecursorSimContract.cs)
+- Added IRecursorSimContractValidator + RecursorSimContractValidator (diagnostic only)
+- Added POST /api/recursor/validate-sim-batch (debug/Unity integration endpoint)
+- No ADX schema changes. No adaptation behavior changes.
+
+PHASE 10S-2 — MEDICAL-SUPPLY ADAPTER SPEC (COMPLETE, part of 10S-1)
+- Full event taxonomy, payload fields, feature mapping, adaptation parameter mapping
+- Shadow validation plan and conservative active adaptation plan
+
+PHASE 10S-3 — SHADOW INTEGRATION (FUTURE)
+- Register medical-supply-stocking in SimCatalogRepository
+- Run complete sessions; verify BehaviorStateTrainingRows in ADX
+- Validate feature dimensions (safetyCompliance, selfCorrection, procedureSequencing)
+- Confirm TemporalEmbeddings and TemporalRiskPredictions are populated
+
+PHASE 10S-4 — CONSERVATIVE ACTIVE ADAPTATION (FUTURE)
+- Promote after 30+ shadow sessions and policy reliability gates pass
+- Requires sign-off that parameter changes cannot trigger safety_error events
+- Phase 8A guardrail modifier and Phase 9D conditional suppression apply from day one
+
+PHASE 10S-5 — CROSS-SIM DASHBOARD VALIDATION (FUTURE)
+- Dashboard filtering by SimId
+- Cross-sim policy effectiveness comparison
+- Sim-specific adaptation parameter coverage analysis
+
+--------------------------------------------------
 PHASE 11 — CONTINUOUS / ONLINE LEARNING (FUTURE)
 --------------------------------------------------
 - Periodic model retraining

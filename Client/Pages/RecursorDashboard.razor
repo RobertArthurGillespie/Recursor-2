@@ -1,0 +1,474 @@
+@page "/recursor-dashboard"
+@using NCATAIBlazorFrontendTest.Shared
+@using System.Text.Json
+@inject HttpClient Http
+
+<PageTitle>Recursor Dashboard</PageTitle>
+
+<h2>Recursor Evaluation Dashboard</h2>
+<p class="text-muted">Internal demo tool — behavior &rarr; state &rarr; adaptation &rarr; prediction &rarr; outcome.</p>
+
+<!-- ── Elevated-risk model comparison ───────────────────────────────── -->
+<div class="mb-3">
+    <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleModelComparison">
+        @(_showModelComparison ? "Hide" : "Show") Elevated-Risk Model Comparison
+    </button>
+    @if (_showModelComparison)
+    {
+        @if (_loadingComparison)
+        {
+            <p class="mt-2"><em>Loading comparison...</em></p>
+        }
+        else if (_comparisonError is not null)
+        {
+            <div class="alert alert-warning mt-2">@_comparisonError</div>
+        }
+        else if (_comparisonRows is not null)
+        {
+            @if (_comparisonRows.Count == 0)
+            {
+                <p class="text-muted mt-2">No comparison data — train at least one model and run validation sessions to populate TemporalElevatedRiskPredictions.</p>
+            }
+            else
+            {
+                <h6 class="mt-2">Elevated-Risk Model Comparison (shadow-only)</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered" style="font-size:0.82rem">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ModelVersion</th>
+                                <th class="text-center">Horizon</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center">Accuracy</th>
+                                <th class="text-center">ElevPrec</th>
+                                <th class="text-center">ElevRecall</th>
+                                <th class="text-center">ElevF1</th>
+                                <th class="text-center">FP</th>
+                                <th class="text-center">FN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in _comparisonRows)
+                            {
+                                <tr>
+                                    <td><code>@row.ModelVersion</code></td>
+                                    <td class="text-center">H@row.Horizon</td>
+                                    <td class="text-center">@row.Total</td>
+                                    <td class="text-center">@FormatPct(row.Accuracy)</td>
+                                    <td class="text-center">@FormatPct(row.ElevatedPrecision)</td>
+                                    <td class="text-center">@FormatPct(row.ElevatedRecall)</td>
+                                    <td class="text-center">@FormatPct(row.ElevatedF1)</td>
+                                    <td class="text-center">@row.FalsePositive</td>
+                                    <td class="text-center">@row.FalseNegative</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small">Predictions are shadow-only and do not affect adaptation decisions. Compare rows across ModelVersion to evaluate retraining.</p>
+            }
+        }
+    }
+</div>
+
+@if (_loadingList)
+{
+    <p><em>Loading recent sessions...</em></p>
+}
+else if (_listError is not null)
+{
+    <div class="alert alert-warning">@_listError</div>
+}
+else if (_sessions is not null)
+{
+    @if (_selectedTimeline is null)
+    {
+        <!-- ── Recent sessions table ─────────────────────────── -->
+        <h5>Recent Sessions <span class="badge bg-secondary">@_sessions.Count</span></h5>
+        @if (_sessions.Count == 0)
+        {
+            <p class="text-muted">No sessions found in ADX. Run a session to populate data.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Session</th>
+                            <th>User</th>
+                            <th>Sim</th>
+                            <th>Scenario</th>
+                            <th class="text-center">Windows</th>
+                            <th class="text-center">Adapt</th>
+                            <th class="text-center">Preds</th>
+                            <th>Last Active</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in _sessions)
+                        {
+                            <tr>
+                                <td><code>@Truncate(s.SessionId, 12)</code></td>
+                                <td>@s.UserId</td>
+                                <td>@s.SimId</td>
+                                <td>@s.ScenarioId</td>
+                                <td class="text-center">@s.WindowCount</td>
+                                <td class="text-center">@s.AdaptationCount</td>
+                                <td class="text-center">@s.PredictionCount</td>
+                                <td>@s.LastSeenUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" @onclick="() => LoadTimeline(s.SessionId)">
+                                        View
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else
+    {
+        <!-- ── Session timeline ───────────────────────────────── -->
+        <div class="mb-2">
+            <button class="btn btn-sm btn-secondary" @onclick="ClearTimeline">&larr; Back to sessions</button>
+            <span class="ms-2 text-muted">Session: <code>@_selectedSessionId</code></span>
+        </div>
+
+        @if (_loadingTimeline)
+        {
+            <p><em>Loading session timeline...</em></p>
+        }
+        else if (_timelineError is not null)
+        {
+            <div class="alert alert-warning">@_timelineError</div>
+        }
+        else
+        {
+            var t = _selectedTimeline;
+
+            <!-- Summary cards -->
+            <div class="row g-2 mb-3">
+                <div class="col-6 col-md-3">
+                    <div class="card text-center py-2">
+                        <div class="fs-4 fw-bold">@t.TotalWindows</div>
+                        <div class="text-muted small">Windows</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card text-center py-2">
+                        <div class="fs-4 fw-bold">@t.TotalAdaptations</div>
+                        <div class="text-muted small">Adaptations</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card text-center py-2">
+                        <div class="fs-4 fw-bold">@t.TotalPredictions</div>
+                        <div class="text-muted small">Predictions</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card text-center py-2">
+                        <div class="fs-4 fw-bold">@FormatPct(t.AveragePredictionConfidence)</div>
+                        <div class="text-muted small">Avg Confidence</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="card text-center py-2">
+                        <div class="fs-5 fw-bold">@FormatPct(t.H1PredictionAccuracy)</div>
+                        <div class="text-muted small">H1 Accuracy (next window)</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="card text-center py-2">
+                        <div class="fs-5 fw-bold">@FormatPct(t.H2PredictionAccuracy)</div>
+                        <div class="text-muted small">H2 Accuracy (+2 windows)</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="card text-center py-2">
+                        <div class="fs-5 fw-bold">@FormatPct(t.H3PredictionAccuracy)</div>
+                        <div class="text-muted small">H3 Accuracy (+3 windows)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline table -->
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered" style="font-size:0.82rem">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Win</th>
+                            <th>State</th>
+                            <th>Confusion</th>
+                            <th>Goal</th>
+                            <th>Hint</th>
+                            <th>Risk</th>
+                            <th>Seq</th>
+                            <th>Vol</th>
+                            <th>Mom</th>
+                            <th>Adaptation</th>
+                            <th>Policy Notes</th>
+                            <th>H1 Pred/Target</th>
+                            <th>H2 Pred/Target</th>
+                            <th>H3 Pred/Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var w in t.Windows)
+                        {
+                            <tr class="@StateRowClass(w.GuardrailOverallBehaviorState)">
+                                <td class="fw-bold">@w.WindowIndex</td>
+                                <td>@StateBadge(w.GuardrailOverallBehaviorState)</td>
+                                <td>@w.ConfusionScore.ToString("F2")</td>
+                                <td>@w.GoalUnderstanding.ToString("F2")</td>
+                                <td>@w.HintDependenceScore.ToString("F2")</td>
+                                <td>@RiskBadge(w.PredictedNearTermRisk)</td>
+                                <td class="text-muted">@w.SequenceWindowCount</td>
+                                <td class="text-muted">@w.VolatilityScore.ToString("F2")</td>
+                                <td class="text-muted">@w.MomentumScore.ToString("F2")</td>
+                                <td>
+                                    @if (w.AdaptationDecision is not null)
+                                    {
+                                        var ad = w.AdaptationDecision;
+                                        <span class="badge bg-info text-dark">@FormatFamilies(ad.InterventionFamiliesJson)</span>
+                                        @if (!string.IsNullOrEmpty(ad.ReasoningSummary))
+                                        {
+                                            <div class="text-muted" style="font-size:0.75rem">@TruncateStr(ad.ReasoningSummary, 60)</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td style="font-size:0.75rem">
+                                    @if (w.AdaptationDecision is not null)
+                                    {
+                                        var ad = w.AdaptationDecision;
+                                        @if (!string.IsNullOrEmpty(ad.Phase8AGuardrailNotes))
+                                        {
+                                            <div><span class="badge bg-warning text-dark">8A</span> @ad.Phase8AGuardrailNotes</div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(ad.Phase8EReliabilityNotes))
+                                        {
+                                            <div><span class="badge bg-secondary">8E</span> @ad.Phase8EReliabilityNotes</div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(ad.Phase10TrajectoryNotes))
+                                        {
+                                            <div><span class="badge bg-dark">10A</span> @ad.Phase10TrajectoryNotes</div>
+                                        }
+                                    }
+                                </td>
+                                <td>@HorizonCell(w, 1)</td>
+                                <td>@HorizonCell(w, 2)</td>
+                                <td>@HorizonCell(w, 3)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-muted small mt-1">
+                Win = window index &bull; State = guardrail behavior state &bull;
+                Risk = trajectory near-term risk &bull; Seq = sequence window count &bull;
+                Vol = volatility &bull; Mom = momentum &bull;
+                H1/H2/H3 = temporal prediction horizon vs observed target (✓ correct / ✗ wrong / — not yet available)
+            </p>
+        }
+    }
+}
+
+@code {
+    private bool _loadingList = true;
+    private bool _loadingTimeline = false;
+    private List<DashboardSessionSummaryDto>? _sessions;
+    private SessionTimelineDto? _selectedTimeline;
+    private string? _selectedSessionId;
+    private string? _listError;
+    private string? _timelineError;
+
+    // Phase 10D-4: model comparison panel state
+    private bool _showModelComparison = false;
+    private bool _loadingComparison = false;
+    private List<ElevatedRiskModelComparisonRow>? _comparisonRows;
+    private string? _comparisonError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _sessions = await Http.GetFromJsonAsync<List<DashboardSessionSummaryDto>>(
+                "api/recursor/dashboard/recent-sessions") ?? [];
+        }
+        catch (Exception ex)
+        {
+            _listError = $"Could not load sessions: {ex.Message}";
+        }
+        finally
+        {
+            _loadingList = false;
+        }
+    }
+
+    private async Task LoadTimeline(string sessionId)
+    {
+        _selectedSessionId = sessionId;
+        _selectedTimeline  = null;
+        _timelineError     = null;
+        _loadingTimeline   = true;
+
+        try
+        {
+            _selectedTimeline = await Http.GetFromJsonAsync<SessionTimelineDto>(
+                $"api/recursor/dashboard/session/{Uri.EscapeDataString(sessionId)}");
+        }
+        catch (Exception ex)
+        {
+            _timelineError = $"Could not load timeline: {ex.Message}";
+        }
+        finally
+        {
+            _loadingTimeline = false;
+        }
+    }
+
+    private void ClearTimeline()
+    {
+        _selectedTimeline  = null;
+        _selectedSessionId = null;
+        _timelineError     = null;
+    }
+
+    private async Task ToggleModelComparison()
+    {
+        _showModelComparison = !_showModelComparison;
+        if (_showModelComparison && _comparisonRows is null)
+            await LoadModelComparison();
+    }
+
+    private async Task LoadModelComparison()
+    {
+        _loadingComparison = true;
+        _comparisonError   = null;
+        try
+        {
+            _comparisonRows = await Http.GetFromJsonAsync<List<ElevatedRiskModelComparisonRow>>(
+                "api/recursor/dashboard/elevated-risk/model-comparison") ?? [];
+        }
+        catch (Exception ex)
+        {
+            _comparisonError = $"Could not load model comparison: {ex.Message}";
+        }
+        finally
+        {
+            _loadingComparison = false;
+        }
+    }
+
+    // ── Display helpers ───────────────────────────────────────────────────────
+
+    private static string Truncate(string s, int len) =>
+        s.Length <= len ? s : s[..len] + "…";
+
+    private static string TruncateStr(string s, int len) =>
+        s.Length <= len ? s : s[..len] + "…";
+
+    private static string FormatPct(double? v) =>
+        v.HasValue ? $"{v.Value:P0}" : "—";
+
+    private static string FormatPct(double v) => $"{v:P0}";
+
+    private static string StateRowClass(string state) => state switch
+    {
+        "struggling"  => "table-danger",
+        "recovering"  => "table-warning",
+        "mastering"   => "table-success",
+        "conflicted"  => "table-secondary",
+        _             => ""
+    };
+
+    private static MarkupString StateBadge(string state)
+    {
+        var cls = state switch
+        {
+            "struggling"  => "bg-danger",
+            "recovering"  => "bg-warning text-dark",
+            "mastering"   => "bg-success",
+            "stable"      => "bg-primary",
+            "conflicted"  => "bg-secondary",
+            _             => "bg-light text-dark"
+        };
+        return (MarkupString)$"<span class=\"badge {cls}\">{state}</span>";
+    }
+
+    private static MarkupString RiskBadge(string risk)
+    {
+        var cls = risk switch
+        {
+            "high"   => "bg-danger",
+            "medium" => "bg-warning text-dark",
+            "low"    => "bg-success",
+            _        => "bg-light text-dark"
+        };
+        var label = string.IsNullOrEmpty(risk) ? "—" : risk;
+        return (MarkupString)$"<span class=\"badge {cls}\">{label}</span>";
+    }
+
+    private static string FormatFamilies(string json)
+    {
+        if (string.IsNullOrEmpty(json) || json == "null") return "—";
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var items = doc.RootElement
+                .EnumerateArray()
+                .Select(e => e.GetString() ?? "")
+                .Where(s => s.Length > 0);
+            return string.Join(", ", items);
+        }
+        catch
+        {
+            return json;
+        }
+    }
+
+    private static MarkupString HorizonCell(WindowTimelineDto w, int horizon)
+    {
+        var pred   = w.TemporalRiskPredictions.FirstOrDefault(p => p.Horizon == horizon);
+        var target = w.TemporalPredictionTargets.FirstOrDefault(t => t.Horizon == horizon);
+        var correct = horizon == 1 ? w.H1PredictionCorrect
+                    : horizon == 2 ? w.H2PredictionCorrect
+                    :                w.H3PredictionCorrect;
+
+        if (pred is null && target is null)
+            return (MarkupString)"<span class=\"text-muted\">—</span>";
+
+        var predLabel  = pred   is not null ? RiskBadgeHtml(pred.PredictedNearTermRisk)   : "—";
+        var targetLabel = target is not null ? RiskBadgeHtml(target.TargetNearTermRisk) : "?";
+        var correctIcon = correct switch
+        {
+            true  => "<span class=\"text-success fw-bold\">✓</span>",
+            false => "<span class=\"text-danger fw-bold\">✗</span>",
+            null  => "<span class=\"text-muted\">—</span>"
+        };
+
+        return (MarkupString)$"{predLabel}&rarr;{targetLabel} {correctIcon}";
+    }
+
+    private static string RiskBadgeHtml(string risk)
+    {
+        var cls = risk switch
+        {
+            "high"   => "bg-danger",
+            "medium" => "bg-warning text-dark",
+            "low"    => "bg-success",
+            _        => "bg-light text-dark"
+        };
+        var label = string.IsNullOrEmpty(risk) ? "?" : risk;
+        return $"<span class=\"badge {cls}\">{label}</span>";
+    }
+}

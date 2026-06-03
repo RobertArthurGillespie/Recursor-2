@@ -11,7 +11,16 @@
       "Bash(awk -F/ '{ *)",
       "Bash(awk '/create table AdaptationDecisions_v2/,/^\\\\\\)/' \"C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/docs/kql/recursor-adx-setup.kql\")",
       "Bash(grep -v '^$')",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\\\\NCATAIBlazorFrontendTest.Server\\\\Recursor\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\" -Force)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\\\\Server\" -Recurse -Force | Where-Object { $_.PSIsContainer -eq $true } | Select-Object FullName | Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(grep -E \"\\\\.\\(cs|txt|md\\)$\")"
     ]
   }
 }

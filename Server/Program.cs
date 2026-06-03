@@ -24,6 +24,7 @@ using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Server.Recursor.Seeding;
 using NCATAIBlazorFrontendTest.Server.Recursor.ML;
+using Microsoft.AspNetCore.Hosting;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
 using Kusto.Data.Net.Client;
 using Microsoft.Extensions.Logging;
@@ -167,8 +168,66 @@ builder.Services.Configure<RecursorPolicyReliabilityOptions>(
 builder.Services.AddScoped<IPolicyReliabilityWeightingService, PolicyReliabilityWeightingService>();
 // Phase 10A: sequence-aware feature extraction and trajectory classification.
 builder.Services.AddScoped<ISequenceFeatureExtractor, SequenceFeatureExtractor>();
+// Phase 10S-1: sim adapter contract validator — diagnostic only, no pipeline side effects.
+builder.Services.AddSingleton<IRecursorSimContractValidator, RecursorSimContractValidator>();
 // Phase 10B: temporal embedding and prediction target generation.
 builder.Services.AddScoped<ITemporalEmbeddingService, TemporalEmbeddingService>();
+
+// Phase 10C-2: temporal risk predictor — ADX query service, training service, and prediction service.
+builder.Services.AddSingleton<IAdxTemporalTrainingQueryService, AdxTemporalTrainingQueryService>();
+// Phase 14A: internal evaluation dashboard — read-only ADX query service.
+builder.Services.AddSingleton<IAdxDashboardQueryService, AdxDashboardQueryService>();
+builder.Services.AddSingleton<ITemporalRiskModelTrainingService, TemporalRiskModelTrainingService>();
+
+var resolvedTemporalRiskH1Path = ResolveModelPath(
+    builder.Configuration["Recursor:Models:TemporalRiskH1ModelPath"],
+    builder.Environment.ContentRootPath);
+var resolvedTemporalRiskH2Path = ResolveModelPath(
+    builder.Configuration["Recursor:Models:TemporalRiskH2ModelPath"],
+    builder.Environment.ContentRootPath);
+var resolvedTemporalRiskH3Path = ResolveModelPath(
+    builder.Configuration["Recursor:Models:TemporalRiskH3ModelPath"],
+    builder.Environment.ContentRootPath);
+
+builder.Services.AddSingleton<ITemporalRiskPredictionService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<TemporalRiskPredictionService>>();
+    return new TemporalRiskPredictionService(
+        logger,
+        resolvedTemporalRiskH1Path,
+        resolvedTemporalRiskH2Path,
+        resolvedTemporalRiskH3Path);
+});
+
+// Phase 10D-1/10D-4: binary elevated-risk predictor — training service and prediction service.
+builder.Services.AddSingleton<ITemporalElevatedRiskModelTrainingService, TemporalElevatedRiskModelTrainingService>();
+
+var elevatedRiskModelVersion =
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskModelVersion"]
+    ?? TemporalElevatedRiskPredictionService.ModelVersion;
+
+// Use the same version-based path resolver as the trainer — setting TemporalElevatedRiskModelVersion
+// is sufficient to load the right model files without also updating each HnModelPath key.
+var resolvedElevatedRiskH1Path = TemporalElevatedRiskModelTrainingService.ResolveVersionedModelPath(
+    1, elevatedRiskModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskH1ModelPath"]);
+var resolvedElevatedRiskH2Path = TemporalElevatedRiskModelTrainingService.ResolveVersionedModelPath(
+    2, elevatedRiskModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskH2ModelPath"]);
+var resolvedElevatedRiskH3Path = TemporalElevatedRiskModelTrainingService.ResolveVersionedModelPath(
+    3, elevatedRiskModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskH3ModelPath"]);
+
+builder.Services.AddSingleton<ITemporalElevatedRiskPredictionService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<TemporalElevatedRiskPredictionService>>();
+    return new TemporalElevatedRiskPredictionService(
+        logger,
+        resolvedElevatedRiskH1Path,
+        resolvedElevatedRiskH2Path,
+        resolvedElevatedRiskH3Path,
+        elevatedRiskModelVersion);
+});
 
 bool anyModelPresent =
     (resolvedHintDependencePath            is not null && File.Exists(resolvedHintDependencePath))            ||

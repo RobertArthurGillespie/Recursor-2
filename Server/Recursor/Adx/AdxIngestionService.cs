@@ -21,6 +21,10 @@ public interface IAdxIngestionService
     // Phase 10B
     Task IngestTemporalEmbeddingAsync(TemporalEmbeddingRow row);
     Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row);
+    // Phase 10C-2
+    Task IngestTemporalRiskPredictionAsync(TemporalRiskPredictionRow row);
+    // Phase 10D-1
+    Task IngestTemporalElevatedRiskPredictionAsync(TemporalElevatedRiskPredictionRow row);
 }
 
 public class AdxIngestionService : IAdxIngestionService
@@ -749,6 +753,75 @@ public class AdxIngestionService : IAdxIngestionService
         return table;
     }
 
+    public async Task IngestTemporalRiskPredictionAsync(TemporalRiskPredictionRow row)
+    {
+        if (!CheckClient("TemporalRiskPredictions")) return;
+
+        var table = BuildTemporalRiskPredictionsTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "TemporalRiskPredictions")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "TemporalRiskPredictionsCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    public async Task IngestTemporalElevatedRiskPredictionAsync(TemporalElevatedRiskPredictionRow row)
+    {
+        if (!CheckClient("TemporalElevatedRiskPredictions")) return;
+
+        var table = BuildTemporalElevatedRiskPredictionsTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "TemporalElevatedRiskPredictions")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "TemporalElevatedRiskPredictionsCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
+    // ── DataTable builders ────────────────────────────────────────────────────
+
+    private static DataTable BuildTemporalRiskPredictionsTable(TemporalRiskPredictionRow row)
+    {
+        var table = new DataTable("TemporalRiskPredictions");
+        table.Columns.Add("SessionId",             typeof(string));
+        table.Columns.Add("UserId",                typeof(string));
+        table.Columns.Add("SimId",                 typeof(string));
+        table.Columns.Add("ScenarioId",            typeof(string));
+        table.Columns.Add("WindowIndex",           typeof(int));
+        table.Columns.Add("Horizon",               typeof(int));
+        table.Columns.Add("PredictedNearTermRisk", typeof(string));
+        table.Columns.Add("Confidence",            typeof(double));
+        table.Columns.Add("ModelVersion",          typeof(string));
+        table.Columns.Add("CreatedAtUtc",          typeof(DateTime));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.UserId,
+            row.SimId,
+            row.ScenarioId,
+            row.WindowIndex,
+            row.Horizon,
+            row.PredictedNearTermRisk,
+            row.Confidence,
+            row.ModelVersion,
+            row.CreatedAtUtc);
+
+        return table;
+    }
+
     private static DataTable BuildTemporalEmbeddingsTable(TemporalEmbeddingRow row)
     {
         var table = new DataTable("TemporalEmbeddings");
@@ -804,6 +877,35 @@ public class AdxIngestionService : IAdxIngestionService
             row.TargetConfusionScore,
             row.TargetGoalUnderstanding,
             row.TargetHintDependenceScore,
+            row.CreatedAtUtc);
+
+        return table;
+    }
+
+    private static DataTable BuildTemporalElevatedRiskPredictionsTable(TemporalElevatedRiskPredictionRow row)
+    {
+        var table = new DataTable("TemporalElevatedRiskPredictions");
+        table.Columns.Add("SessionId",             typeof(string));
+        table.Columns.Add("UserId",                typeof(string));
+        table.Columns.Add("SimId",                 typeof(string));
+        table.Columns.Add("ScenarioId",            typeof(string));
+        table.Columns.Add("WindowIndex",           typeof(int));
+        table.Columns.Add("Horizon",               typeof(int));
+        table.Columns.Add("PredictedElevatedRisk", typeof(string));
+        table.Columns.Add("Confidence",            typeof(double));
+        table.Columns.Add("ModelVersion",          typeof(string));
+        table.Columns.Add("CreatedAtUtc",          typeof(DateTime));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.UserId,
+            row.SimId,
+            row.ScenarioId,
+            row.WindowIndex,
+            row.Horizon,
+            row.PredictedElevatedRisk,
+            row.Confidence,
+            row.ModelVersion,
             row.CreatedAtUtc);
 
         return table;

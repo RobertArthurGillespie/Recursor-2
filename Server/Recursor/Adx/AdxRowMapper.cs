@@ -368,4 +368,46 @@ public static class AdxRowMapper
                 row.Features.GetRawText(), JsonOpts) ?? new BehavioralFeatureSet()
         };
     }
+
+    // ── Phase 10C-2: TemporalRiskPredictions ─────────────────────────────────
+
+    public static TemporalRiskPredictionRow MapTemporalRiskPrediction(
+        NCATAIBlazorFrontendTest.Server.Recursor.Models.TemporalEmbeddingVector embedding,
+        NCATAIBlazorFrontendTest.Server.Recursor.ML.TemporalRiskHorizonPrediction prediction,
+        int horizon,
+        DateTime createdAtUtc) =>
+        new()
+        {
+            SessionId            = embedding.SessionId,
+            UserId               = embedding.UserId,
+            SimId                = embedding.SimId,
+            ScenarioId           = embedding.ScenarioId,
+            WindowIndex          = embedding.WindowIndex,
+            Horizon              = horizon,
+            PredictedNearTermRisk = prediction.PredictedNearTermRisk,
+            Confidence           = prediction.Confidence,
+            ModelVersion         = prediction.ModelVersion,
+            CreatedAtUtc         = createdAtUtc,
+        };
+
+    // ── Phase 10D-1: TemporalElevatedRiskPredictions ──────────────────────────
+
+    public static TemporalElevatedRiskPredictionRow MapTemporalElevatedRiskPrediction(
+        NCATAIBlazorFrontendTest.Server.Recursor.Models.TemporalEmbeddingVector embedding,
+        NCATAIBlazorFrontendTest.Server.Recursor.ML.TemporalElevatedRiskHorizonPrediction prediction,
+        int horizon,
+        DateTime createdAtUtc) =>
+        new()
+        {
+            SessionId             = embedding.SessionId,
+            UserId                = embedding.UserId,
+            SimId                 = embedding.SimId,
+            ScenarioId            = embedding.ScenarioId,
+            WindowIndex           = embedding.WindowIndex,
+            Horizon               = horizon,
+            PredictedElevatedRisk = prediction.PredictedElevatedRisk,
+            Confidence            = prediction.Confidence,
+            ModelVersion          = prediction.ModelVersion,
+            CreatedAtUtc          = createdAtUtc,
+        };
 }

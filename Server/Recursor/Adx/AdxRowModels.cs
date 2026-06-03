@@ -310,3 +310,37 @@ public class TemporalPredictionTargetRow
     public double TargetHintDependenceScore { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 }
+
+// ── Phase 10C-2: TemporalRiskPredictions row ──────────────────────────────────
+// One row per (session, window, horizon). Written as a shadow/observability record;
+// never used to gate or modify adaptation decisions.
+public class TemporalRiskPredictionRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public string SimId { get; set; } = "";
+    public string ScenarioId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public int Horizon { get; set; }
+    public string PredictedNearTermRisk { get; set; } = "";
+    public double Confidence { get; set; }
+    public string ModelVersion { get; set; } = "";
+    public DateTime CreatedAtUtc { get; set; }
+}
+
+// ── Phase 10D-1: TemporalElevatedRiskPredictions row ──────────────────────────
+// Separate table from TemporalRiskPredictions to avoid analytics ambiguity:
+// PredictedElevatedRisk uses "low" / "elevated" vocabulary, not "low" / "medium" / "high".
+public class TemporalElevatedRiskPredictionRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public string SimId { get; set; } = "";
+    public string ScenarioId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public int Horizon { get; set; }
+    public string PredictedElevatedRisk { get; set; } = "";
+    public double Confidence { get; set; }
+    public string ModelVersion { get; set; } = "";
+    public DateTime CreatedAtUtc { get; set; }
+}

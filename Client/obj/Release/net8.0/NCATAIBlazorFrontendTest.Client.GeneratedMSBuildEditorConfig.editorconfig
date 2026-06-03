@@ -368,6 +368,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcVGltZWxpbmUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/RecursorDashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjdXJzb3JEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/Tables/Basic.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGFibGVzXEJhc2ljLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 

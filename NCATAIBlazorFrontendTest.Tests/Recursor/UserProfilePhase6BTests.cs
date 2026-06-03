@@ -80,6 +80,8 @@ public class UserProfilePhase6BTests
         public Task IngestAdaptationEffectivenessAsync(AdaptationEffectivenessRow row) => Task.CompletedTask;
         public Task IngestTemporalEmbeddingAsync(TemporalEmbeddingRow row) => Task.CompletedTask;
         public Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row) => Task.CompletedTask;
+        public Task IngestTemporalRiskPredictionAsync(TemporalRiskPredictionRow row) => Task.CompletedTask;
+        public Task IngestTemporalElevatedRiskPredictionAsync(TemporalElevatedRiskPredictionRow row) => Task.CompletedTask;
     }
 
     // ── New profile creation ──────────────────────────────────────────────────

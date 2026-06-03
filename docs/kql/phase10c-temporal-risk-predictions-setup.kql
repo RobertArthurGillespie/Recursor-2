@@ -1,0 +1,35 @@
+// Phase 10C-2: TemporalRiskPredictions table and CSV ingestion mapping.
+// Run once against your RecursorDb database in the ADX web UI or via Kusto CLI.
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.create table TemporalRiskPredictions (
+    SessionId: string,
+    UserId: string,
+    SimId: string,
+    ScenarioId: string,
+    WindowIndex: int,
+    Horizon: int,
+    PredictedNearTermRisk: string,
+    Confidence: real,
+    ModelVersion: string,
+    CreatedAtUtc: datetime
+)
+
+// ── Ingestion policy: batch data into the table within 30 seconds ─────────────
+
+.alter table TemporalRiskPredictions policy ingestionbatching @'{"MaximumBatchingTimeSpan":"00:00:30","MaximumNumberOfItems":500}'
+
+// ── CSV ingestion mapping ─────────────────────────────────────────────────────
+// Ordinals match the column order produced by AdxIngestionService.BuildTemporalRiskPredictionsTable.
+
+.create table TemporalRiskPredictions ingestion csv mapping 'TemporalRiskPredictionsCsvMapping'
+'[{"Name":"SessionId","DataType":"string","Ordinal":"0"},{"Name":"UserId","DataType":"string","Ordinal":"1"},{"Name":"SimId","DataType":"string","Ordinal":"2"},{"Name":"ScenarioId","DataType":"string","Ordinal":"3"},{"Name":"WindowIndex","DataType":"int","Ordinal":"4"},{"Name":"Horizon","DataType":"int","Ordinal":"5"},{"Name":"PredictedNearTermRisk","DataType":"string","Ordinal":"6"},{"Name":"Confidence","DataType":"real","Ordinal":"7"},{"Name":"ModelVersion","DataType":"string","Ordinal":"8"},{"Name":"CreatedAtUtc","DataType":"datetime","Ordinal":"9"}]'
+
+// ── Verification query ────────────────────────────────────────────────────────
+// Run after a few sessions to confirm rows are arriving.
+// ADX queued ingestion has a 5–30 second delay; allow time before checking.
+
+TemporalRiskPredictions
+| summarize count() by Horizon, PredictedNearTermRisk, ModelVersion
+| order by Horizon asc
