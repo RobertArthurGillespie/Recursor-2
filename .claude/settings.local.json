@@ -20,7 +20,11 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\\\\Server\" -Recurse -Force | Where-Object { $_.PSIsContainer -eq $true } | Select-Object FullName | Sort-Object FullName)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(grep -E \"\\\\.\\(cs|txt|md\\)$\")"
+      "Bash(grep -E \"\\\\.\\(cs|txt|md\\)$\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Rober\\\\source\\\\repos\\\\Recursor_Engine_vers2\\\\NCATAIBlazorFrontendTest\\\\Client\\\\Pages\" -Directory)",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(dotnet test *)"
     ]
   }
 }

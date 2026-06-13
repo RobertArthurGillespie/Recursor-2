@@ -1,0 +1,94 @@
+@page "/login"
+@layout BaseLayout
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavManager
+@inject List<TestUserProfile> TestUsers
+
+<div class="auth-bg d-flex min-vh-100">
+    <div class="row g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
+        <div class="col-xxl-3 col-lg-5 col-md-6">
+            <a href="/" class="auth-brand d-flex justify-content-center mb-2">
+                <img src="/images/logo-dark.png" alt="dark logo" height="26" class="logo-dark">
+                <img src="/images/logo.png" alt="logo light" height="26" class="logo-light">
+            </a>
+
+            <p class="fw-semibold mb-4 text-center text-muted fs-15">Recursor Engine</p>
+
+            <div class="card overflow-hidden text-center p-xxl-4 p-3 mb-0">
+                <h4 class="fw-semibold mb-3 fs-18">Sign in to your account</h4>
+
+                <div class="text-start mb-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="username">Username</label>
+                        <input id="username"
+                               type="text"
+                               class="form-control"
+                               @bind="_username"
+                               placeholder="Enter username" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="password">Password</label>
+                        <input id="password"
+                               type="password"
+                               class="form-control"
+                               @bind="_password"
+                               placeholder="Enter password" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-danger py-2 fs-13" role="alert">
+                            @_errorMessage
+                        </div>
+                    }
+
+                    <div class="d-grid mt-3">
+                        <button class="btn btn-primary fw-semibold"
+                                @onclick="HandleLogin"
+                                disabled="@_isSubmitting">
+                            @if (_isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"
+                                      role="status"
+                                      aria-hidden="true"></span>
+                            }
+                            Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mt-4 text-center mb-0">
+                <span class="fw-bold text-decoration-underline text-uppercase text-reset fs-12">NCAT Recursor</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _username = "";
+    private string _password = "";
+    private string? _errorMessage;
+    private bool _isSubmitting = false;
+
+    private async Task HandleLogin()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        var profile = TestUsers.FirstOrDefault(u =>
+            u.Username == _username && u.Password == _password);
+
+        if (profile is null)
+        {
+            _errorMessage = "Invalid username or password.";
+            _isSubmitting = false;
+            return;
+        }
+
+        var mockProvider = (MockAuthenticationStateProvider)AuthStateProvider;
+        await mockProvider.Login(profile.UserId, profile.Username, profile.Role);
+        NavManager.NavigateTo("/profile");
+    }
+}

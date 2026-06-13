@@ -1,0 +1,89 @@
+@page "/recursor-sims"
+@attribute [Authorize(Roles = "Admin")]
+@using NCATAIBlazorFrontendTest.Shared
+@inject HttpClient Http
+
+<PageTitle>Recursor Sims</PageTitle>
+
+<h2>Recursor Sims</h2>
+<p class="text-muted">All simulations currently represented in ADX. Select a sim to browse users and sessions.</p>
+
+@if (_loading)
+{
+    <p><em>Loading sims...</em></p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-warning">@_error</div>
+}
+else if (_sims is not null)
+{
+    @if (_sims.Count == 0)
+    {
+        <p class="text-muted">No sims found in ADX. Run at least one session to populate data.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>SimId</th>
+                        <th class="text-center">Users</th>
+                        <th class="text-center">Scenarios</th>
+                        <th class="text-center">Sessions</th>
+                        <th class="text-center">Windows</th>
+                        <th class="text-center">Raw Events</th>
+                        <th class="text-center">Adaptations</th>
+                        <th>Last Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sim in _sims)
+                    {
+                        <tr>
+                            <td><code>@sim.SimId</code></td>
+                            <td class="text-center">@sim.UserCount</td>
+                            <td class="text-center">@sim.ScenarioCount</td>
+                            <td class="text-center">@sim.SessionCount</td>
+                            <td class="text-center">@sim.WindowCount</td>
+                            <td class="text-center">@sim.RawEventCount</td>
+                            <td class="text-center">@sim.AdaptationCount</td>
+                            <td>@sim.LastSeenUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="/recursor-sims/@Uri.EscapeDataString(sim.SimId)">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private bool _loading = true;
+    private List<SimExplorerSimSummaryDto>? _sims;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _sims = await Http.GetFromJsonAsync<List<SimExplorerSimSummaryDto>>(
+                "api/recursor/sim-explorer/sims") ?? [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load sims: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

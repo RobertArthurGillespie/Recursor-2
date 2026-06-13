@@ -1,0 +1,50 @@
+@page "/profile"
+@attribute [Authorize]
+@using System.Security.Claims
+@inject List<TestUserProfile> TestUsers
+
+<PageTitle>My Profile</PageTitle>
+
+<h2>My Profile</h2>
+
+<AuthorizeView>
+    <Authorized>
+        @{
+            var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var username = context.User.Identity?.Name ?? userId;
+            var role = context.User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+            var profile = TestUsers.FirstOrDefault(u => u.UserId == userId);
+        }
+
+        <div class="card mb-4 p-3">
+            <h5 class="fw-semibold mb-1">@username</h5>
+            <p class="text-muted mb-0 fs-13">Role: <strong>@role</strong></p>
+            <p class="text-muted mb-0 fs-13">User ID: <code>@userId</code></p>
+        </div>
+
+        @if (profile is not null && profile.PlayedSimIds.Count > 0)
+        {
+            <h5 class="mb-3">Your Simulations</h5>
+            <div class="row g-3">
+                @foreach (var simId in profile.PlayedSimIds)
+                {
+                    <div class="col-md-4">
+                        <div class="card h-100 p-3">
+                            <h6 class="fw-semibold mb-2">
+                                <i class="ti ti-device-gamepad-2 me-1"></i>@simId
+                            </h6>
+                            <a class="btn btn-sm btn-outline-primary mt-auto"
+                               href="/recursor-sims/@Uri.EscapeDataString(simId)/users/@Uri.EscapeDataString(userId)/sessions">
+                                View Session Details
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No simulations on record for this account.</p>
+        }
+    </Authorized>
+</AuthorizeView>

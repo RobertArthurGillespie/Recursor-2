@@ -1,0 +1,98 @@
+@page "/recursor-sims/{SimId}"
+@attribute [Authorize(Roles = "Admin")]
+@using NCATAIBlazorFrontendTest.Shared
+@inject HttpClient Http
+
+<PageTitle>Sim: @SimId</PageTitle>
+
+<h2>Sim: <code>@SimId</code></h2>
+<p><a href="/recursor-sims">&larr; Back to Sims</a></p>
+
+@if (_loading)
+{
+    <p><em>Loading users...</em></p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-warning">@_error</div>
+}
+else if (_users is not null)
+{
+    @if (_users.Count == 0)
+    {
+        <p class="text-muted">No users found for this sim in ADX.</p>
+    }
+    else
+    {
+        <h5>Users <span class="badge bg-secondary">@_users.Count</span></h5>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>UserId</th>
+                        <th class="text-center">Sessions</th>
+                        <th class="text-center">Scenarios</th>
+                        <th class="text-center">Windows</th>
+                        <th class="text-center">Raw Events</th>
+                        <th class="text-center">Adaptations</th>
+                        <th class="text-center">Avg Confusion</th>
+                        <th class="text-center">Avg Goal</th>
+                        <th class="text-center">Avg Hint</th>
+                        <th>Last Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in _users)
+                    {
+                        <tr>
+                            <td><code>@user.UserId</code></td>
+                            <td class="text-center">@user.SessionCount</td>
+                            <td class="text-center">@user.ScenarioCount</td>
+                            <td class="text-center">@user.WindowCount</td>
+                            <td class="text-center">@user.RawEventCount</td>
+                            <td class="text-center">@user.AdaptationCount</td>
+                            <td class="text-center">@FormatScore(user.AvgConfusionScore)</td>
+                            <td class="text-center">@FormatScore(user.AvgGoalUnderstanding)</td>
+                            <td class="text-center">@FormatScore(user.AvgHintDependenceScore)</td>
+                            <td>@user.LastSeenUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="/recursor-sims/@Uri.EscapeDataString(SimId)/users/@Uri.EscapeDataString(user.UserId)/sessions">
+                                    Sessions
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string SimId { get; set; } = "";
+
+    private bool _loading = true;
+    private List<SimExplorerUserSummaryDto>? _users;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _users = await Http.GetFromJsonAsync<List<SimExplorerUserSummaryDto>>(
+                $"api/recursor/sim-explorer/sims/{Uri.EscapeDataString(SimId)}/users") ?? [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load users: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatScore(double? v) => v.HasValue ? v.Value.ToString("F2") : "—";
+}

@@ -1,0 +1,528 @@
+@page "/recursor-sims/{SimId}/users/{UserId}/sessions/{SessionId}"
+@using NCATAIBlazorFrontendTest.Shared
+@using System.Text.Json
+@inject HttpClient Http
+
+<PageTitle>Session Detail — @SessionId</PageTitle>
+
+<h2>Session Detail</h2>
+<p>
+    <a href="/recursor-sims/@Uri.EscapeDataString(SimId)/users/@Uri.EscapeDataString(UserId)/sessions">&larr; Back to Sessions</a>
+</p>
+
+@if (_loading)
+{
+    <p><em>Loading session detail...</em></p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-warning">@_error</div>
+}
+else if (_detail is not null)
+{
+    var d = _detail;
+    var tl = d.Timeline;
+    long safetyErr = d.EventCountsByCategory.FirstOrDefault(c => c.Label == "safety_error")?.Count ?? 0;
+    long errCount  = d.EventCountsByCategory.FirstOrDefault(c => c.Label == "error")?.Count ?? 0;
+    long succCount = d.EventCountsByCategory.FirstOrDefault(c => c.Label == "success")?.Count ?? 0;
+    var filteredEvents = d.RawEvents
+        .Where(e => string.IsNullOrEmpty(_categoryFilter) || e.Category == _categoryFilter)
+        .Where(e => string.IsNullOrEmpty(_eventTypeFilter) ||
+                    e.EventType.Contains(_eventTypeFilter, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    <!-- Session metadata -->
+    <div class="mb-3">
+        <table class="table table-sm table-borderless" style="max-width:520px;font-size:0.9rem">
+            <tbody>
+                <tr><td class="text-muted">SessionId</td><td><code>@d.SessionId</code></td></tr>
+                <tr><td class="text-muted">SimId</td><td><code>@d.SimId</code></td></tr>
+                <tr><td class="text-muted">UserId</td><td><code>@d.UserId</code></td></tr>
+                <tr><td class="text-muted">ScenarioId</td><td><code>@d.ScenarioId</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@(tl?.TotalWindows ?? 0)</div>
+                <div class="text-muted small">Windows</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@(tl?.TotalAdaptations ?? 0)</div>
+                <div class="text-muted small">Adaptations</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@d.RawEvents.Count@(d.RawEventsTruncated ? "+" : "")</div>
+                <div class="text-muted small">Raw Events</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2 @(safetyErr > 0 ? "border-danger" : "")">
+                <div class="fs-5 fw-bold @(safetyErr > 0 ? "text-danger" : "")">@safetyErr</div>
+                <div class="text-muted small">Safety Errors</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@errCount</div>
+                <div class="text-muted small">Errors</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@succCount</div>
+                <div class="text-muted small">Successes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Section A: Recursor Timeline ──────────────────────────────────── -->
+    <h5 class="mt-4">Recursor Timeline</h5>
+    @if (tl is null)
+    {
+        <p class="text-muted">Timeline not available — no behavior windows found in ADX for this session.</p>
+    }
+    else
+    {
+        <!-- Timeline summary cards -->
+        <div class="row g-2 mb-2">
+            <div class="col-6 col-md-3">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.H1PredictionAccuracy)</div>
+                    <div class="text-muted small">H1 Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.H2PredictionAccuracy)</div>
+                    <div class="text-muted small">H2 Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.H3PredictionAccuracy)</div>
+                    <div class="text-muted small">H3 Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.AveragePredictionConfidence)</div>
+                    <div class="text-muted small">Avg Confidence</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline table -->
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered" style="font-size:0.82rem">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Win</th>
+                        <th>State</th>
+                        <th>Confusion</th>
+                        <th>Goal</th>
+                        <th>Hint</th>
+                        <th>Risk</th>
+                        <th>Seq</th>
+                        <th>Vol</th>
+                        <th>Mom</th>
+                        <th>Adaptation</th>
+                        <th>Policy Notes</th>
+                        <th>Coach / Explanation</th>
+                        <th>H1</th>
+                        <th>H2</th>
+                        <th>H3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var w in tl.Windows)
+                    {
+                        <tr class="@StateRowClass(w.GuardrailOverallBehaviorState)">
+                            <td class="fw-bold">@w.WindowIndex</td>
+                            <td>@StateBadge(w.GuardrailOverallBehaviorState)</td>
+                            <td>@w.ConfusionScore.ToString("F2")</td>
+                            <td>@w.GoalUnderstanding.ToString("F2")</td>
+                            <td>@w.HintDependenceScore.ToString("F2")</td>
+                            <td>@RiskBadge(w.PredictedNearTermRisk)</td>
+                            <td class="text-muted">@w.SequenceWindowCount</td>
+                            <td class="text-muted">@w.VolatilityScore.ToString("F2")</td>
+                            <td class="text-muted">@w.MomentumScore.ToString("F2")</td>
+                            <td>
+                                @if (w.AdaptationDecision is not null)
+                                {
+                                    var ad = w.AdaptationDecision;
+                                    <span class="badge bg-info text-dark">@FormatFamilies(ad.InterventionFamiliesJson)</span>
+                                    @if (!string.IsNullOrEmpty(ad.ReasoningSummary))
+                                    {
+                                        <div class="text-muted" style="font-size:0.75rem">@TruncateStr(ad.ReasoningSummary, 60)</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td style="font-size:0.75rem">
+                                @if (w.AdaptationDecision is not null)
+                                {
+                                    var ad = w.AdaptationDecision;
+                                    @if (!string.IsNullOrEmpty(ad.Phase8AGuardrailNotes))
+                                    {
+                                        <div><span class="badge bg-warning text-dark">8A</span> @ad.Phase8AGuardrailNotes</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(ad.Phase8EReliabilityNotes))
+                                    {
+                                        <div><span class="badge bg-secondary">8E</span> @ad.Phase8EReliabilityNotes</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(ad.Phase10TrajectoryNotes))
+                                    {
+                                        <div><span class="badge bg-dark">10A</span> @ad.Phase10TrajectoryNotes</div>
+                                    }
+                                }
+                            </td>
+                            <td style="font-size:0.75rem; max-width:200px">
+                                @if (w.AdaptationDecision is not null)
+                                {
+                                    var ad = w.AdaptationDecision;
+                                    @if (HasExplanation(ad))
+                                    {
+                                        <details>
+                                            <summary style="cursor:pointer">@FormatHypothesisBadges(ad.HypothesisLabelsJson)</summary>
+                                            @MaybeLineMarkup("State",  ad.LearnerStateSummary, 100)
+                                            @MaybeLineMarkup("Why",    ad.WhySupportChanged,   100)
+                                            @MaybeLineMarkup("Coach",  ad.CoachMessage,        100)
+                                            @MaybeLineMarkup("Conf",   ad.ConfidenceNote,       80)
+                                        </details>
+                                    }
+                                    else if (!string.IsNullOrEmpty(ad.ReasoningSummary))
+                                    {
+                                        <span class="text-muted">@TruncateStr(ad.ReasoningSummary, 60)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>@HorizonCell(w, 1)</td>
+                            <td>@HorizonCell(w, 2)</td>
+                            <td>@HorizonCell(w, 3)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted small mt-1">
+            Win = window index &bull; State = guardrail behavior state &bull;
+            Risk = trajectory near-term risk &bull; H1/H2/H3 = temporal prediction horizon (✓ / ✗ / —)
+        </p>
+    }
+
+    <!-- ── Section B: Raw Sim Telemetry ──────────────────────────────────── -->
+    <h5 class="mt-4">Raw Sim Telemetry</h5>
+
+    @if (d.RawEventsTruncated)
+    {
+        <div class="alert alert-info py-1">
+            Showing first 2000 raw events. Session has more than 2000 events — earlier events are displayed.
+        </div>
+    }
+
+    <!-- Event count summaries -->
+    @if (d.EventCountsByCategory.Count > 0 || d.EventCountsByEventType.Count > 0)
+    {
+        <div class="row g-2 mb-2">
+            @if (d.EventCountsByCategory.Count > 0)
+            {
+                <div class="col-12 col-md-6">
+                    <strong>By Category</strong>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        @foreach (var c in d.EventCountsByCategory)
+                        {
+                            <span class="badge bg-secondary">@c.Label (@c.Count)</span>
+                        }
+                    </div>
+                </div>
+            }
+            @if (d.EventCountsByEventType.Count > 0)
+            {
+                <div class="col-12 col-md-6">
+                    <strong>By Event Type</strong>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        @foreach (var ev in d.EventCountsByEventType.Take(20))
+                        {
+                            <span class="badge bg-light text-dark border">@ev.Label (@ev.Count)</span>
+                        }
+                        @if (d.EventCountsByEventType.Count > 20)
+                        {
+                            <span class="text-muted small">+@(d.EventCountsByEventType.Count - 20) more</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Filters -->
+    <div class="row g-2 mb-2">
+        <div class="col-12 col-md-3">
+            <label class="form-label small mb-0">Filter by Category</label>
+            <select class="form-select form-select-sm" @bind="_categoryFilter">
+                <option value="">All</option>
+                @foreach (var cat in _categories)
+                {
+                    <option value="@cat">@cat</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label small mb-0">Filter by Event Type</label>
+            <input class="form-control form-control-sm" placeholder="type to filter…"
+                   @bind="_eventTypeFilter" @bind:event="oninput" />
+        </div>
+    </div>
+
+    @if (d.RawEvents.Count == 0)
+    {
+        <p class="text-muted">No raw events found in ADX for this session.</p>
+    }
+    else
+    {
+        <p class="text-muted small">Showing @filteredEvents.Count of @d.RawEvents.Count events.</p>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered" style="font-size:0.80rem">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Seq</th>
+                        <th>Time</th>
+                        <th>EventType</th>
+                        <th>Category</th>
+                        <th>Actor</th>
+                        <th>Target</th>
+                        <th>Metrics</th>
+                        <th>Context</th>
+                        <th>Payload</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ev in filteredEvents)
+                    {
+                        <tr>
+                            <td class="text-muted">@ev.SequenceNumber</td>
+                            <td class="text-nowrap text-muted">@ev.TimestampUtc.ToString("HH:mm:ss.fff")</td>
+                            <td><code style="font-size:0.78rem">@ev.EventType</code></td>
+                            <td>@CategoryBadge(ev.Category)</td>
+                            <td class="text-muted">@ev.Actor</td>
+                            <td class="text-muted">@ev.Target</td>
+                            <td>@JsonExpandCell(ev.MetricsJson)</td>
+                            <td>@JsonExpandCell(ev.ContextJson)</td>
+                            <td>@JsonExpandCell(ev.PayloadJson)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string SimId { get; set; } = "";
+    [Parameter] public string UserId { get; set; } = "";
+    [Parameter] public string SessionId { get; set; } = "";
+
+    private bool _loading = true;
+    private SimExplorerSessionDetailDto? _detail;
+    private string? _error;
+
+    private string _categoryFilter = "";
+    private string _eventTypeFilter = "";
+
+    private List<string> _categories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _detail = await Http.GetFromJsonAsync<SimExplorerSessionDetailDto>(
+                $"api/recursor/sim-explorer/sims/{Uri.EscapeDataString(SimId)}/users/{Uri.EscapeDataString(UserId)}/sessions/{Uri.EscapeDataString(SessionId)}");
+
+            if (_detail is not null)
+            {
+                _categories = _detail.RawEvents
+                    .Select(e => e.Category)
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToList();
+            }
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _error = $"Session '{SessionId}' not found for sim '{SimId}' / user '{UserId}'.";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load session detail: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    // ── Display helpers ───────────────────────────────────────────────────────
+
+    private static string FormatPct(double? v) => v.HasValue ? $"{v.Value:P0}" : "—";
+
+    private static string TruncateStr(string s, int len) => s.Length <= len ? s : s[..len] + "…";
+
+    private static string StateRowClass(string state) => state switch
+    {
+        "struggling" => "table-danger",
+        "recovering" => "table-warning",
+        "mastering"  => "table-success",
+        "conflicted" => "table-secondary",
+        _            => ""
+    };
+
+    private static MarkupString StateBadge(string state)
+    {
+        var cls = state switch
+        {
+            "struggling" => "bg-danger",
+            "recovering" => "bg-warning text-dark",
+            "mastering"  => "bg-success",
+            "stable"     => "bg-primary",
+            "conflicted" => "bg-secondary",
+            _            => "bg-light text-dark"
+        };
+        return (MarkupString)$"<span class=\"badge {cls}\">{state}</span>";
+    }
+
+    private static MarkupString RiskBadge(string risk)
+    {
+        var cls = risk switch
+        {
+            "high"   => "bg-danger",
+            "medium" => "bg-warning text-dark",
+            "low"    => "bg-success",
+            _        => "bg-light text-dark"
+        };
+        var label = string.IsNullOrEmpty(risk) ? "—" : risk;
+        return (MarkupString)$"<span class=\"badge {cls}\">{label}</span>";
+    }
+
+    private static MarkupString CategoryBadge(string category)
+    {
+        var cls = category switch
+        {
+            "safety_error" => "bg-danger",
+            "error"        => "bg-warning text-dark",
+            "success"      => "bg-success",
+            _              => "bg-light text-dark"
+        };
+        if (string.IsNullOrEmpty(category)) return (MarkupString)"<span class=\"text-muted\">—</span>";
+        return (MarkupString)$"<span class=\"badge {cls}\">{category}</span>";
+    }
+
+    private static string FormatFamilies(string json)
+    {
+        if (string.IsNullOrEmpty(json) || json == "null") return "—";
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var items = doc.RootElement
+                .EnumerateArray()
+                .Select(e => e.GetString() ?? "")
+                .Where(s => s.Length > 0);
+            return string.Join(", ", items);
+        }
+        catch { return json; }
+    }
+
+    private static MarkupString JsonExpandCell(string json)
+    {
+        if (string.IsNullOrEmpty(json) || json == "null")
+            return (MarkupString)"<span class=\"text-muted\">—</span>";
+        var escaped = System.Net.WebUtility.HtmlEncode(json);
+        return (MarkupString)$"<details><summary style=\"cursor:pointer;font-size:0.75rem\">JSON</summary><pre style=\"font-size:0.72rem;max-width:260px;white-space:pre-wrap;word-break:break-all\">{escaped}</pre></details>";
+    }
+
+    private static MarkupString HorizonCell(WindowTimelineDto w, int horizon)
+    {
+        var pred   = w.TemporalRiskPredictions.FirstOrDefault(p => p.Horizon == horizon);
+        var target = w.TemporalPredictionTargets.FirstOrDefault(t => t.Horizon == horizon);
+        var correct = horizon == 1 ? w.H1PredictionCorrect
+                    : horizon == 2 ? w.H2PredictionCorrect
+                    :                w.H3PredictionCorrect;
+
+        if (pred is null && target is null)
+            return (MarkupString)"<span class=\"text-muted\">—</span>";
+
+        var predHtml   = pred   is not null ? RiskBadgeHtml(pred.PredictedNearTermRisk)  : "—";
+        var targetHtml = target is not null ? RiskBadgeHtml(target.TargetNearTermRisk) : "?";
+        var icon = correct switch
+        {
+            true  => "<span class=\"text-success fw-bold\">✓</span>",
+            false => "<span class=\"text-danger fw-bold\">✗</span>",
+            null  => "<span class=\"text-muted\">—</span>"
+        };
+        return (MarkupString)$"{predHtml}&rarr;{targetHtml} {icon}";
+    }
+
+    private static string RiskBadgeHtml(string risk)
+    {
+        var cls = risk switch
+        {
+            "high"   => "bg-danger",
+            "medium" => "bg-warning text-dark",
+            "low"    => "bg-success",
+            _        => "bg-light text-dark"
+        };
+        var label = string.IsNullOrEmpty(risk) ? "?" : risk;
+        return $"<span class=\"badge {cls}\">{label}</span>";
+    }
+
+    private static bool HasExplanation(AdaptationDecisionTimelineDto ad) =>
+        !string.IsNullOrEmpty(ad.HypothesisLabelsJson) ||
+        !string.IsNullOrEmpty(ad.LearnerStateSummary)  ||
+        !string.IsNullOrEmpty(ad.CoachMessage);
+
+    private static MarkupString FormatHypothesisBadges(string? json)
+    {
+        if (string.IsNullOrEmpty(json) || json == "null" || json == "[]")
+            return (MarkupString)"<span class=\"text-muted\" style=\"font-size:0.72rem\">(no patterns)</span>";
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var badges = doc.RootElement
+                .EnumerateArray()
+                .Select(e => e.GetString() ?? "")
+                .Where(s => s.Length > 0)
+                .Select(s => $"<span class=\"badge bg-secondary me-1\" style=\"font-size:0.7rem\">{s}</span>")
+                .ToList();
+            return badges.Count > 0
+                ? (MarkupString)string.Concat(badges)
+                : (MarkupString)"<span class=\"text-muted\" style=\"font-size:0.72rem\">(no patterns)</span>";
+        }
+        catch { return (MarkupString)"<span class=\"text-muted\" style=\"font-size:0.72rem\">(parse error)</span>"; }
+    }
+
+    private static MarkupString MaybeLineMarkup(string label, string? value, int maxLen)
+    {
+        if (string.IsNullOrEmpty(value)) return (MarkupString)"";
+        var display = value.Length > maxLen ? value[..maxLen] + "…" : value;
+        return (MarkupString)$"<div class=\"mt-1\"><strong>{label}:</strong> {display}</div>";
+    }
+}

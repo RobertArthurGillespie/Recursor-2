@@ -1,4 +1,5 @@
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
+using NCATAIBlazorFrontendTest.Shared;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 
@@ -137,6 +138,73 @@ public class SimCatalogRepository : ISimCatalogRepository
                 Max  = 5
             }
         ]
+            },
+            ["medical-supply-stocking"] = new SimCatalogDocument
+            {
+                Id           = "medical-supply-stocking",
+                DocumentType = "SimCatalog",
+                SimId        = "medical-supply-stocking",
+                SupportedDimensions =
+                [
+                    "attentionDetection",
+                    "goalUnderstanding",
+                    "procedureSequencing",
+                    "paceRegulation",
+                    "selfCorrection",
+                    "feedbackResponsiveness",
+                    "safetyCompliance",
+                    "taskContinuity"
+                ],
+                EventTypes =
+                [
+                    MedicalSupplyEventTypes.SupplySelected,
+                    MedicalSupplyEventTypes.SupplyInspected,
+                    MedicalSupplyEventTypes.BinSelected,
+                    MedicalSupplyEventTypes.SupplyStockedCorrectly,
+                    MedicalSupplyEventTypes.WrongBinError,
+                    MedicalSupplyEventTypes.DamagedSupplyStocked,
+                    MedicalSupplyEventTypes.ExpiredSupplyStocked,
+                    MedicalSupplyEventTypes.DamagedSupplyRejectedCorrectly,
+                    MedicalSupplyEventTypes.ExpiredSupplyRejectedCorrectly,
+                    MedicalSupplyEventTypes.UsableSupplyRejected,
+                    MedicalSupplyEventTypes.InspectionSkipped,
+                    MedicalSupplyEventTypes.HintRequested,
+                    MedicalSupplyEventTypes.HintFollowed,
+                    MedicalSupplyEventTypes.HintIgnored,
+                    MedicalSupplyEventTypes.CorrectedAfterFeedback,
+                    MedicalSupplyEventTypes.RepeatedErrorAfterFeedback,
+                    MedicalSupplyEventTypes.ScenarioCompleted
+                ],
+                AdaptiveParameters =
+                [
+                    new AdaptiveParameterDefinition
+                    {
+                        Name = "difficulty",
+                        Type = "float",
+                        Min  = 0.0,
+                        Max  = 1.0
+                    },
+                    new AdaptiveParameterDefinition
+                    {
+                        Name          = "hintMode",
+                        Type          = "enum",
+                        AllowedValues = ["off", "minimal", "guided"]
+                    },
+                    new AdaptiveParameterDefinition
+                    {
+                        Name = "timePressure",
+                        Type = "float",
+                        Min  = 0.0,
+                        Max  = 1.0
+                    },
+                    new AdaptiveParameterDefinition
+                    {
+                        Name = "errorTolerance",
+                        Type = "int",
+                        Min  = 0,
+                        Max  = 5
+                    }
+                ]
             }
         };
     }

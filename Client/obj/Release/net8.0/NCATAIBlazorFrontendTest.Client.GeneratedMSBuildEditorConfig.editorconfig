@@ -324,6 +324,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTGF5b3V0c1xJY29uVmlldy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/Logout.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nb3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/Maps/Google.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFwc1xHb29nbGUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -368,8 +376,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcVGltZWxpbmUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/Profile.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZmlsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/RecursorDashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjdXJzb3JEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/RecursorSims.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjdXJzb3JTaW1zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/RecursorSimSessionDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjdXJzb3JTaW1TZXNzaW9uRGV0YWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/RecursorSimUsers.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjdXJzb3JTaW1Vc2Vycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/RecursorSimUserSessions.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjdXJzb3JTaW1Vc2VyU2Vzc2lvbnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Rober/source/repos/Recursor_Engine_vers2/NCATAIBlazorFrontendTest/Client/Pages/Tables/Basic.razor]

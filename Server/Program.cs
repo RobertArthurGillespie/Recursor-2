@@ -26,6 +26,7 @@ using NCATAIBlazorFrontendTest.Server.Recursor.Seeding;
 using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using Microsoft.AspNetCore.Hosting;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
+using NCATAIBlazorFrontendTest.Server.Recursor.Services.SimEventInterpretation;
 using Kusto.Data.Net.Client;
 using Microsoft.Extensions.Logging;
 
@@ -117,6 +118,11 @@ builder.Services.AddSingleton<IUserRelativePolicyAdvisorService, UserRelativePol
 builder.Services.AddSingleton<IUserThresholdDerivationService, UserThresholdDerivationService>();
 builder.Services.AddSingleton<IUserProfileUpdateService, UserProfileUpdateService>();
 
+// Phase 10S-2: sim-specific event interpretation adapters (singleton — stateless).
+builder.Services.AddSingleton<DefaultSimEventInterpretationAdapter>();
+builder.Services.AddSingleton<MedicalSupplyEventInterpretationAdapter>();
+builder.Services.AddSingleton<ISimEventInterpretationAdapterFactory, SimEventInterpretationAdapterFactory>();
+
 // Recursor pipeline services (scoped — one per request).
 builder.Services.AddScoped<IFeatureExtractionService, FeatureExtractionService>();
 builder.Services.AddScoped<IBehaviorInterpreter, BehaviorInterpreter>();
@@ -177,6 +183,8 @@ builder.Services.AddScoped<ITemporalEmbeddingService, TemporalEmbeddingService>(
 builder.Services.AddSingleton<IAdxTemporalTrainingQueryService, AdxTemporalTrainingQueryService>();
 // Phase 14A: internal evaluation dashboard — read-only ADX query service.
 builder.Services.AddSingleton<IAdxDashboardQueryService, AdxDashboardQueryService>();
+// Phase 16A: Sim Explorer — read-only browse by sim/user/session.
+builder.Services.AddSingleton<IAdxSimExplorerQueryService, AdxSimExplorerQueryService>();
 builder.Services.AddSingleton<ITemporalRiskModelTrainingService, TemporalRiskModelTrainingService>();
 
 var resolvedTemporalRiskH1Path = ResolveModelPath(

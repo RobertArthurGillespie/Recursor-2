@@ -1,0 +1,139 @@
+@page "/recursor-sims/{SimId}/users/{UserId}/sessions"
+@using NCATAIBlazorFrontendTest.Shared
+@inject HttpClient Http
+
+<PageTitle>Sessions for @UserId</PageTitle>
+
+<h2>Sessions for <code>@UserId</code></h2>
+<p>
+    Sim: <code>@SimId</code> &nbsp;|&nbsp;
+    <a href="/recursor-sims/@Uri.EscapeDataString(SimId)">&larr; Back to Users</a>
+</p>
+
+@if (_loading)
+{
+    <p><em>Loading sessions...</em></p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-warning">@_error</div>
+}
+else if (_sessions is not null)
+{
+    <!-- Summary cards -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@_sessions.Count</div>
+                <div class="text-muted small">Sessions</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@_sessions.Sum(s => s.WindowCount)</div>
+                <div class="text-muted small">Windows</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@_sessions.Sum(s => s.RawEventCount)</div>
+                <div class="text-muted small">Raw Events</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2">
+                <div class="fs-5 fw-bold">@_sessions.Sum(s => s.AdaptationCount)</div>
+                <div class="text-muted small">Adaptations</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card text-center py-2 @(_sessions.Sum(s => s.SafetyErrorCount) > 0 ? "border-danger" : "")">
+                <div class="fs-5 fw-bold @(_sessions.Sum(s => s.SafetyErrorCount) > 0 ? "text-danger" : "")">
+                    @_sessions.Sum(s => s.SafetyErrorCount)
+                </div>
+                <div class="text-muted small">Safety Errors</div>
+            </div>
+        </div>
+    </div>
+
+    @if (_sessions.Count == 0)
+    {
+        <p class="text-muted">No sessions found for this user in ADX.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>SessionId</th>
+                        <th>Scenario</th>
+                        <th class="text-center">Windows</th>
+                        <th class="text-center">Raw Events</th>
+                        <th class="text-center">Adapt</th>
+                        <th class="text-center">Safety Err</th>
+                        <th class="text-center">Errors</th>
+                        <th class="text-center">Successes</th>
+                        <th class="text-center">Avg Confusion</th>
+                        <th class="text-center">Avg Goal</th>
+                        <th>Last Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in _sessions)
+                    {
+                        <tr>
+                            <td><code>@Truncate(s.SessionId, 14)</code></td>
+                            <td>@s.ScenarioId</td>
+                            <td class="text-center">@s.WindowCount</td>
+                            <td class="text-center">@s.RawEventCount</td>
+                            <td class="text-center">@s.AdaptationCount</td>
+                            <td class="text-center @(s.SafetyErrorCount > 0 ? "text-danger fw-bold" : "text-muted")">@s.SafetyErrorCount</td>
+                            <td class="text-center">@s.ErrorCount</td>
+                            <td class="text-center">@s.SuccessCount</td>
+                            <td class="text-center">@FormatScore(s.AvgConfusionScore)</td>
+                            <td class="text-center">@FormatScore(s.AvgGoalUnderstanding)</td>
+                            <td>@s.LastSeenUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="/recursor-sims/@Uri.EscapeDataString(SimId)/users/@Uri.EscapeDataString(UserId)/sessions/@Uri.EscapeDataString(s.SessionId)">
+                                    Details
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string SimId { get; set; } = "";
+    [Parameter] public string UserId { get; set; } = "";
+
+    private bool _loading = true;
+    private List<SimExplorerSessionSummaryDto>? _sessions;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _sessions = await Http.GetFromJsonAsync<List<SimExplorerSessionSummaryDto>>(
+                $"api/recursor/sim-explorer/sims/{Uri.EscapeDataString(SimId)}/users/{Uri.EscapeDataString(UserId)}/sessions") ?? [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load sessions: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatScore(double? v) => v.HasValue ? v.Value.ToString("F2") : "—";
+    private static string Truncate(string s, int len) => s.Length <= len ? s : s[..len] + "…";
+}
