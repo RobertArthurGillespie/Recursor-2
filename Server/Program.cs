@@ -185,6 +185,9 @@ builder.Services.AddSingleton<IAdxTemporalTrainingQueryService, AdxTemporalTrain
 builder.Services.AddSingleton<IAdxDashboardQueryService, AdxDashboardQueryService>();
 // Phase 16A: Sim Explorer — read-only browse by sim/user/session.
 builder.Services.AddSingleton<IAdxSimExplorerQueryService, AdxSimExplorerQueryService>();
+// Phase 10S-4: trend-aware debrief — ADX query service + orchestration service.
+builder.Services.AddSingleton<IAdxMedicalSupplyDebriefQueryService, AdxMedicalSupplyDebriefQueryService>();
+builder.Services.AddScoped<IMedicalSupplyDebriefService, MedicalSupplyDebriefService>();
 builder.Services.AddSingleton<ITemporalRiskModelTrainingService, TemporalRiskModelTrainingService>();
 
 var resolvedTemporalRiskH1Path = ResolveModelPath(
