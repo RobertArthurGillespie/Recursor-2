@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "aUeC3diQ0JFc1NLoNG0af8op31GyfOcfYTfJF0nCMdU=",
+  "Hash": "yg64L7Vc4ccclsI7vI+xJbjAKMnN2TkuRCnqWbna2js=",
   "Source": "NCATAIBlazorFrontendTest.Server",
   "BasePath": "_content/NCATAIBlazorFrontendTest.Server",
   "Mode": "Default",
@@ -11,10 +11,10 @@
       "Version": 2,
       "Source": "NCATAIBlazorFrontendTest.Client",
       "GetPublishAssetsTargets": "ComputeFilesToPublish;GetCurrentProjectPublishStaticWebAssetItems",
-      "AdditionalPublishProperties": "_PublishingBlazorWasmProject=true;BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true",
+      "AdditionalPublishProperties": "_PublishingBlazorWasmProject=true;BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true;Configuration=Debug;Platform=AnyCPU",
       "AdditionalPublishPropertiesToRemove": "NoBuild;RuntimeIdentifier;WebPublishProfileFile;TargetFramework",
       "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
-      "AdditionalBuildProperties": "",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
       "AdditionalBuildPropertiesToRemove": "RuntimeIdentifier;SelfContained;WebPublishProfileFile;TargetFramework"
     }
   ],
@@ -211,8 +211,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "manifest",
-      "Fingerprint": "tnmmbs0ddo",
-      "Integrity": "OTdK1qgC3ghp1wU8PRRcPMj+aOTM1JzE+udXbzq1xgI=",
+      "Fingerprint": "bth1kbc2r6",
+      "Integrity": "kQ/VDax8AC+Yph/w/M5WwBPnkO+BEFISzKkINmBdcOM=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\blazor.boot.json"
@@ -1555,8 +1555,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
-      "Fingerprint": "gsfd9rh70h",
-      "Integrity": "0Kmos9fM9BSBgF2ZqRythXnaGF7Nkfb7iO6GLG8ST5k=",
+      "Fingerprint": "dylfvd6dsc",
+      "Integrity": "5Y8vuO7hGAUKbtxsHe9wXfGzSH3WlzGpJVUzyuTe9/U=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.pdb"
@@ -1576,8 +1576,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
-      "Fingerprint": "rf1a6unq9j",
-      "Integrity": "xxPCNp6rjTYqmXPhlqQn+WX60X5FmGSlBzPBve9VhwE=",
+      "Fingerprint": "w9lkd1t67z",
+      "Integrity": "TDb8PZORSr6tKSLm94WEP7603Gc4CDZQgsnWgelxQQ8=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.wasm"
@@ -1597,8 +1597,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "symbol",
-      "Fingerprint": "b6ibr9o5z7",
-      "Integrity": "w6/rOuHc0gpX72SKYy4IFc1BSQC4wur23DlhXlfwPrs=",
+      "Fingerprint": "6xof2z96ae",
+      "Integrity": "FhaOgZApASuunPP6ZF1nG/VSGStHXvGPU31aVLkZJhI=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.pdb"
@@ -1618,8 +1618,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
-      "Fingerprint": "0r05vbchyy",
-      "Integrity": "DB6ENCbexgZg5DTfpGRep/tKqqEW7NVIlsRsCt2FUHc=",
+      "Fingerprint": "euzidd30uy",
+      "Integrity": "CslHcfbQ9qvmuxz75FVQrE+GXgeQTc1vlWvrPzLz5Rg=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.wasm"
@@ -5321,7 +5321,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\01zhu80q6n-sybv2hxg92.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-0r05vbchyy.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-euzidd30uy.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -5335,11 +5335,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "hzgxvwa1gi",
-      "Integrity": "PbNjo58oKO5PrFfFfwIGZpkQoq6re6Yt5DI/OGRk4E4=",
+      "Fingerprint": "nhg6rpufyr",
+      "Integrity": "Bch1ddN0cMb5koTI39+6zG0e1Lm1WnjN6hMgL2FPqbo=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-0r05vbchyy.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-euzidd30uy.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0l0gml9ckc-0071rouzll.gz",
@@ -5489,7 +5489,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1otqf94gnh-izj95c2kfi.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-tnmmbs0ddo.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-bth1kbc2r6.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -5503,11 +5503,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "kmc1awy9sn",
-      "Integrity": "1N/xswkb3seIX+gmC7ECnXO/VCF+HLD5I6t7CF3cRqI=",
+      "Fingerprint": "sb2s537rrr",
+      "Integrity": "yDvlZ2Xy9ZcPAYg0AJ4kgiD5eV0EvfGa+ID2nLNF58A=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-tnmmbs0ddo.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-bth1kbc2r6.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1r97wvyazd-u9q1ri1lhd.gz",
@@ -6602,7 +6602,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\7yxelbsrys-l10pvhb7s4.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-gsfd9rh70h.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-dylfvd6dsc.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -6616,11 +6616,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "avq3x5eqql",
-      "Integrity": "OgBXxX5ANoCT8J2tQBKJnBmsRr4Oo1BIZSqoW7pFH8A=",
+      "Fingerprint": "qt8m5cbv6c",
+      "Integrity": "Lhu1E0SNjjxcFtJ1g649HlffRdu3kFneI5Nm9Sl5eJ4=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-gsfd9rh70h.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-dylfvd6dsc.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8jxyzkyqys-kzpdt3i8c6.gz",
@@ -8156,7 +8156,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\juusd4rgnc-dfa529ngj2.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-rf1a6unq9j.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-w9lkd1t67z.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -8170,11 +8170,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Client.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "pvqqpmj2o7",
-      "Integrity": "a3RzR7mUvqzVqoEKa25XznIjHdiQ2Ny71AfplkIAWTc=",
+      "Fingerprint": "pa531mac77",
+      "Integrity": "b2lVFhgGTI655jVFUZjMNFF3GZQu9hbfS3cieS4RiUo=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-rf1a6unq9j.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-w9lkd1t67z.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ks9j7jll5s-1qemrbr3g4.gz",
@@ -9773,7 +9773,7 @@
       "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v4i8d4elcd-btxqarc2em.gz"
     },
     {
-      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-b6ibr9o5z7.gz",
+      "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-6xof2z96ae.gz",
       "SourceId": "NCATAIBlazorFrontendTest.Client",
       "SourceType": "Project",
       "ContentRoot": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\",
@@ -9787,11 +9787,11 @@
       "RelatedAsset": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\NCATAIBlazorFrontendTest.Shared.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "jb8f51j322",
-      "Integrity": "35Do+hXHk+koowFIfddz5htng5df+B4jNWzQHKk54oE=",
+      "Fingerprint": "e7gm06uua1",
+      "Integrity": "ijMtO4HnEbVgw4m6MaB/0caCcK+UnLAG7WGLyiZ6fhc=",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-b6ibr9o5z7.gz"
+      "OriginalItemSpec": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-6xof2z96ae.gz"
     },
     {
       "Identity": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\vmjsyu5b9y-nmgzcmwijs.gz",
@@ -42704,7 +42704,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -42757,7 +42757,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -42841,7 +42841,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -42894,7 +42894,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -42978,7 +42978,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43031,7 +43031,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43115,7 +43115,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43168,7 +43168,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43252,7 +43252,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43305,7 +43305,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43389,7 +43389,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43442,7 +43442,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43526,7 +43526,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43579,7 +43579,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43616,28 +43616,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"OTdK1qgC3ghp1wU8PRRcPMj+aOTM1JzE+udXbzq1xgI=\""
+          "Value": "\"kQ/VDax8AC+Yph/w/M5WwBPnkO+BEFISzKkINmBdcOM=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 15 Jun 2026 21:46:18 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-OTdK1qgC3ghp1wU8PRRcPMj+aOTM1JzE+udXbzq1xgI="
+          "Value": "sha256-kQ/VDax8AC+Yph/w/M5WwBPnkO+BEFISzKkINmBdcOM="
         }
       ]
     },
     {
       "Route": "_framework/blazor.boot.json",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-tnmmbs0ddo.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-bth1kbc2r6.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000094607379"
+          "Quality": "0.000094652153"
         }
       ],
       "ResponseHeaders": [
@@ -43655,11 +43655,11 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "10569"
+          "Value": "10564"
         },
         {
           "Name": "ETag",
-          "Value": "\"1N/xswkb3seIX+gmC7ECnXO/VCF+HLD5I6t7CF3cRqI=\""
+          "Value": "\"yDvlZ2Xy9ZcPAYg0AJ4kgiD5eV0EvfGa+ID2nLNF58A=\""
         },
         {
           "Name": "Last-Modified",
@@ -43675,19 +43675,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"OTdK1qgC3ghp1wU8PRRcPMj+aOTM1JzE+udXbzq1xgI=\""
+          "Value": "W/\"kQ/VDax8AC+Yph/w/M5WwBPnkO+BEFISzKkINmBdcOM=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-OTdK1qgC3ghp1wU8PRRcPMj+aOTM1JzE+udXbzq1xgI="
+          "Value": "sha256-kQ/VDax8AC+Yph/w/M5WwBPnkO+BEFISzKkINmBdcOM="
         }
       ]
     },
     {
       "Route": "_framework/blazor.boot.json.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-tnmmbs0ddo.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\1ouikicgtj-bth1kbc2r6.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -43704,7 +43704,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "10569"
+          "Value": "10564"
         },
         {
           "Name": "Content-Type",
@@ -43712,7 +43712,7 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"1N/xswkb3seIX+gmC7ECnXO/VCF+HLD5I6t7CF3cRqI=\""
+          "Value": "\"yDvlZ2Xy9ZcPAYg0AJ4kgiD5eV0EvfGa+ID2nLNF58A=\""
         },
         {
           "Name": "Last-Modified",
@@ -43726,7 +43726,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-1N/xswkb3seIX+gmC7ECnXO/VCF+HLD5I6t7CF3cRqI="
+          "Value": "sha256-yDvlZ2Xy9ZcPAYg0AJ4kgiD5eV0EvfGa+ID2nLNF58A="
         }
       ]
     },
@@ -43800,7 +43800,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Wed, 01 Nov 2023 01:05:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43853,7 +43853,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Wed, 01 Nov 2023 01:05:46 GMT"
         },
         {
           "Name": "Vary",
@@ -43937,7 +43937,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:18 GMT"
         },
         {
           "Name": "Vary",
@@ -43990,7 +43990,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:18 GMT"
         },
         {
           "Name": "Vary",
@@ -44074,7 +44074,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:18 GMT"
         },
         {
           "Name": "Vary",
@@ -44127,7 +44127,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:18 GMT"
         },
         {
           "Name": "Vary",
@@ -44211,7 +44211,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:50 GMT"
         },
         {
           "Name": "Vary",
@@ -44264,7 +44264,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:50 GMT"
         },
         {
           "Name": "Vary",
@@ -44348,7 +44348,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:50 GMT"
         },
         {
           "Name": "Vary",
@@ -44401,7 +44401,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:50 GMT"
         },
         {
           "Name": "Vary",
@@ -44485,7 +44485,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:24 GMT"
         },
         {
           "Name": "Vary",
@@ -44538,7 +44538,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:24 GMT"
         },
         {
           "Name": "Vary",
@@ -44622,7 +44622,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:24 GMT"
         },
         {
           "Name": "Vary",
@@ -44675,7 +44675,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:02:24 GMT"
         },
         {
           "Name": "Vary",
@@ -44759,7 +44759,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:01:46 GMT"
         },
         {
           "Name": "Vary",
@@ -44812,7 +44812,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 15 Mar 2025 03:01:46 GMT"
         },
         {
           "Name": "Vary",
@@ -44896,7 +44896,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 23 Oct 2023 14:14:14 GMT"
         },
         {
           "Name": "Vary",
@@ -44949,7 +44949,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 23 Oct 2023 14:14:14 GMT"
         },
         {
           "Name": "Vary",
@@ -45033,7 +45033,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 23 Oct 2023 14:14:14 GMT"
         },
         {
           "Name": "Vary",
@@ -45086,7 +45086,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 23 Oct 2023 14:14:14 GMT"
         },
         {
           "Name": "Vary",
@@ -45170,7 +45170,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 23 Oct 2023 14:14:14 GMT"
         },
         {
           "Name": "Vary",
@@ -45223,7 +45223,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 23 Oct 2023 14:14:14 GMT"
         },
         {
           "Name": "Vary",
@@ -45307,7 +45307,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45360,7 +45360,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45444,7 +45444,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45497,7 +45497,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45581,7 +45581,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45634,7 +45634,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45718,7 +45718,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45771,7 +45771,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45855,7 +45855,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45908,7 +45908,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -45992,7 +45992,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46045,7 +46045,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46129,7 +46129,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46182,7 +46182,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46266,7 +46266,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46319,7 +46319,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46403,7 +46403,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46456,7 +46456,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46540,7 +46540,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46593,7 +46593,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46677,7 +46677,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46730,7 +46730,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46814,7 +46814,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46867,7 +46867,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -46951,7 +46951,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47004,7 +47004,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47088,7 +47088,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47141,7 +47141,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47225,7 +47225,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47278,7 +47278,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47362,7 +47362,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47415,7 +47415,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47499,7 +47499,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47552,7 +47552,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47636,7 +47636,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47689,7 +47689,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47773,7 +47773,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47826,7 +47826,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47910,7 +47910,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -47963,7 +47963,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48047,7 +48047,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48100,7 +48100,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48184,7 +48184,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48237,7 +48237,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48321,7 +48321,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48374,7 +48374,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48458,7 +48458,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48511,7 +48511,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48595,7 +48595,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48648,7 +48648,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48732,7 +48732,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48785,7 +48785,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48869,7 +48869,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -48922,7 +48922,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49006,7 +49006,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49059,7 +49059,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49143,7 +49143,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49196,7 +49196,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49280,7 +49280,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49333,7 +49333,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49417,7 +49417,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49470,7 +49470,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49554,7 +49554,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49607,7 +49607,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49691,7 +49691,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49744,7 +49744,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49828,7 +49828,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49881,7 +49881,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -49965,7 +49965,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50018,7 +50018,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50102,7 +50102,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50155,7 +50155,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50239,7 +50239,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50292,7 +50292,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50376,7 +50376,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50429,7 +50429,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50513,7 +50513,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50566,7 +50566,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50650,7 +50650,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50703,7 +50703,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50787,7 +50787,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50840,7 +50840,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50924,7 +50924,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -50977,7 +50977,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51061,7 +51061,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51114,7 +51114,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51198,7 +51198,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51251,7 +51251,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51335,7 +51335,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51388,7 +51388,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51472,7 +51472,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51525,7 +51525,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51609,7 +51609,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51662,7 +51662,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51746,7 +51746,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51799,7 +51799,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51883,7 +51883,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -51936,7 +51936,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52020,7 +52020,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52073,7 +52073,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52157,7 +52157,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52210,7 +52210,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52384,28 +52384,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"0Kmos9fM9BSBgF2ZqRythXnaGF7Nkfb7iO6GLG8ST5k=\""
+          "Value": "\"5Y8vuO7hGAUKbtxsHe9wXfGzSH3WlzGpJVUzyuTe9/U=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
+          "Value": "Mon, 15 Jun 2026 21:46:17 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-0Kmos9fM9BSBgF2ZqRythXnaGF7Nkfb7iO6GLG8ST5k="
+          "Value": "sha256-5Y8vuO7hGAUKbtxsHe9wXfGzSH3WlzGpJVUzyuTe9/U="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.pdb",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-gsfd9rh70h.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-dylfvd6dsc.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000002453121"
+          "Quality": "0.000002453139"
         }
       ],
       "ResponseHeaders": [
@@ -52423,15 +52423,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "407643"
+          "Value": "407640"
         },
         {
           "Name": "ETag",
-          "Value": "\"OgBXxX5ANoCT8J2tQBKJnBmsRr4Oo1BIZSqoW7pFH8A=\""
+          "Value": "\"Lhu1E0SNjjxcFtJ1g649HlffRdu3kFneI5Nm9Sl5eJ4=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52443,19 +52443,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"0Kmos9fM9BSBgF2ZqRythXnaGF7Nkfb7iO6GLG8ST5k=\""
+          "Value": "W/\"5Y8vuO7hGAUKbtxsHe9wXfGzSH3WlzGpJVUzyuTe9/U=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-0Kmos9fM9BSBgF2ZqRythXnaGF7Nkfb7iO6GLG8ST5k="
+          "Value": "sha256-5Y8vuO7hGAUKbtxsHe9wXfGzSH3WlzGpJVUzyuTe9/U="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.pdb.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-gsfd9rh70h.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\8glc2t5u1m-dylfvd6dsc.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52472,7 +52472,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "407643"
+          "Value": "407640"
         },
         {
           "Name": "Content-Type",
@@ -52480,11 +52480,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"OgBXxX5ANoCT8J2tQBKJnBmsRr4Oo1BIZSqoW7pFH8A=\""
+          "Value": "\"Lhu1E0SNjjxcFtJ1g649HlffRdu3kFneI5Nm9Sl5eJ4=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -52494,7 +52494,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-OgBXxX5ANoCT8J2tQBKJnBmsRr4Oo1BIZSqoW7pFH8A="
+          "Value": "sha256-Lhu1E0SNjjxcFtJ1g649HlffRdu3kFneI5Nm9Sl5eJ4="
         }
       ]
     },
@@ -52521,28 +52521,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"xxPCNp6rjTYqmXPhlqQn+WX60X5FmGSlBzPBve9VhwE=\""
+          "Value": "\"TDb8PZORSr6tKSLm94WEP7603Gc4CDZQgsnWgelxQQ8=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 15 Jun 2026 21:46:17 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-xxPCNp6rjTYqmXPhlqQn+WX60X5FmGSlBzPBve9VhwE="
+          "Value": "sha256-TDb8PZORSr6tKSLm94WEP7603Gc4CDZQgsnWgelxQQ8="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.wasm",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-rf1a6unq9j.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-w9lkd1t67z.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000003682129"
+          "Quality": "0.000003682143"
         }
       ],
       "ResponseHeaders": [
@@ -52560,11 +52560,11 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "271581"
+          "Value": "271580"
         },
         {
           "Name": "ETag",
-          "Value": "\"a3RzR7mUvqzVqoEKa25XznIjHdiQ2Ny71AfplkIAWTc=\""
+          "Value": "\"b2lVFhgGTI655jVFUZjMNFF3GZQu9hbfS3cieS4RiUo=\""
         },
         {
           "Name": "Last-Modified",
@@ -52580,19 +52580,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"xxPCNp6rjTYqmXPhlqQn+WX60X5FmGSlBzPBve9VhwE=\""
+          "Value": "W/\"TDb8PZORSr6tKSLm94WEP7603Gc4CDZQgsnWgelxQQ8=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-xxPCNp6rjTYqmXPhlqQn+WX60X5FmGSlBzPBve9VhwE="
+          "Value": "sha256-TDb8PZORSr6tKSLm94WEP7603Gc4CDZQgsnWgelxQQ8="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Client.wasm.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-rf1a6unq9j.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\ka8mhffdbw-w9lkd1t67z.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52609,7 +52609,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "271581"
+          "Value": "271580"
         },
         {
           "Name": "Content-Type",
@@ -52617,7 +52617,7 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"a3RzR7mUvqzVqoEKa25XznIjHdiQ2Ny71AfplkIAWTc=\""
+          "Value": "\"b2lVFhgGTI655jVFUZjMNFF3GZQu9hbfS3cieS4RiUo=\""
         },
         {
           "Name": "Last-Modified",
@@ -52631,7 +52631,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-a3RzR7mUvqzVqoEKa25XznIjHdiQ2Ny71AfplkIAWTc="
+          "Value": "sha256-b2lVFhgGTI655jVFUZjMNFF3GZQu9hbfS3cieS4RiUo="
         }
       ]
     },
@@ -52658,28 +52658,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"w6/rOuHc0gpX72SKYy4IFc1BSQC4wur23DlhXlfwPrs=\""
+          "Value": "\"FhaOgZApASuunPP6ZF1nG/VSGStHXvGPU31aVLkZJhI=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:41 GMT"
+          "Value": "Mon, 15 Jun 2026 21:46:11 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-w6/rOuHc0gpX72SKYy4IFc1BSQC4wur23DlhXlfwPrs="
+          "Value": "sha256-FhaOgZApASuunPP6ZF1nG/VSGStHXvGPU31aVLkZJhI="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.pdb",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-b6ibr9o5z7.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-6xof2z96ae.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000075970523"
+          "Quality": "0.000074744002"
         }
       ],
       "ResponseHeaders": [
@@ -52697,15 +52697,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "13162"
+          "Value": "13378"
         },
         {
           "Name": "ETag",
-          "Value": "\"35Do+hXHk+koowFIfddz5htng5df+B4jNWzQHKk54oE=\""
+          "Value": "\"ijMtO4HnEbVgw4m6MaB/0caCcK+UnLAG7WGLyiZ6fhc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:41 GMT"
         },
         {
           "Name": "Vary",
@@ -52717,19 +52717,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"w6/rOuHc0gpX72SKYy4IFc1BSQC4wur23DlhXlfwPrs=\""
+          "Value": "W/\"FhaOgZApASuunPP6ZF1nG/VSGStHXvGPU31aVLkZJhI=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-w6/rOuHc0gpX72SKYy4IFc1BSQC4wur23DlhXlfwPrs="
+          "Value": "sha256-FhaOgZApASuunPP6ZF1nG/VSGStHXvGPU31aVLkZJhI="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.pdb.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-b6ibr9o5z7.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\v88vaap3a2-6xof2z96ae.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52746,7 +52746,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "13162"
+          "Value": "13378"
         },
         {
           "Name": "Content-Type",
@@ -52754,11 +52754,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"35Do+hXHk+koowFIfddz5htng5df+B4jNWzQHKk54oE=\""
+          "Value": "\"ijMtO4HnEbVgw4m6MaB/0caCcK+UnLAG7WGLyiZ6fhc=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:41 GMT"
         },
         {
           "Name": "Vary",
@@ -52768,7 +52768,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-35Do+hXHk+koowFIfddz5htng5df+B4jNWzQHKk54oE="
+          "Value": "sha256-ijMtO4HnEbVgw4m6MaB/0caCcK+UnLAG7WGLyiZ6fhc="
         }
       ]
     },
@@ -52795,28 +52795,28 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"DB6ENCbexgZg5DTfpGRep/tKqqEW7NVIlsRsCt2FUHc=\""
+          "Value": "\"CslHcfbQ9qvmuxz75FVQrE+GXgeQTc1vlWvrPzLz5Rg=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Mon, 15 Jun 2026 21:46:17 GMT"
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-DB6ENCbexgZg5DTfpGRep/tKqqEW7NVIlsRsCt2FUHc="
+          "Value": "sha256-CslHcfbQ9qvmuxz75FVQrE+GXgeQTc1vlWvrPzLz5Rg="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.wasm",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-0r05vbchyy.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-euzidd30uy.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000054247586"
+          "Quality": "0.000052356021"
         }
       ],
       "ResponseHeaders": [
@@ -52834,11 +52834,11 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "18433"
+          "Value": "19099"
         },
         {
           "Name": "ETag",
-          "Value": "\"PbNjo58oKO5PrFfFfwIGZpkQoq6re6Yt5DI/OGRk4E4=\""
+          "Value": "\"Bch1ddN0cMb5koTI39+6zG0e1Lm1WnjN6hMgL2FPqbo=\""
         },
         {
           "Name": "Last-Modified",
@@ -52854,19 +52854,19 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"DB6ENCbexgZg5DTfpGRep/tKqqEW7NVIlsRsCt2FUHc=\""
+          "Value": "W/\"CslHcfbQ9qvmuxz75FVQrE+GXgeQTc1vlWvrPzLz5Rg=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-DB6ENCbexgZg5DTfpGRep/tKqqEW7NVIlsRsCt2FUHc="
+          "Value": "sha256-CslHcfbQ9qvmuxz75FVQrE+GXgeQTc1vlWvrPzLz5Rg="
         }
       ]
     },
     {
       "Route": "_framework/NCATAIBlazorFrontendTest.Shared.wasm.gz",
-      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-0r05vbchyy.gz",
+      "AssetFile": "C:\\Users\\Rober\\source\\repos\\Recursor_Engine_vers2\\NCATAIBlazorFrontendTest\\Client\\obj\\Debug\\net8.0\\compressed\\0gpzvimwfr-euzidd30uy.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -52883,7 +52883,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "18433"
+          "Value": "19099"
         },
         {
           "Name": "Content-Type",
@@ -52891,7 +52891,7 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"PbNjo58oKO5PrFfFfwIGZpkQoq6re6Yt5DI/OGRk4E4=\""
+          "Value": "\"Bch1ddN0cMb5koTI39+6zG0e1Lm1WnjN6hMgL2FPqbo=\""
         },
         {
           "Name": "Last-Modified",
@@ -52905,7 +52905,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-PbNjo58oKO5PrFfFfwIGZpkQoq6re6Yt5DI/OGRk4E4="
+          "Value": "sha256-Bch1ddN0cMb5koTI39+6zG0e1Lm1WnjN6hMgL2FPqbo="
         }
       ]
     },
@@ -53116,7 +53116,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53169,7 +53169,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53253,7 +53253,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53306,7 +53306,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53390,7 +53390,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53443,7 +53443,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53527,7 +53527,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53580,7 +53580,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53664,7 +53664,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53717,7 +53717,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53801,7 +53801,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53854,7 +53854,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53938,7 +53938,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -53991,7 +53991,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54075,7 +54075,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54128,7 +54128,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54212,7 +54212,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54265,7 +54265,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54349,7 +54349,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54402,7 +54402,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54486,7 +54486,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54539,7 +54539,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54623,7 +54623,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54676,7 +54676,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54760,7 +54760,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54813,7 +54813,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54897,7 +54897,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -54950,7 +54950,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55034,7 +55034,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55087,7 +55087,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55171,7 +55171,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55224,7 +55224,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55308,7 +55308,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55361,7 +55361,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55445,7 +55445,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55498,7 +55498,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55582,7 +55582,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55635,7 +55635,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55719,7 +55719,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55772,7 +55772,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55856,7 +55856,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55909,7 +55909,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -55993,7 +55993,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56046,7 +56046,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56130,7 +56130,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56183,7 +56183,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56267,7 +56267,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56320,7 +56320,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56404,7 +56404,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56457,7 +56457,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56541,7 +56541,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56594,7 +56594,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56678,7 +56678,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56731,7 +56731,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56815,7 +56815,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56868,7 +56868,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -56952,7 +56952,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57005,7 +57005,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57089,7 +57089,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57142,7 +57142,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57226,7 +57226,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57279,7 +57279,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57363,7 +57363,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57416,7 +57416,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57500,7 +57500,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57553,7 +57553,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57637,7 +57637,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57690,7 +57690,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57774,7 +57774,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57827,7 +57827,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57911,7 +57911,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -57964,7 +57964,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -58048,7 +58048,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -58101,7 +58101,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -58185,7 +58185,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -58238,7 +58238,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -58733,7 +58733,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -58786,7 +58786,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -60103,7 +60103,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -60156,7 +60156,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -60514,7 +60514,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -60567,7 +60567,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -61747,7 +61747,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -61800,7 +61800,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -67364,7 +67364,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -67417,7 +67417,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -70789,7 +70789,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -70842,7 +70842,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -71200,7 +71200,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -71253,7 +71253,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -72570,7 +72570,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -72623,7 +72623,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -72707,7 +72707,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -72760,7 +72760,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -75173,7 +75173,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",
@@ -75226,7 +75226,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 13 Jun 2026 03:12:47 GMT"
+          "Value": "Sat, 13 Jun 2026 03:12:46 GMT"
         },
         {
           "Name": "Vary",

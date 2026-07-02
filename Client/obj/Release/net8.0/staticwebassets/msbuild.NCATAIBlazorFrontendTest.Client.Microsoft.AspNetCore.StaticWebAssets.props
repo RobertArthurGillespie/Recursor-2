@@ -7266,8 +7266,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>q5wub391us</Fingerprint>
-      <Integrity>TqVzleYe2LkfuLml1to6pPFmrC8pUr3RkKsHgbFcdOY=</Integrity>
+      <Fingerprint>53o32h2ku4</Fingerprint>
+      <Integrity>Tx3cxLN/Ip7nzrqKIGMI0hJIcK35egcAgj4CIsTveAk=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\images\users\avatar-1.jpg'))</OriginalItemSpec>

@@ -19,6 +19,9 @@ public class MedicalSupplySessionSummary
     public MedicalSupplyBehaviorSummary? BehaviorSummary { get; set; }
     public List<string> HypothesisLabels { get; set; } = [];
     public List<string> InterventionFamilies { get; set; } = [];
+    // Populated from Unity-provided CurrentSummary DTO; null when built from ADX.
+    public int? TotalErrors { get; set; }
+    public int? TotalActions { get; set; }
 }
 
 public class MedicalSupplyTrendDeltas
@@ -147,6 +150,8 @@ public static class MedicalSupplyDebriefHelper
                 usableSupplyRejected  = current.EventCounts.UsableSupplyRejected,
                 safetyErrors          = current.EventCounts.SafetyErrors,
                 successCount          = current.EventCounts.SuccessCount,
+                totalErrors           = current.TotalErrors,
+                totalActions          = current.TotalActions,
                 avgConfusion          = current.BehaviorSummary?.AvgConfusion,
                 avgSafetyCompliance   = current.BehaviorSummary?.AvgSafetyCompliance,
                 avgGoalUnderstanding  = current.BehaviorSummary?.AvgGoalUnderstanding,
@@ -278,8 +283,11 @@ Return valid JSON only — no markdown, no extra commentary — with exactly the
 
     public async Task<TrendAwareDebriefResponse> GenerateTrendAwareDebriefAsync(TrendAwareDebriefRequest request)
     {
-        var current = await BuildSessionSummaryAsync(
-            request.CurrentSessionId, request.PerformanceScore, request.ErrorsText);
+        var current = request.CurrentSummary is not null
+            ? await BuildSessionSummaryFromDtoAsync(
+                request.CurrentSummary, request.CurrentSessionId, request.PerformanceScore, request.ErrorsText)
+            : await BuildSessionSummaryAsync(
+                request.CurrentSessionId, request.PerformanceScore, request.ErrorsText);
 
         MedicalSupplySessionSummary? previous = null;
         if (request.IncludePreviousSession)
@@ -299,34 +307,84 @@ Return valid JSON only — no markdown, no extra commentary — with exactly the
         return await CallGptAsync(current, previous, deltas, overallTrend);
     }
 
-    // ── Session summary builder ───────────────────────────────────────────────
+    // ── Session summary builders ──────────────────────────────────────────────
 
-    private async Task<MedicalSupplySessionSummary> BuildSessionSummaryAsync(
-        string sessionId, double performanceScore, string errorsText)
+    // Builds the current-session summary from Unity-provided DTO counts, avoiding
+    // ADX raw-event and behavior queries that may not have data yet due to ingestion
+    // delay. Hypothesis labels and intervention families are best-effort only;
+    // failure to load them should never fail the debrief endpoint.
+    private async Task<MedicalSupplySessionSummary> BuildSessionSummaryFromDtoAsync(
+        MedicalSupplyCurrentSessionSummaryDto dto,
+        string sessionId,
+        double performanceScore,
+        string errorsText)
     {
-        var eventCounts     = await _debriefQuery.GetRawEventCountsAsync(sessionId);
-        var behaviorSummary = await _debriefQuery.GetBehaviorSummaryAsync(sessionId);
+        var eventCounts = new MedicalSupplyRawEventCounts
+        {
+            WrongBinErrors = dto.WrongBinErrors,
+            DamagedSupplyStocked = dto.DamagedSupplyStocked,
+            UsableSupplyRejected = dto.UsableSupplyRejected,
+            SafetyErrors = dto.SafetyErrors,
+            SuccessCount = dto.SuccessCount,
+        };
 
-        var hypothesisRows = await _recursorQuery.GetLatestHypothesisSetsAsync(sessionId, 3);
-        var hypothesisLabels = hypothesisRows
-            .SelectMany(r => MedicalSupplyDebriefHelper.ExtractHypothesisLabels(r.Hypotheses))
-            .Distinct()
-            .ToList();
+        MedicalSupplyBehaviorSummary? behaviorSummary = null;
 
-        var adaptationRows = await _recursorQuery.GetLatestAdaptationDecisionsAsync(sessionId, 1);
-        var interventionFamilies = adaptationRows
-            .SelectMany(r => MedicalSupplyDebriefHelper.ExtractJsonStringArray(r.InterventionFamilies))
-            .Distinct()
-            .ToList();
+        if (dto.AvgConfusion.HasValue
+            || dto.AvgSafetyCompliance.HasValue
+            || dto.AvgGoalUnderstanding.HasValue
+            || !string.IsNullOrWhiteSpace(dto.LatestState))
+        {
+            behaviorSummary = new MedicalSupplyBehaviorSummary
+            {
+                AvgConfusion = dto.AvgConfusion ?? 0,
+                AvgSafetyCompliance = dto.AvgSafetyCompliance ?? 0,
+                AvgGoalUnderstanding = dto.AvgGoalUnderstanding ?? 0,
+                DominantState = dto.LatestState ?? "",
+                WindowCount = 0,
+            };
+        }
+
+        // Best-effort enrichment. These should not be allowed to fail the debrief.
+        var hypothesisLabels = await TryGetHypothesisLabelsAsync(sessionId);
+        var interventionFamilies = await TryGetInterventionFamiliesAsync(sessionId);
 
         return new MedicalSupplySessionSummary
         {
-            SessionId            = sessionId,
-            PerformanceScore     = performanceScore,
-            ErrorsText           = errorsText,
-            EventCounts          = eventCounts,
-            BehaviorSummary      = behaviorSummary,
-            HypothesisLabels     = hypothesisLabels,
+            SessionId = sessionId,
+            PerformanceScore = performanceScore,
+            ErrorsText = errorsText,
+            EventCounts = eventCounts,
+            BehaviorSummary = behaviorSummary,
+            HypothesisLabels = hypothesisLabels,
+            InterventionFamilies = interventionFamilies,
+            TotalErrors = dto.TotalErrors,
+            TotalActions = dto.TotalActions,
+        };
+    }
+
+    private async Task<MedicalSupplySessionSummary> BuildSessionSummaryAsync(
+        string sessionId,
+        double performanceScore,
+        string errorsText)
+    {
+        // These debrief-specific ADX query methods already catch internally and
+        // return empty/null summaries when unavailable.
+        var eventCounts = await _debriefQuery.GetRawEventCountsAsync(sessionId);
+        var behaviorSummary = await _debriefQuery.GetBehaviorSummaryAsync(sessionId);
+
+        // Best-effort enrichment. These should not be allowed to fail the debrief.
+        var hypothesisLabels = await TryGetHypothesisLabelsAsync(sessionId);
+        var interventionFamilies = await TryGetInterventionFamiliesAsync(sessionId);
+
+        return new MedicalSupplySessionSummary
+        {
+            SessionId = sessionId,
+            PerformanceScore = performanceScore,
+            ErrorsText = errorsText,
+            EventCounts = eventCounts,
+            BehaviorSummary = behaviorSummary,
+            HypothesisLabels = hypothesisLabels,
             InterventionFamilies = interventionFamilies,
         };
     }
@@ -414,5 +472,47 @@ Return valid JSON only — no markdown, no extra commentary — with exactly the
             ConfidenceNote  = "Coaching narrative unavailable — please try again.",
             EvidenceSummary = evidence,
         };
+    }
+
+    private async Task<List<string>> TryGetHypothesisLabelsAsync(string sessionId)
+    {
+        try
+        {
+            var hypothesisRows = await _recursorQuery.GetLatestHypothesisSetsAsync(sessionId, 3);
+
+            return hypothesisRows
+                .SelectMany(r => MedicalSupplyDebriefHelper.ExtractHypothesisLabels(r.Hypotheses))
+                .Distinct()
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Could not load hypothesis labels for debrief session '{SessionId}'. Continuing without them.",
+                sessionId);
+
+            return [];
+        }
+    }
+
+    private async Task<List<string>> TryGetInterventionFamiliesAsync(string sessionId)
+    {
+        try
+        {
+            var adaptationRows = await _recursorQuery.GetLatestAdaptationDecisionsAsync(sessionId, 1);
+
+            return adaptationRows
+                .SelectMany(r => MedicalSupplyDebriefHelper.ExtractJsonStringArray(r.InterventionFamilies))
+                .Distinct()
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Could not load intervention families for debrief session '{SessionId}'. Continuing without them.",
+                sessionId);
+
+            return [];
+        }
     }
 }

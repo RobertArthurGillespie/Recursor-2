@@ -1252,8 +1252,8 @@ C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Clien
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\NCATAIBlazorFrontendTest.Client.pdb
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\ref\NCATAIBlazorFrontendTest.Client.dll
 C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\staticwebassets.upToDateCheck.txt
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\0gpzvimwfr-6asg0fwbsz.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\v88vaap3a2-mq4o55i74r.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\ka8mhffdbw-0sj3zq84zc.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\8glc2t5u1m-6c4k5ijad6.gz
-C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\1ouikicgtj-m4kvixj6yp.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\0gpzvimwfr-zmis54nrs2.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\v88vaap3a2-1vwvinjoxz.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\ka8mhffdbw-h7aoqstasq.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\8glc2t5u1m-hzqiubsf7t.gz
+C:\Users\Rober\source\repos\Recursor_Engine_vers2\NCATAIBlazorFrontendTest\Client\obj\Release\net8.0\compressed\1ouikicgtj-qxs28ybcc9.gz

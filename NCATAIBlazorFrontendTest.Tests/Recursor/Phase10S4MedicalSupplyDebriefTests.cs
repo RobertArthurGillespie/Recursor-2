@@ -393,6 +393,155 @@ public class Phase10S4MedicalSupplyDebriefTests
         Assert.IsType<BadRequestObjectResult>(result);
     }
 
+    // ── 8. CurrentSummary bypasses ADX raw-count query for current session ───
+
+    [Fact]
+    public async Task GenerateTrendAwareDebrief_WithCurrentSummary_BypassesAdxRawCountQuery()
+    {
+        const string currentId = "session-current-dto";
+
+        var fakeAdx = new FakeAdxDebriefQueryService { PreviousSessionIdToReturn = null };
+        var fakeRecursorQuery = new FakeAdxRecursorQueryService();
+
+        var request = new TrendAwareDebriefRequest
+        {
+            UserId           = "user-001",
+            SimId            = "medical-supply-stocking",
+            ScenarioId       = "basic-supply-room",
+            CurrentSessionId = currentId,
+            PerformanceScore = 0.80,
+            ErrorsText       = "One wrong bin.",
+            IncludePreviousSession = false,
+            CurrentSummary = new MedicalSupplyCurrentSessionSummaryDto
+            {
+                WrongBinErrors = 1,
+                SafetyErrors   = 0,
+                SuccessCount   = 12,
+                TotalErrors    = 1,
+                TotalActions   = 13,
+            },
+        };
+
+        var svc = new MedicalSupplyDebriefService(
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+
+        await svc.GenerateTrendAwareDebriefAsync(request);
+
+        Assert.DoesNotContain(currentId, fakeAdx.RawEventCountSessionIds);
+    }
+
+    [Fact]
+    public async Task GenerateTrendAwareDebrief_WithCurrentSummary_PreviousSessionStillQueriesAdx()
+    {
+        const string currentId  = "session-current-dto-2";
+        const string previousId = "session-previous-dto";
+
+        var fakeAdx = new FakeAdxDebriefQueryService();
+        var fakeRecursorQuery = new FakeAdxRecursorQueryService();
+
+        var request = new TrendAwareDebriefRequest
+        {
+            UserId            = "user-002",
+            SimId             = "medical-supply-stocking",
+            ScenarioId        = "basic-supply-room",
+            CurrentSessionId  = currentId,
+            PreviousSessionId = previousId,
+            IncludePreviousSession = true,
+            CurrentSummary = new MedicalSupplyCurrentSessionSummaryDto
+            {
+                WrongBinErrors = 2,
+                SafetyErrors   = 1,
+                SuccessCount   = 10,
+                TotalErrors    = 3,
+                TotalActions   = 13,
+            },
+        };
+
+        var svc = new MedicalSupplyDebriefService(
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+
+        await svc.GenerateTrendAwareDebriefAsync(request);
+
+        // Current session bypassed; previous session must still be queried.
+        Assert.DoesNotContain(currentId, fakeAdx.RawEventCountSessionIds);
+        Assert.Contains(previousId, fakeAdx.RawEventCountSessionIds);
+    }
+
+    [Fact]
+    public void BuildPromptPayload_WithTotalErrorsAndActions_IncludesThemInJson()
+    {
+        var current = Session("s-cur", wrongBin: 2, safetyErrors: 1, success: 8);
+        current.TotalErrors  = 5;
+        current.TotalActions = 20;
+        var deltas = new MedicalSupplyTrendDeltas { HasPreviousData = false };
+
+        var payload = MedicalSupplyDebriefHelper.BuildPromptPayload(current, null, deltas, "insufficient_data");
+        var json    = JsonSerializer.Serialize(payload);
+
+        Assert.Contains("totalErrors", json);
+        Assert.Contains("totalActions", json);
+        Assert.Contains("5", json);
+        Assert.Contains("20", json);
+    }
+
+    [Fact]
+    public async Task GenerateTrendAwareDebrief_NoCurrentSummary_FallsBackToAdxCurrentSession()
+    {
+        const string currentId = "session-adx-fallback";
+
+        var fakeAdx = new FakeAdxDebriefQueryService { PreviousSessionIdToReturn = null };
+        var fakeRecursorQuery = new FakeAdxRecursorQueryService();
+
+        var request = new TrendAwareDebriefRequest
+        {
+            UserId           = "user-003",
+            SimId            = "medical-supply-stocking",
+            ScenarioId       = "basic-supply-room",
+            CurrentSessionId = currentId,
+            IncludePreviousSession = false,
+            // CurrentSummary intentionally omitted.
+        };
+
+        var svc = new MedicalSupplyDebriefService(
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+
+        await svc.GenerateTrendAwareDebriefAsync(request);
+
+        Assert.Contains(currentId, fakeAdx.RawEventCountSessionIds);
+    }
+
+    [Fact]
+    public async Task GenerateTrendAwareDebrief_WithCurrentSummaryNoPreviousSession_ReturnsInsufficientData()
+    {
+        var fakeAdx = new FakeAdxDebriefQueryService { PreviousSessionIdToReturn = null };
+        var fakeRecursorQuery = new FakeAdxRecursorQueryService();
+
+        var request = new TrendAwareDebriefRequest
+        {
+            UserId           = "user-004",
+            SimId            = "medical-supply-stocking",
+            ScenarioId       = "basic-supply-room",
+            CurrentSessionId = "session-no-prev",
+            IncludePreviousSession = true,
+            CurrentSummary = new MedicalSupplyCurrentSessionSummaryDto
+            {
+                WrongBinErrors = 0,
+                SafetyErrors   = 0,
+                SuccessCount   = 15,
+                TotalErrors    = 0,
+                TotalActions   = 15,
+            },
+        };
+
+        var svc = new MedicalSupplyDebriefService(
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+
+        // GPT call fails in test environment → fallback response is returned.
+        var result = await svc.GenerateTrendAwareDebriefAsync(request);
+
+        Assert.Equal("insufficient_data", result.OverallTrend);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static RawEventRecord Event(string eventType) => new()
@@ -437,9 +586,13 @@ public class Phase10S4MedicalSupplyDebriefTests
         public string? PreviousSessionIdToReturn { get; set; }
         public string? LastExcludedSessionId { get; private set; }
         public bool GetPreviousSessionWasCalled { get; private set; }
+        public List<string> RawEventCountSessionIds { get; } = new();
 
         public Task<MedicalSupplyRawEventCounts> GetRawEventCountsAsync(string sessionId)
-            => Task.FromResult(new MedicalSupplyRawEventCounts());
+        {
+            RawEventCountSessionIds.Add(sessionId);
+            return Task.FromResult(new MedicalSupplyRawEventCounts());
+        }
 
         public Task<MedicalSupplyBehaviorSummary?> GetBehaviorSummaryAsync(string sessionId)
             => Task.FromResult<MedicalSupplyBehaviorSummary?>(null);
