@@ -25,6 +25,8 @@ public interface IAdxIngestionService
     Task IngestTemporalRiskPredictionAsync(TemporalRiskPredictionRow row);
     // Phase 10D-1
     Task IngestTemporalElevatedRiskPredictionAsync(TemporalElevatedRiskPredictionRow row);
+    // Phase 10E
+    Task IngestTemporalBehaviorStatePredictionAsync(TemporalBehaviorStatePredictionRow row);
 }
 
 public class AdxIngestionService : IAdxIngestionService
@@ -41,7 +43,7 @@ public class AdxIngestionService : IAdxIngestionService
         // GetService returns null when IKustoQueuedIngestClient is not registered
         // (i.e. Adx:ClusterUri is not configured). Services skip ADX calls with a warning.
         _ingestClient = services.GetService<IKustoQueuedIngestClient>();
-        _database = configuration["Adx:Database"] ?? "RecursorDb";
+        _database = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger = logger;
     }
 
@@ -804,6 +806,25 @@ public class AdxIngestionService : IAdxIngestionService
         await _ingestClient!.IngestFromDataReaderAsync(reader, props);
     }
 
+    public async Task IngestTemporalBehaviorStatePredictionAsync(TemporalBehaviorStatePredictionRow row)
+    {
+        if (!CheckClient("TemporalBehaviorStatePredictions")) return;
+
+        var table = BuildTemporalBehaviorStatePredictionsTable(row);
+        var props = new KustoQueuedIngestionProperties(_database, "TemporalBehaviorStatePredictions")
+        {
+            Format = DataSourceFormat.csv,
+            IngestionMapping = new IngestionMapping
+            {
+                IngestionMappingKind = IngestionMappingKind.Csv,
+                IngestionMappingReference = "TemporalBehaviorStatePredictionsCsvMapping"
+            }
+        };
+
+        using var reader = table.CreateDataReader();
+        await _ingestClient!.IngestFromDataReaderAsync(reader, props);
+    }
+
     // ── DataTable builders ────────────────────────────────────────────────────
 
     private static DataTable BuildTemporalRiskPredictionsTable(TemporalRiskPredictionRow row)
@@ -920,6 +941,41 @@ public class AdxIngestionService : IAdxIngestionService
             row.Confidence,
             row.ModelVersion,
             row.CreatedAtUtc);
+
+        return table;
+    }
+
+    private static DataTable BuildTemporalBehaviorStatePredictionsTable(TemporalBehaviorStatePredictionRow row)
+    {
+        var table = new DataTable("TemporalBehaviorStatePredictions");
+        table.Columns.Add("SessionId",              typeof(string));
+        table.Columns.Add("UserId",                 typeof(string));
+        table.Columns.Add("SimId",                  typeof(string));
+        table.Columns.Add("ScenarioId",              typeof(string));
+        table.Columns.Add("WindowIndex",             typeof(int));
+        table.Columns.Add("Horizon",                 typeof(int));
+        table.Columns.Add("PredictedBehaviorState",  typeof(string));
+        table.Columns.Add("Confidence",              typeof(double));
+        table.Columns.Add("ClassProbabilities",      typeof(string)); // dynamic — JSON object {label: probability}
+        table.Columns.Add("ModelVersion",            typeof(string));
+        table.Columns.Add("CreatedAtUtc",            typeof(DateTime));
+        // Stage 4 (corrective pass): appended last (ordinal 11) — additive schema change, keeps
+        // every existing ordinal stable for already-ingested rows and the CSV mapping.
+        table.Columns.Add("PredictionId",            typeof(string));
+
+        table.Rows.Add(
+            row.SessionId,
+            row.UserId,
+            row.SimId,
+            row.ScenarioId,
+            row.WindowIndex,
+            row.Horizon,
+            row.PredictedBehaviorState,
+            row.Confidence,
+            row.ClassProbabilities,
+            row.ModelVersion,
+            row.CreatedAtUtc,
+            row.PredictionId);
 
         return table;
     }

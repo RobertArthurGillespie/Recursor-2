@@ -4,9 +4,18 @@
 
 Before Phase 10D-4, the elevated-risk predictor always stamped `ModelVersion = "temporal-elevated-risk-v1"` on every prediction row, regardless of retraining. This made it impossible to tell which predictions came from which training run, and prevented any meaningful before/after comparison.
 
-Phase 10D-4 makes every training run produce a clearly versioned artifact (e.g. `temporal_elevated_risk_h1_v2.zip`) and stamps that version on all predictions emitted by the loaded model. A new analytics endpoint lets you query accuracy, precision, recall, and F1 split by model version so you can compare v1 vs v2 from real session data.
+Phase 10D-4 makes every training run produce a clearly versioned artifact and stamps that version on all predictions emitted by the loaded model. A new analytics endpoint lets you query accuracy, precision, recall, and F1 split by model version so you can compare v1 vs v2 from real session data.
 
 **Nothing in this phase changes adaptation behavior.** The elevated-risk predictor remains shadow-only.
+
+**Corrective-pass note:** this document originally described a flat-filename artifact convention
+(`temporal_elevated_risk_h{n}_{version}.zip`, one appsettings.json key per horizon). The trainer
+was later changed to publish immutable version directories instead
+(`versions/temporal-elevated-risk/{version}/h{n}.zip` + `manifest.json`), but the runtime path
+resolver was not updated to match — a freshly published version was silently unreachable by the
+running app. Both sides now agree on the version-directory layout; see
+`docs/recursor-model-versioning.md` for the shared contract (covers all three temporal model
+families: temporal-risk, elevated-risk, and behavior-state) and the corrected sections below.
 
 ---
 
@@ -21,10 +30,11 @@ POST /api/recursor/train-temporal-elevated-risk
 Uses the version configured in `appsettings.json` → `Recursor:Models:TemporalElevatedRiskModelVersion`
 (default: `temporal-elevated-risk-v1`).
 
-Model files saved to paths configured in `appsettings.json`:
-- `Recursor/TrainingModels/temporal_elevated_risk_h1_v1.zip`
-- `Recursor/TrainingModels/temporal_elevated_risk_h2_v1.zip`
-- `Recursor/TrainingModels/temporal_elevated_risk_h3_v1.zip`
+Artifacts are published atomically to:
+- `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v1/h1.zip`
+- `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v1/h2.zip`
+- `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v1/h3.zip`
+- `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v1/manifest.json`
 
 ### Training a new version (v2)
 
@@ -33,32 +43,41 @@ POST /api/recursor/train-temporal-elevated-risk?modelVersion=temporal-elevated-r
 ```
 
 - Only letters, numbers, dash, underscore, and dot are allowed in `modelVersion`.
-- The version suffix is extracted (`v2` from `temporal-elevated-risk-v2`).
-- Model files are saved to **new paths** that do not overwrite v1:
-  - `Recursor/TrainingModels/temporal_elevated_risk_h1_v2.zip`
-  - `Recursor/TrainingModels/temporal_elevated_risk_h2_v2.zip`
-  - `Recursor/TrainingModels/temporal_elevated_risk_h3_v2.zip`
+- An existing version is immutable — retraining the same `modelVersion` label is rejected;
+  choose a new label to train again. Artifacts are published to a **new** version directory
+  that never overwrites v1:
+  - `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v2/h1.zip`
+  - `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v2/h2.zip`
+  - `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v2/h3.zip`
+  - `Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v2/manifest.json`
 
-The training report includes `ModelVersion`, `GeneratedAtUtc`, and per-horizon metrics (accuracy, precision, recall, F1, FP, FN) for the test split.
+The training report includes `ModelVersion`, `GeneratedAtUtc`, and per-horizon metrics (accuracy, precision, recall, F1, FP, FN) for the validation split.
 
 ---
 
 ## How to configure the app to load v2
 
-After training v2 and verifying the model files exist, update `appsettings.json`:
+After training v2 and verifying the version directory + manifest exist, update `appsettings.json`:
 
 ```json
 "Recursor": {
   "Models": {
-    "TemporalElevatedRiskModelVersion": "temporal-elevated-risk-v2",
-    "TemporalElevatedRiskH1ModelPath": "Recursor/TrainingModels/temporal_elevated_risk_h1_v2.zip",
-    "TemporalElevatedRiskH2ModelPath": "Recursor/TrainingModels/temporal_elevated_risk_h2_v2.zip",
-    "TemporalElevatedRiskH3ModelPath": "Recursor/TrainingModels/temporal_elevated_risk_h3_v2.zip"
+    "TemporalElevatedRiskModelVersion": "temporal-elevated-risk-v2"
   }
 }
 ```
 
-Then **restart or redeploy** the app. `TemporalElevatedRiskPredictionService` loads models once at startup and stamps `LoadedModelVersion` on every prediction row for the lifetime of that process.
+That alone is sufficient — the runtime resolver derives the H1/H2/H3 paths from the version
+directory named by `TemporalElevatedRiskModelVersion`. (`TemporalElevatedRiskH1ModelPath` /
+`H2ModelPath` / `H3ModelPath` still exist as explicit-override escape hatches for non-standard
+deployments — see `docs/recursor-model-versioning.md` — but are not needed for the normal
+workflow.)
+
+Then **restart or redeploy** the app. At startup the app validates `temporal-elevated-risk-v2`'s
+`manifest.json` (family/version/completion/all three horizon artifacts present) and fails
+loudly if the directory exists but is inconsistent — it does not fail if nothing has been
+published yet for that version. `TemporalElevatedRiskPredictionService` loads models once at
+startup and stamps `LoadedModelVersion` on every prediction row for the lifetime of that process.
 
 ---
 
@@ -131,12 +150,14 @@ Do not compare training-set accuracy (from the training report) to live accuracy
 # 1. Train v2
 POST /api/recursor/train-temporal-elevated-risk?modelVersion=temporal-elevated-risk-v2
 
-# 2. Verify model files exist at:
-#    Server/Recursor/TrainingModels/temporal_elevated_risk_h1_v2.zip  (etc.)
+# 2. Verify the version directory + manifest exist:
+#    Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v2/
+#      h1.zip, h2.zip, h3.zip, manifest.json
 
-# 3. Update appsettings.json to point at v2 paths + set TemporalElevatedRiskModelVersion = temporal-elevated-risk-v2
+# 3. Update appsettings.json: TemporalElevatedRiskModelVersion = temporal-elevated-risk-v2
+#    (no per-horizon path keys needed)
 
-# 4. Restart/redeploy the app
+# 4. Restart/redeploy the app — startup validates the manifest and logs which version loaded
 
 # 5. Run validation sessions — the new model stamps v2 on all prediction rows
 
@@ -151,6 +172,11 @@ GET /api/recursor/dashboard/elevated-risk/model-comparison
 
 ---
 
-## v1 files remain intact
+## v1 artifacts remain intact
 
-Training v2 writes to `temporal_elevated_risk_h{1,2,3}_v2.zip`. The v1 `.zip` files at their configured paths are never touched. Reverting to v1 is as simple as pointing `appsettings.json` back at the v1 paths and restarting.
+Training v2 publishes an entirely separate version directory
+(`versions/temporal-elevated-risk/temporal-elevated-risk-v2/`). The v1 directory and its
+`manifest.json`/`.zip` files are never touched or overwritten — publishing is atomic and
+per-version-immutable. Reverting to v1 is as simple as pointing
+`TemporalElevatedRiskModelVersion` in `appsettings.json` back at
+`temporal-elevated-risk-v1` and restarting; no files need to be deleted or moved.

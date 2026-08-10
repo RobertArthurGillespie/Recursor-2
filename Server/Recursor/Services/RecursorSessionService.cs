@@ -127,6 +127,10 @@ public class RecursorSessionService : IRecursorSessionService
 
         session.Status = "ended";
         session.LastSeenAtUtc = DateTime.UtcNow;
+        // Drop any events buffered for a not-yet-triggered feature window so they cannot
+        // linger in memory for the (unbounded) remaining lifetime of the ended session.
+        session.PendingFeatureWindowEvents.Clear();
+        session.EventsSinceLastWindow = 0;
         _sessionRepository.Update(session);
         _logger.LogInformation("Session {SessionId} ended.", sessionId);
 

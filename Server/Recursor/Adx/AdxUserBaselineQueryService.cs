@@ -48,7 +48,7 @@ public class AdxUserBaselineQueryService : IAdxUserBaselineQueryService
     {
         // GetService returns null when ADX is not configured (no ClusterUri registered).
         _queryProvider = services.GetService<ICslQueryProvider>();
-        _database = configuration["Adx:Database"] ?? "RecursorDb";
+        _database = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger = logger;
     }
 

@@ -22,11 +22,13 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
     public class AzureOpenAiExplanationService : IExplanationGenerationService
     {
         private readonly ILogger<AzureOpenAiExplanationService> _logger;
+        private readonly IConfiguration _configuration;
         private static readonly HttpClient _httpClient = new();
 
-        public AzureOpenAiExplanationService(ILogger<AzureOpenAiExplanationService> logger)
+        public AzureOpenAiExplanationService(ILogger<AzureOpenAiExplanationService> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<GptExplanationResult?> GenerateExplanationAsync(
@@ -37,11 +39,20 @@ namespace NCATAIBlazorFrontendTest.Server.Recursor.Services
         {
             try
             {
-                var credential = new AzureKeyCredential("F8fFcrOkGNjJFbL710c19YIU6Vq1H0sP0ifcZ0bM4eAJvZwT4FxHJQQJ99BLACYeBjFXJ3w3AAABACOGhJoF");
-                var openAIClient = new AzureOpenAIClient(new Uri("https://manuscriptgenerator.openai.azure.com/"), credential);
+                var endpoint = _configuration["AzureOpenAi:ManuscriptGenerator:Endpoint"];
+                var key = _configuration["AzureOpenAi:ManuscriptGenerator:Key"];
+                if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(key))
+                {
+                    throw new InvalidOperationException(
+                        "Missing required configuration 'AzureOpenAi:ManuscriptGenerator:Endpoint'/'Key'. " +
+                        "Set via user-secrets locally or App Service configuration / Key Vault in deployed environments.");
+                }
+
+                var credential = new AzureKeyCredential(key);
+                var openAIClient = new AzureOpenAIClient(new Uri(endpoint), credential);
                 _httpClient.DefaultRequestHeaders.Clear();
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-                _httpClient.DefaultRequestHeaders.Add("api-key", "F8fFcrOkGNjJFbL710c19YIU6Vq1H0sP0ifcZ0bM4eAJvZwT4FxHJQQJ99BLACYeBjFXJ3w3AAABACOGhJoF");
+                _httpClient.DefaultRequestHeaders.Add("api-key", key);
                 _logger.LogWarning($"created client for sending chat message");
 
                 ChatClient client = openAIClient.GetChatClient("gpt-5.4-mini");

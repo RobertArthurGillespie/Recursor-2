@@ -63,6 +63,7 @@ public class UserProfilePhase6CTests
         public Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row) => Task.CompletedTask;
         public Task IngestTemporalRiskPredictionAsync(TemporalRiskPredictionRow row) => Task.CompletedTask;
         public Task IngestTemporalElevatedRiskPredictionAsync(TemporalElevatedRiskPredictionRow row) => Task.CompletedTask;
+        public Task IngestTemporalBehaviorStatePredictionAsync(TemporalBehaviorStatePredictionRow row) => Task.CompletedTask;
     }
 
     private static UserProfileUpdateService CreateUpdateService(IUserProfileRepository repo)

@@ -1,0 +1,83 @@
+// Phase 10E: TemporalBehaviorStatePredictions table and CSV ingestion mapping.
+// Stage 12 (corrective pass): rewritten to be SAFELY RERUNNABLE. Run against your RecursorDb
+// database in the ADX web UI or via Kusto CLI — running this script again (e.g. to pick up a
+// schema change) no longer fails or requires manually dropping the table first.
+//
+// Shadow-only, observability table. PredictedBehaviorState is multiclass over the
+// five canonical labels defined in Server/Recursor/Services/BehaviorStateLabelPolicy.cs
+// (struggling / recovering / stable / mastering / conflicted). Never used to gate or
+// modify adaptation decisions, guardrails, policy selection, or any sim parameter.
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+// .create-merge is idempotent: creates the table if absent, or adds any new columns to an
+// existing table without dropping data — unlike .create table, which fails if the table
+// already exists.
+
+.create-merge table TemporalBehaviorStatePredictions (
+    SessionId: string,
+    UserId: string,
+    SimId: string,
+    ScenarioId: string,
+    WindowIndex: int,
+    Horizon: int,
+    PredictedBehaviorState: string,
+    Confidence: real,
+    ClassProbabilities: dynamic,
+    ModelVersion: string,
+    CreatedAtUtc: datetime,
+    PredictionId: string
+)
+// Stage 4 (corrective pass): PredictionId is a deterministic hash of
+// (SessionId, WindowIndex, Horizon, ModelVersion) — see
+// BehaviorStatePredictionKeys.ComputePredictionId in Server/Recursor/Models/SessionModels.cs.
+// Appended as the last column so re-running this .create-merge against an already-populated
+// table only adds the new column — existing rows are untouched and will simply have an empty
+// PredictionId.
+//
+// Stage 6/9 (corrective pass): PredictionId is canonical identity for every row created after
+// this migration. Pre-migration rows may have a blank PredictionId — no backfill of those rows
+// is required, because every read path below (and every dashboard/evaluation query in
+// AdxDashboardQueryService.cs) reconstructs a legacy row's logical identity from the same
+// composite key (SessionId, WindowIndex, Horizon, ModelVersion) PredictionId itself hashes, via
+// the LogicalPredictionId fallback pattern used in the verification query below. This means a
+// blank PredictionId is safe to leave as-is: it does NOT cause legacy rows to collapse into one
+// logical prediction. A future optional backfill/migration could compute and write real
+// PredictionId values onto legacy rows to retire this compatibility path, but it is not required
+// now.
+
+// ── Ingestion policy: batch data into the table within 30 seconds ─────────────
+// .alter (not .create) is already idempotent — reapplying the same policy is a no-op.
+
+.alter table TemporalBehaviorStatePredictions policy ingestionbatching @'{"MaximumBatchingTimeSpan":"00:00:30","MaximumNumberOfItems":500}'
+
+// ── CSV ingestion mapping ─────────────────────────────────────────────────────
+// Ordinals match the column order produced by
+// AdxIngestionService.BuildTemporalBehaviorStatePredictionsTable — keep both in sync; a test
+// (Stage12CsvMappingSchemaTests.cs) snapshots this order and fails if they diverge.
+//
+// .create-or-alter is idempotent (replaces the mapping if it already exists, creates it
+// otherwise) — .create-table-ingestion-mapping fails if the mapping already exists.
+//
+// Mapping shape corrected to Kusto's actual CSV ingestion-mapping schema: lowercase "column"/
+// "datatype", with "Ordinal" nested under "Properties" — NOT a flat "Name"/"DataType"/"Ordinal"
+// object, which is not a schema Kusto's CSV mapping recognizes and would leave columns
+// unmapped at ingestion time.
+
+.create-or-alter table TemporalBehaviorStatePredictions ingestion csv mapping 'TemporalBehaviorStatePredictionsCsvMapping'
+'[{"column":"SessionId","datatype":"string","Properties":{"Ordinal":"0"}},{"column":"UserId","datatype":"string","Properties":{"Ordinal":"1"}},{"column":"SimId","datatype":"string","Properties":{"Ordinal":"2"}},{"column":"ScenarioId","datatype":"string","Properties":{"Ordinal":"3"}},{"column":"WindowIndex","datatype":"int","Properties":{"Ordinal":"4"}},{"column":"Horizon","datatype":"int","Properties":{"Ordinal":"5"}},{"column":"PredictedBehaviorState","datatype":"string","Properties":{"Ordinal":"6"}},{"column":"Confidence","datatype":"real","Properties":{"Ordinal":"7"}},{"column":"ClassProbabilities","datatype":"dynamic","Properties":{"Ordinal":"8"}},{"column":"ModelVersion","datatype":"string","Properties":{"Ordinal":"9"}},{"column":"CreatedAtUtc","datatype":"datetime","Properties":{"Ordinal":"10"}},{"column":"PredictionId","datatype":"string","Properties":{"Ordinal":"11"}}]'
+
+// ── Verification query ────────────────────────────────────────────────────────
+// Run after a few sessions to confirm rows are arriving.
+// ADX queued ingestion has a 5–30 second delay; allow time before checking.
+// Deduplicates defensively (Stage 7) by the deterministic PredictionId (Stage 4) — a
+// replayed/retried ingest, or a restart/multi-instance replay, must not inflate this count.
+// Stage 6/9: falls back to a legacy composite identity (SessionId, WindowIndex, Horizon,
+// ModelVersion) for pre-migration rows whose PredictionId is blank, so those rows still dedup
+// per-prediction instead of all collapsing into a single logical row. New rows (nonblank
+// PredictionId) are unaffected — LogicalPredictionId equals PredictionId for them.
+
+TemporalBehaviorStatePredictions
+| extend LogicalPredictionId = iif(isempty(PredictionId), strcat("legacy|", SessionId, "|", tostring(WindowIndex), "|", tostring(Horizon), "|", ModelVersion), PredictionId)
+| summarize arg_max(CreatedAtUtc, *) by LogicalPredictionId
+| summarize count() by Horizon, PredictedBehaviorState, ModelVersion
+| order by Horizon asc

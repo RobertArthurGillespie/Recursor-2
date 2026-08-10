@@ -26,9 +26,20 @@
         {
             <div class="alert alert-warning mt-2">@_comparisonError</div>
         }
-        else if (_comparisonRows is not null)
+        else if (_comparisonResult is not null && _comparisonResult.Status != DashboardQueryStatus.Success)
         {
-            @if (_comparisonRows.Count == 0)
+            <!-- Stage 7: a query failure is never rendered as "no data" — always a distinct, visible error state. -->
+            <div class="alert alert-danger mt-2">
+                <strong>@_comparisonResult.Status</strong>: @DescribeQueryStatus(_comparisonResult.Status)
+                @if (!string.IsNullOrEmpty(_comparisonResult.ErrorMessage))
+                {
+                    <div class="small mt-1">@_comparisonResult.ErrorMessage</div>
+                }
+            </div>
+        }
+        else if (_comparisonResult is not null)
+        {
+            @if (_comparisonResult.Rows.Count == 0)
             {
                 <p class="text-muted mt-2">No comparison data — train at least one model and run validation sessions to populate TemporalElevatedRiskPredictions.</p>
             }
@@ -51,7 +62,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var row in _comparisonRows)
+                            @foreach (var row in _comparisonResult.Rows)
                             {
                                 <tr>
                                     <td><code>@row.ModelVersion</code></td>
@@ -74,6 +85,211 @@
     }
 </div>
 
+<!-- ── Behavior-state model comparison (Phase 10E, shadow-only) ────────── -->
+<div class="mb-3">
+    <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleBehaviorStateComparison">
+        @(_showBehaviorStateComparison ? "Hide" : "Show") Behavior-State Temporal Prediction — Shadow-only behavior-state prediction
+    </button>
+    @if (_showBehaviorStateComparison)
+    {
+        <!-- Stage 7/11: simulation/scenario/model-version/horizon filters — never imply
+             predictions control adaptations. -->
+        <div class="d-flex flex-wrap align-items-center gap-3 mt-2 mb-1" style="font-size:0.85rem">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted">Simulation:</span>
+                <select class="form-select form-select-sm" style="width:auto" value="@_behaviorStateSimFilter" @onchange="OnBehaviorStateFilterChangedAsync">
+                    @foreach (var opt in BehaviorStateSimOptions)
+                    {
+                        <option value="@opt.Value">@opt.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted">Horizon:</span>
+                <select class="form-select form-select-sm" style="width:auto" value="@_behaviorStateHorizonFilter" @onchange="OnBehaviorStateHorizonFilterChangedAsync">
+                    @foreach (var opt in BehaviorStateHorizonOptions)
+                    {
+                        <option value="@opt.Value">@opt.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted">Scenario:</span>
+                <input class="form-control form-control-sm" style="width:160px" placeholder="all scenarios"
+                       value="@_behaviorStateScenarioFilter" @onchange="OnBehaviorStateScenarioFilterChangedAsync" />
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted">Model version:</span>
+                <input class="form-control form-control-sm" style="width:200px" placeholder="all versions"
+                       value="@_behaviorStateModelVersionFilter" @onchange="OnBehaviorStateModelVersionFilterChangedAsync" />
+            </div>
+        </div>
+
+        @if (_loadingBehaviorStateComparison)
+        {
+            <p class="mt-2"><em>Loading comparison...</em></p>
+        }
+        else if (_behaviorStateComparisonError is not null)
+        {
+            <div class="alert alert-warning mt-2">@_behaviorStateComparisonError</div>
+        }
+        else if (_behaviorStateComparisonResult is not null && _behaviorStateComparisonResult.Status != DashboardQueryStatus.Success)
+        {
+            <!-- Stage 11: a query failure is never rendered as "no data" — always a distinct, visible error state. -->
+            <div class="alert alert-danger mt-2">
+                <strong>@_behaviorStateComparisonResult.Status</strong>: @DescribeQueryStatus(_behaviorStateComparisonResult.Status)
+                @if (!string.IsNullOrEmpty(_behaviorStateComparisonResult.ErrorMessage))
+                {
+                    <div class="small mt-1">@_behaviorStateComparisonResult.ErrorMessage</div>
+                }
+            </div>
+        }
+        else if (_behaviorStateComparisonResult is not null)
+        {
+            @if (_behaviorStateComparisonResult.Rows.Count == 0)
+            {
+                <p class="text-muted mt-2">No comparison data for this filter — train a behavior-state model (POST /api/recursor/train-temporal-behavior-state), enable Recursor:Policies:EnableTemporalBehaviorStatePrediction, and run validation sessions to populate TemporalBehaviorStatePredictions.</p>
+            }
+            else
+            {
+                <p class="text-muted small mt-2 mb-1">
+                    <strong>Shadow-only behavior-state prediction.</strong> This panel is purely
+                    observational — it never controls adaptation decisions, guardrails, policy
+                    selection, hint behavior, difficulty, or time pressure.
+                </p>
+                @foreach (var group in _behaviorStateComparisonResult.Rows.GroupBy(r => (r.ModelVersion, r.Horizon)).OrderBy(g => g.Key.ModelVersion).ThenBy(g => g.Key.Horizon))
+                {
+                    var rows = group.ToList();
+                    var totalSupport = rows.Sum(r => r.SupportCount);
+                    var totalTruePositive = rows.Sum(r => r.TruePositive);
+                    var microAccuracy = totalSupport > 0 ? (double?)totalTruePositive / totalSupport : null;
+                    var macroF1 = rows.Count > 0 ? rows.Where(r => r.F1.HasValue).Select(r => r.F1!.Value).DefaultIfEmpty(0).Average() : (double?)null;
+
+                    <h6 class="mt-3"><code>@group.Key.ModelVersion</code> — H@group.Key.Horizon
+                        <span class="text-muted small">(MicroAccuracy: @FormatPct(microAccuracy), MacroF1: @FormatPct(macroF1))</span>
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered" style="font-size:0.82rem">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Class</th>
+                                    <th class="text-center">Support</th>
+                                    <th class="text-center">Predicted</th>
+                                    <th class="text-center">TP</th>
+                                    <th class="text-center">Precision</th>
+                                    <th class="text-center">Recall</th>
+                                    <th class="text-center">F1</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in rows.OrderBy(r => r.ClassLabel))
+                                {
+                                    <tr>
+                                        <td>@StateBadge(row.ClassLabel)</td>
+                                        <td class="text-center">@row.SupportCount</td>
+                                        <td class="text-center">@row.PredictedCount</td>
+                                        <td class="text-center">@row.TruePositive</td>
+                                        <td class="text-center">@FormatPct(row.Precision)</td>
+                                        <td class="text-center">@FormatPct(row.Recall)</td>
+                                        <td class="text-center">@FormatPct(row.F1)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        }
+
+        @if (_behaviorStateCoverageResult is not null && _behaviorStateCoverageResult.Status != DashboardQueryStatus.Success)
+        {
+            <div class="alert alert-danger mt-2">
+                <strong>@_behaviorStateCoverageResult.Status</strong>: @DescribeQueryStatus(_behaviorStateCoverageResult.Status)
+            </div>
+        }
+        else if (_behaviorStateCoverageResult is not null && _behaviorStateCoverageResult.Rows.Count > 0)
+        {
+            <h6 class="mt-3">Prediction coverage</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered" style="font-size:0.82rem">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ModelVersion</th>
+                            <th class="text-center">Horizon</th>
+                            <th class="text-center">Resolved</th>
+                            <th class="text-center">Pending</th>
+                            <th class="text-center">Missing target</th>
+                            <th class="text-center">Unknown target</th>
+                            <th class="text-center">Invalid target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var group in _behaviorStateCoverageResult.Rows.GroupBy(r => (r.ModelVersion, r.Horizon)).OrderBy(g => g.Key.ModelVersion).ThenBy(g => g.Key.Horizon))
+                        {
+                            <tr>
+                                <td><code>@group.Key.ModelVersion</code></td>
+                                <td class="text-center">H@group.Key.Horizon</td>
+                                <td class="text-center">@(group.FirstOrDefault(r => r.Coverage == "resolved")?.Count ?? 0)</td>
+                                <td class="text-center">@(group.FirstOrDefault(r => r.Coverage == "pending")?.Count ?? 0)</td>
+                                <td class="text-center">@(group.FirstOrDefault(r => r.Coverage == "missing-target")?.Count ?? 0)</td>
+                                <td class="text-center">@(group.FirstOrDefault(r => r.Coverage == "unknown-target")?.Count ?? 0)</td>
+                                <td class="text-center">@(group.FirstOrDefault(r => r.Coverage == "invalid-target")?.Count ?? 0)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small">"Missing target" = no target ever stamped for that window. "Unknown target" = the guardrail found no signal (not an error). "Invalid target" = an unrecognized label literal. None of these three are ever counted as an incorrect prediction. "Pending" = the target window hasn't happened yet.</p>
+        }
+
+        <!-- Stage 7: confusion matrix — actual (row) vs predicted (column) counts for the same
+             filtered selection as the panels above, using the five canonical classes. -->
+        @if (_behaviorStateConfusionMatrixResult is not null && _behaviorStateConfusionMatrixResult.Status != DashboardQueryStatus.Success)
+        {
+            <div class="alert alert-danger mt-2">
+                <strong>@_behaviorStateConfusionMatrixResult.Status</strong>: @DescribeQueryStatus(_behaviorStateConfusionMatrixResult.Status)
+            </div>
+        }
+        else if (_behaviorStateConfusionMatrixResult is not null && _behaviorStateConfusionMatrixResult.Rows.Count > 0)
+        {
+            @foreach (var group in _behaviorStateConfusionMatrixResult.Rows.GroupBy(r => (r.ModelVersion, r.Horizon)).OrderBy(g => g.Key.ModelVersion).ThenBy(g => g.Key.Horizon))
+            {
+                var cells = group.ToList();
+                var classes = BehaviorStateLabelPolicy.CanonicalLabels;
+                <h6 class="mt-3"><code>@group.Key.ModelVersion</code> — H@group.Key.Horizon confusion matrix
+                    <span class="text-muted small">(rows = actual, columns = predicted)</span>
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered text-center" style="font-size:0.78rem; max-width:520px">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Actual \ Predicted</th>
+                                @foreach (var predicted in classes)
+                                {
+                                    <th>@predicted</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var actual in classes)
+                            {
+                                <tr>
+                                    <th class="table-dark">@actual</th>
+                                    @foreach (var predicted in classes)
+                                    {
+                                        var count = cells.FirstOrDefault(c => c.ActualClass == actual && c.PredictedClass == predicted)?.Count ?? 0;
+                                        <td class="@(actual == predicted ? "table-success fw-bold" : count > 0 ? "table-warning" : "")">@count</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    }
+</div>
+
 @if (_loadingList)
 {
     <p><em>Loading recent sessions...</em></p>
@@ -82,13 +298,25 @@ else if (_listError is not null)
 {
     <div class="alert alert-warning">@_listError</div>
 }
-else if (_sessions is not null)
+else if (_sessionsResult is not null && _sessionsResult.Status != DashboardQueryStatus.Success)
 {
-    @if (_selectedTimeline is null)
+    <!-- Stage 7: an ADX failure must never render as "No sessions found" — always a distinct,
+         visible error state. -->
+    <div class="alert alert-danger">
+        <strong>@_sessionsResult.Status</strong>: @DescribeQueryStatus(_sessionsResult.Status)
+        @if (!string.IsNullOrEmpty(_sessionsResult.ErrorMessage))
+        {
+            <div class="small mt-1">@_sessionsResult.ErrorMessage</div>
+        }
+    </div>
+}
+else if (_sessionsResult is not null)
+{
+    @if (_selectedSessionId is null)
     {
         <!-- ── Recent sessions table ─────────────────────────── -->
-        <h5>Recent Sessions <span class="badge bg-secondary">@_sessions.Count</span></h5>
-        @if (_sessions.Count == 0)
+        <h5>Recent Sessions <span class="badge bg-secondary">@_sessionsResult.Rows.Count</span></h5>
+        @if (_sessionsResult.Rows.Count == 0)
         {
             <p class="text-muted">No sessions found in ADX. Run a session to populate data.</p>
         }
@@ -110,7 +338,7 @@ else if (_sessions is not null)
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var s in _sessions)
+                        @foreach (var s in _sessionsResult.Rows)
                         {
                             <tr>
                                 <td><code>@Truncate(s.SessionId, 12)</code></td>
@@ -149,9 +377,41 @@ else if (_sessions is not null)
         {
             <div class="alert alert-warning">@_timelineError</div>
         }
+        else if (_selectedTimelineResult is not null && _selectedTimelineResult.Status != DashboardQueryStatus.Success)
+        {
+            <!-- Stage 7: a query failure is never rendered as "no prediction data exists" —
+                 always a distinct, visible diagnostic state, never a silent empty timeline. -->
+            <div class="alert alert-danger">
+                <strong>@_selectedTimelineResult.Status</strong>: @DescribeQueryStatus(_selectedTimelineResult.Status)
+                @if (!string.IsNullOrEmpty(_selectedTimelineResult.ErrorMessage))
+                {
+                    <div class="small mt-1">@_selectedTimelineResult.ErrorMessage</div>
+                }
+            </div>
+        }
+        else if (_selectedTimelineResult is null || _selectedTimelineResult.Value is null)
+        {
+            <!-- The query succeeded and genuinely found nothing for this session. -->
+            <p class="text-muted">No prediction data exists for this session yet.</p>
+        }
         else
         {
-            var t = _selectedTimeline;
+            var t = _selectedTimelineResult.Value;
+
+            @if (_availableBehaviorStateVersions.Count > 1)
+            {
+                <!-- Stage 7: explicit model-version selector — mirrors the pattern already used
+                     by RecursorSimSessionDetail.razor's session-detail page. -->
+                <div class="d-flex align-items-center gap-2 mb-2" style="font-size:0.85rem">
+                    <span class="text-muted">Behavior-state model version:</span>
+                    <select class="form-select form-select-sm" style="width:auto" value="@t.SelectedBehaviorStateModelVersion" @onchange="OnBehaviorStateVersionChangedAsync">
+                        @foreach (var v in _availableBehaviorStateVersions)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            }
 
             <!-- Summary cards -->
             <div class="row g-2 mb-3">
@@ -197,6 +457,24 @@ else if (_sessions is not null)
                         <div class="text-muted small">H3 Accuracy (+3 windows)</div>
                     </div>
                 </div>
+                <div class="col-6 col-md-4">
+                    <div class="card text-center py-2">
+                        <div class="fs-5 fw-bold">@FormatPct(t.H1BehaviorStateAccuracy)</div>
+                        <div class="text-muted small">H1 Behavior-State Accuracy (shadow-only)</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="card text-center py-2">
+                        <div class="fs-5 fw-bold">@FormatPct(t.H2BehaviorStateAccuracy)</div>
+                        <div class="text-muted small">H2 Behavior-State Accuracy (shadow-only)</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="card text-center py-2">
+                        <div class="fs-5 fw-bold">@FormatPct(t.H3BehaviorStateAccuracy)</div>
+                        <div class="text-muted small">H3 Behavior-State Accuracy (shadow-only)</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Timeline table -->
@@ -219,6 +497,9 @@ else if (_sessions is not null)
                             <th>H1 Pred/Target</th>
                             <th>H2 Pred/Target</th>
                             <th>H3 Pred/Target</th>
+                            <th>H1 State (shadow)</th>
+                            <th>H2 State (shadow)</th>
+                            <th>H3 State (shadow)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -298,6 +579,9 @@ else if (_sessions is not null)
                                 <td>@HorizonCell(w, 1)</td>
                                 <td>@HorizonCell(w, 2)</td>
                                 <td>@HorizonCell(w, 3)</td>
+                                <td>@BehaviorStateHorizonCell(w, 1)</td>
+                                <td>@BehaviorStateHorizonCell(w, 2)</td>
+                                <td>@BehaviorStateHorizonCell(w, 3)</td>
                             </tr>
                         }
                     </tbody>
@@ -309,7 +593,8 @@ else if (_sessions is not null)
                 Risk = trajectory near-term risk &bull; Seq = sequence window count &bull;
                 Vol = volatility &bull; Mom = momentum &bull;
                 Coach / Explanation = click to expand detected patterns and GPT explanation (older rows may be blank) &bull;
-                H1/H2/H3 = temporal prediction horizon vs observed target (✓ correct / ✗ wrong / — not yet available)
+                H1/H2/H3 Pred/Target = near-term-risk temporal prediction horizon vs observed target (✓ correct / ✗ wrong / — not yet available) &bull;
+                H1/H2/H3 State (shadow) = Phase 10E shadow-only behavior-state prediction vs eventual outcome — observational only, never controls adaptation
             </p>
         }
     }
@@ -318,24 +603,61 @@ else if (_sessions is not null)
 @code {
     private bool _loadingList = true;
     private bool _loadingTimeline = false;
-    private List<DashboardSessionSummaryDto>? _sessions;
-    private SessionTimelineDto? _selectedTimeline;
+    // Stage 7: typed results (Status + Rows/Value) instead of bare lists/objects, so a query
+    // failure can be rendered as a distinct diagnostic state instead of silently as "no data".
+    private DashboardQueryResult<DashboardSessionSummaryDto>? _sessionsResult;
+    private DashboardSingleQueryResult<SessionTimelineDto>? _selectedTimelineResult;
     private string? _selectedSessionId;
     private string? _listError;
     private string? _timelineError;
+    // Stage 7: model-version selector for the currently-open session's behavior-state
+    // predictions — mirrors the pattern already used by RecursorSimSessionDetail.razor.
+    private List<string> _availableBehaviorStateVersions = [];
 
     // Phase 10D-4: model comparison panel state
     private bool _showModelComparison = false;
     private bool _loadingComparison = false;
-    private List<ElevatedRiskModelComparisonRow>? _comparisonRows;
+    private DashboardQueryResult<ElevatedRiskModelComparisonRow>? _comparisonResult;
     private string? _comparisonError;
+
+    // Phase 10E: behavior-state model comparison panel state (shadow-only)
+    private bool _showBehaviorStateComparison = false;
+    private bool _loadingBehaviorStateComparison = false;
+    private DashboardQueryResult<BehaviorStateModelComparisonRow>? _behaviorStateComparisonResult;
+    private DashboardQueryResult<BehaviorStateCoverageRow>? _behaviorStateCoverageResult;
+    private DashboardQueryResult<BehaviorStateConfusionMatrixCell>? _behaviorStateConfusionMatrixResult;
+    private string? _behaviorStateComparisonError;
+
+    // Stage 11: simulation filter — "all" | "sim-training-v1" (original test sim) |
+    // "medical-supply-stocking". Stage 7 adds scenario/model-version/horizon filters
+    // alongside it — all four re-fetch comparison, coverage, and confusion-matrix together.
+    private string _behaviorStateSimFilter = "all";
+    private string _behaviorStateScenarioFilter = "";
+    private string _behaviorStateModelVersionFilter = "";
+    private string _behaviorStateHorizonFilter = "";
+    private static readonly (string Value, string Label)[] BehaviorStateSimOptions =
+    {
+        ("all", "All simulations"),
+        ("sim-training-v1", "Original test simulation"),
+        ("medical-supply-stocking", "medical-supply-stocking"),
+    };
+    private static readonly (string Value, string Label)[] BehaviorStateHorizonOptions =
+    {
+        ("", "All horizons"),
+        ("1", "H1"),
+        ("2", "H2"),
+        ("3", "H3"),
+    };
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            _sessions = await Http.GetFromJsonAsync<List<DashboardSessionSummaryDto>>(
-                "api/recursor/dashboard/recent-sessions") ?? [];
+            // Stage 7: typed result — a query failure (ServiceUnavailable/AuthorizationFailed/
+            // SchemaMissing/QueryFailed) must render as a distinct error state, never silently
+            // as "No sessions found."
+            _sessionsResult = await Http.GetFromJsonAsync<DashboardQueryResult<DashboardSessionSummaryDto>>(
+                "api/recursor/dashboard/recent-sessions");
         }
         catch (Exception ex)
         {
@@ -350,14 +672,52 @@ else if (_sessions is not null)
     private async Task LoadTimeline(string sessionId)
     {
         _selectedSessionId = sessionId;
-        _selectedTimeline  = null;
+        _selectedTimelineResult = null;
         _timelineError     = null;
         _loadingTimeline   = true;
+        _availableBehaviorStateVersions = [];
 
         try
         {
-            _selectedTimeline = await Http.GetFromJsonAsync<SessionTimelineDto>(
-                $"api/recursor/dashboard/session/{Uri.EscapeDataString(sessionId)}");
+            var versionsResult = await Http.GetFromJsonAsync<DashboardQueryResult<string>>(
+                $"api/recursor/dashboard/session/{Uri.EscapeDataString(sessionId)}/behavior-state-model-versions");
+            _availableBehaviorStateVersions = versionsResult?.Rows.Where(v => !string.IsNullOrEmpty(v)).ToList() ?? [];
+
+            await LoadTimelineForVersionAsync(sessionId, behaviorStateModelVersion: null);
+        }
+        catch (Exception ex)
+        {
+            _timelineError = $"Could not load timeline: {ex.Message}";
+        }
+        finally
+        {
+            _loadingTimeline = false;
+        }
+    }
+
+    private async Task LoadTimelineForVersionAsync(string sessionId, string? behaviorStateModelVersion)
+    {
+        var url = $"api/recursor/dashboard/session/{Uri.EscapeDataString(sessionId)}";
+        if (!string.IsNullOrEmpty(behaviorStateModelVersion))
+            url += $"?behaviorStateModelVersion={Uri.EscapeDataString(behaviorStateModelVersion)}";
+
+        var response = await Http.GetAsync(url);
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _selectedTimelineResult = new DashboardSingleQueryResult<SessionTimelineDto> { Status = DashboardQueryStatus.Success, Value = null };
+            return;
+        }
+        response.EnsureSuccessStatusCode();
+        _selectedTimelineResult = await response.Content.ReadFromJsonAsync<DashboardSingleQueryResult<SessionTimelineDto>>();
+    }
+
+    private async Task OnBehaviorStateVersionChangedAsync(ChangeEventArgs e)
+    {
+        if (_selectedSessionId is null) return;
+        _loadingTimeline = true;
+        try
+        {
+            await LoadTimelineForVersionAsync(_selectedSessionId, e.Value?.ToString());
         }
         catch (Exception ex)
         {
@@ -371,7 +731,7 @@ else if (_sessions is not null)
 
     private void ClearTimeline()
     {
-        _selectedTimeline  = null;
+        _selectedTimelineResult = null;
         _selectedSessionId = null;
         _timelineError     = null;
     }
@@ -379,7 +739,7 @@ else if (_sessions is not null)
     private async Task ToggleModelComparison()
     {
         _showModelComparison = !_showModelComparison;
-        if (_showModelComparison && _comparisonRows is null)
+        if (_showModelComparison && _comparisonResult is null)
             await LoadModelComparison();
     }
 
@@ -389,8 +749,8 @@ else if (_sessions is not null)
         _comparisonError   = null;
         try
         {
-            _comparisonRows = await Http.GetFromJsonAsync<List<ElevatedRiskModelComparisonRow>>(
-                "api/recursor/dashboard/elevated-risk/model-comparison") ?? [];
+            _comparisonResult = await Http.GetFromJsonAsync<DashboardQueryResult<ElevatedRiskModelComparisonRow>>(
+                "api/recursor/dashboard/elevated-risk/model-comparison");
         }
         catch (Exception ex)
         {
@@ -401,6 +761,85 @@ else if (_sessions is not null)
             _loadingComparison = false;
         }
     }
+
+    private async Task ToggleBehaviorStateComparison()
+    {
+        _showBehaviorStateComparison = !_showBehaviorStateComparison;
+        if (_showBehaviorStateComparison && _behaviorStateComparisonResult is null)
+            await LoadBehaviorStateComparison();
+    }
+
+    private async Task OnBehaviorStateFilterChangedAsync(ChangeEventArgs e)
+    {
+        _behaviorStateSimFilter = e.Value?.ToString() ?? "all";
+        await LoadBehaviorStateComparison();
+    }
+
+    private async Task OnBehaviorStateScenarioFilterChangedAsync(ChangeEventArgs e)
+    {
+        _behaviorStateScenarioFilter = e.Value?.ToString() ?? "";
+        await LoadBehaviorStateComparison();
+    }
+
+    private async Task OnBehaviorStateModelVersionFilterChangedAsync(ChangeEventArgs e)
+    {
+        _behaviorStateModelVersionFilter = e.Value?.ToString() ?? "";
+        await LoadBehaviorStateComparison();
+    }
+
+    private async Task OnBehaviorStateHorizonFilterChangedAsync(ChangeEventArgs e)
+    {
+        _behaviorStateHorizonFilter = e.Value?.ToString() ?? "";
+        await LoadBehaviorStateComparison();
+    }
+
+    // Stage 7: builds the shared query string for all three behavior-state evaluation panels
+    // (comparison / coverage / confusion matrix) from the current filter selections — "all"
+    // simulations and blank scenario/model-version/horizon mean "do not filter on this field".
+    private string BuildBehaviorStateFilterQuery()
+    {
+        var parts = new List<string> { $"simId={Uri.EscapeDataString(_behaviorStateSimFilter)}" };
+        if (!string.IsNullOrWhiteSpace(_behaviorStateScenarioFilter))
+            parts.Add($"scenarioId={Uri.EscapeDataString(_behaviorStateScenarioFilter)}");
+        if (!string.IsNullOrWhiteSpace(_behaviorStateModelVersionFilter))
+            parts.Add($"modelVersion={Uri.EscapeDataString(_behaviorStateModelVersionFilter)}");
+        if (!string.IsNullOrWhiteSpace(_behaviorStateHorizonFilter))
+            parts.Add($"horizon={Uri.EscapeDataString(_behaviorStateHorizonFilter)}");
+        return string.Join("&", parts);
+    }
+
+    private async Task LoadBehaviorStateComparison()
+    {
+        _loadingBehaviorStateComparison = true;
+        _behaviorStateComparisonError   = null;
+        try
+        {
+            var query = BuildBehaviorStateFilterQuery();
+            _behaviorStateComparisonResult = await Http.GetFromJsonAsync<DashboardQueryResult<BehaviorStateModelComparisonRow>>(
+                $"api/recursor/dashboard/behavior-state/model-comparison?{query}");
+            _behaviorStateCoverageResult = await Http.GetFromJsonAsync<DashboardQueryResult<BehaviorStateCoverageRow>>(
+                $"api/recursor/dashboard/behavior-state/coverage?{query}");
+            _behaviorStateConfusionMatrixResult = await Http.GetFromJsonAsync<DashboardQueryResult<BehaviorStateConfusionMatrixCell>>(
+                $"api/recursor/dashboard/behavior-state/confusion-matrix?{query}");
+        }
+        catch (Exception ex)
+        {
+            _behaviorStateComparisonError = $"Could not load behavior-state comparison: {ex.Message}";
+        }
+        finally
+        {
+            _loadingBehaviorStateComparison = false;
+        }
+    }
+
+    private static string DescribeQueryStatus(DashboardQueryStatus status) => status switch
+    {
+        DashboardQueryStatus.ServiceUnavailable  => "ADX is not configured in this environment — no data source available.",
+        DashboardQueryStatus.AuthorizationFailed => "The query was rejected on authorization grounds — check ADX permissions.",
+        DashboardQueryStatus.SchemaMissing       => "A table or column this query depends on does not exist — has the ADX setup script been run?",
+        DashboardQueryStatus.QueryFailed         => "The query failed to execute.",
+        _ => "Unknown error.",
+    };
 
     // ── Display helpers ───────────────────────────────────────────────────────
 
@@ -415,18 +854,27 @@ else if (_sessions is not null)
 
     private static string FormatPct(double v) => $"{v:P0}";
 
-    private static string StateRowClass(string state) => state switch
+    // Stage 5 (corrective pass): normalizes through BehaviorStateLabelPolicy (trim/case/alias)
+    // before matching, instead of an exact-string switch — "Struggling", " struggling ", and
+    // "struggling" must all resolve to the same row class, and "steady" must resolve the same
+    // as "stable".
+    private static string StateRowClass(string state)
     {
-        "struggling"  => "table-danger",
-        "recovering"  => "table-warning",
-        "mastering"   => "table-success",
-        "conflicted"  => "table-secondary",
-        _             => ""
-    };
+        var canonical = BehaviorStateLabelPolicy.Normalize(state).CanonicalLabel;
+        return canonical switch
+        {
+            "struggling"  => "table-danger",
+            "recovering"  => "table-warning",
+            "mastering"   => "table-success",
+            "conflicted"  => "table-secondary",
+            _             => ""
+        };
+    }
 
     private static MarkupString StateBadge(string state)
     {
-        var cls = state switch
+        var canonical = BehaviorStateLabelPolicy.Normalize(state).CanonicalLabel ?? state;
+        var cls = canonical switch
         {
             "struggling"  => "bg-danger",
             "recovering"  => "bg-warning text-dark",
@@ -435,7 +883,7 @@ else if (_sessions is not null)
             "conflicted"  => "bg-secondary",
             _             => "bg-light text-dark"
         };
-        return (MarkupString)$"<span class=\"badge {cls}\">{state}</span>";
+        return (MarkupString)$"<span class=\"badge {cls}\">{canonical}</span>";
     }
 
     private static MarkupString RiskBadge(string risk)
@@ -482,6 +930,35 @@ else if (_sessions is not null)
 
         var predLabel  = pred   is not null ? RiskBadgeHtml(pred.PredictedNearTermRisk)   : "—";
         var targetLabel = target is not null ? RiskBadgeHtml(target.TargetNearTermRisk) : "?";
+        var correctIcon = correct switch
+        {
+            true  => "<span class=\"text-success fw-bold\">✓</span>",
+            false => "<span class=\"text-danger fw-bold\">✗</span>",
+            null  => "<span class=\"text-muted\">—</span>"
+        };
+
+        return (MarkupString)$"{predLabel}&rarr;{targetLabel} {correctIcon}";
+    }
+
+    private static MarkupString BehaviorStateHorizonCell(WindowTimelineDto w, int horizon)
+    {
+        var pred   = w.BehaviorStatePredictions.FirstOrDefault(p => p.Horizon == horizon);
+        var target = w.TemporalPredictionTargets.FirstOrDefault(t => t.Horizon == horizon);
+        var correct = horizon == 1 ? w.H1BehaviorStateCorrect
+                    : horizon == 2 ? w.H2BehaviorStateCorrect
+                    :                w.H3BehaviorStateCorrect;
+
+        if (pred is null && target is null)
+            return (MarkupString)"<span class=\"text-muted\">—</span>";
+
+        var predLabel = pred is not null ? StateBadge(pred.PredictedBehaviorState).Value : "—";
+        // Stage 5 (corrective pass): resolves through the same BehaviorStateLabelPolicy the
+        // server-side correctness calculation (DashboardTimelineBuilder.ComputeBehaviorStateCorrectness)
+        // already uses, instead of a separate `!= "unknown"` check — so the label shown here and
+        // the ✓/✗ correctness icon next to it can never disagree about what counts as "pending".
+        var targetLabel = BehaviorStateLabelPolicy.Normalize(target?.TargetBehaviorState).IsTrainable
+            ? StateBadge(target!.TargetBehaviorState).Value
+            : "<span class=\"text-muted\">pending</span>";
         var correctIcon = correct switch
         {
             true  => "<span class=\"text-success fw-bold\">✓</span>",

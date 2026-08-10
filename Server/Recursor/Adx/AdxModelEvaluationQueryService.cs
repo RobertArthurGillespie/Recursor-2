@@ -38,7 +38,7 @@ public class AdxModelEvaluationQueryService : IAdxModelEvaluationQueryService
     {
         // GetService returns null when ADX is not configured (no ClusterUri).
         _queryProvider = services.GetService<ICslQueryProvider>();
-        _database = configuration["Adx:Database"] ?? "RecursorDb";
+        _database = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger = logger;
     }
 

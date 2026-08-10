@@ -1,0 +1,96 @@
+@page "/recursor-users"
+@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Authorization
+@using NCATAIBlazorFrontendTest.Shared
+@inject HttpClient Http
+
+<PageTitle>Users</PageTitle>
+
+<h2 class="mb-4">User Registry</h2>
+
+@if (_loading)
+{
+    <p><em>Loading users...</em></p>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-warning">@_error</div>
+}
+else if (_users is not null)
+{
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">User ID</th>
+                            <th class="text-center">Sessions</th>
+                            <th class="text-center">Scenarios</th>
+                            <th class="text-center">Windows</th>
+                            <th class="text-center">Raw Events</th>
+                            <th class="text-center">Adaptations</th>
+                            <th class="text-center">Avg Confusion</th>
+                            <th class="text-center">Avg Goal</th>
+                            <th class="text-center">Avg Hint</th>
+                            <th>Last Active</th>
+                            <th class="pe-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in _users)
+                        {
+                            <tr>
+                                <td class="ps-3"><code>@user.UserId</code></td>
+                                <td class="text-center">@user.SessionCount</td>
+                                <td class="text-center">@user.ScenarioCount</td>
+                                <td class="text-center">@user.WindowCount</td>
+                                <td class="text-center">@user.RawEventCount</td>
+                                <td class="text-center">@user.AdaptationCount</td>
+                                <td class="text-center">@FormatScore(user.AvgConfusionScore)</td>
+                                <td class="text-center">@FormatScore(user.AvgGoalUnderstanding)</td>
+                                <td class="text-center">@FormatScore(user.AvgHintDependenceScore)</td>
+                                <td>@user.LastSeenUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="pe-3 text-end">
+                                    <a href="/profile/@Uri.EscapeDataString(user.UserId)"
+                                       class="btn btn-sm btn-primary fw-semibold">
+                                        View Profile
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (_users.Count == 0)
+            {
+                <p class="text-muted p-3 mb-0">No users found in ADX.</p>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private List<SimExplorerUserSummaryDto>? _users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _users = await Http.GetFromJsonAsync<List<SimExplorerUserSummaryDto>>(
+                "api/recursor/sim-explorer/users") ?? [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load users: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatScore(double? v) => v.HasValue ? v.Value.ToString("F2") : "—";
+}

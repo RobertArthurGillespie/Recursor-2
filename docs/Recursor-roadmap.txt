@@ -105,7 +105,7 @@ PHASE 10A — SEQUENCE-AWARE FEATURES (COMPLETE)
 - Near-term risk classification
 - ADX ingestion + API exposure
 
-PHASE 10B — TEMPORAL EMBEDDINGS (NEXT)
+PHASE 10B — TEMPORAL EMBEDDINGS (COMPLETE)
 - Fixed-length embedding vector per window
 - Combines:
   - current state
@@ -117,15 +117,59 @@ PHASE 10B — TEMPORAL EMBEDDINGS (NEXT)
 - Training targets stored in TemporalPredictionTargets table
 - No deep learning yet
 
-PHASE 10C — TEMPORAL PREDICTION MODELS (FUTURE)
-- Train models on embedding + target tables
-- Predict:
-  - next behavior state
-  - next-N window trajectory
-- Potential models:
-  - LSTM / RNN
-  - Transformer encoder
-- Introduce trajectory-aware adaptation
+PHASE 10C — TEMPORAL PREDICTION MODELS (COMPLETE)
+- 10C-2: baseline 3-class (low/medium/high) SdcaMaximumEntropy model, all 3 horizons
+- Stored in TemporalRiskPredictions table
+- Shadow-only; no deep learning
+
+PHASE 10D — ELEVATED-RISK BINARY PREDICTOR (COMPLETE)
+- 10D-1: binary (low/elevated) SdcaMaximumEntropy model, all 3 horizons
+- 10D-4: model artifact versioning + /elevated-risk/model-comparison dashboard endpoint
+- Stored in TemporalElevatedRiskPredictions table; shadow-only
+
+PHASE 10E — BEHAVIOR-STATE TEMPORAL PREDICTOR
+Status: Implementation complete; live ADX audit, immutable model training,
+medical-supply prediction validation, and cross-simulation validation pending.
+Do not read this phase as fully validated — see "Next steps" below.
+- Multiclass (struggling/recovering/stable/mastering/conflicted) SdcaMaximumEntropy
+  model, all 3 horizons — first trainer to consume TargetBehaviorState
+- Centralized BehaviorStateLabelPolicy (now in the Shared project so both Server and
+  the Blazor dashboard client reference the exact same rules): distinguishes Missing
+  (blank) from NoSignal ("unknown") from Invalid; no fabricated labels; canonical set
+  unchanged from the existing MultiSignalGuardrailService vocabulary ("stable", not
+  "steady"). TemporalEmbeddingService.BuildPredictionTargets normalizes through this
+  policy before persisting TargetBehaviorState, and the dashboard's target-label
+  rendering goes through the same policy instead of its own ad-hoc check.
+- Session-level, grouped-stratified (by dominant label and SimId) train/validation
+  split — not random row splitting. Explicit coverage reporting: classes/simulations
+  absent from either side of the split are surfaced via CrossSimulationValidationStatus
+  (Passed / InsufficientCoverage / NotApplicable) and recorded in the model manifest —
+  combined metrics are never described as cross-simulation-validated when coverage is
+  incomplete.
+- Stored in TemporalBehaviorStatePredictions table, including per-class probabilities
+  and a deterministic PredictionId (hash of SessionId+WindowIndex+Horizon+ModelVersion)
+  for durable logical dedup across restarts/multi-instance replay — see
+  docs/recursor-model-versioning.md.
+- Model artifacts published as immutable version directories
+  (Recursor/TrainingModels/versions/temporal-behavior-state/{version}/h{n}.zip +
+  manifest.json), resolved by the runtime loader via the same layout the publisher
+  writes to (previously these diverged — a published version was unreachable by the
+  runtime resolver — see docs/recursor-model-versioning.md).
+- Runtime inference gated by Recursor:Policies:EnableTemporalBehaviorStatePrediction
+  (default false); dashboard model-comparison + coverage + confusion-matrix endpoints
+  with simulation/scenario/model-version/horizon filtering; session timeline columns
+  clearly labeled "shadow". A real end-to-end pipeline regression test confirms
+  adaptation output (parameter changes, hint mode, difficulty, time pressure, error
+  tolerance, guardrail decisions) is byte-for-byte identical whether this flag is on
+  or off.
+- Shadow-only; see docs/recursor-phase10e-behavior-state-temporal-predictor.md and
+  docs/recursor-phase10e-behavior-state-label-policy.md
+- Audit KQL (docs/kql/phase10e-temporal-behavior-state-target-audit.kql) has not yet
+  been run against production ADX data — real label-quality numbers are a Phase 10F
+  entry criterion, not yet known. No temporal-behavior-state model version has been
+  trained/published in a live environment yet — the immutable-publish/runtime-resolve
+  path is covered by a synthetic-data integration test only (see
+  Stage3ModelPublisherResolverIntegrationTests.cs), not by a real training run.
 
 --------------------------------------------------
 PHASE 10S — SECOND-SIMULATION ADAPTER INTEGRATION
@@ -148,11 +192,11 @@ PHASE 10S-2 — MEDICAL-SUPPLY ADAPTER SPEC (COMPLETE, part of 10S-1)
 - Full event taxonomy, payload fields, feature mapping, adaptation parameter mapping
 - Shadow validation plan and conservative active adaptation plan
 
-PHASE 10S-3 — SHADOW INTEGRATION (FUTURE)
-- Register medical-supply-stocking in SimCatalogRepository
-- Run complete sessions; verify BehaviorStateTrainingRows in ADX
-- Validate feature dimensions (safetyCompliance, selfCorrection, procedureSequencing)
-- Confirm TemporalEmbeddings and TemporalRiskPredictions are populated
+PHASE 10S-3 — SHADOW INTEGRATION (COMPLETE)
+- Registered medical-supply-stocking in SimCatalogRepository
+- Fixed SafetyCompliance=1.0 mismatch via sim-specific event interpretation adapter
+- BehaviorStateTrainingRows, TemporalEmbeddings, TemporalRiskPredictions confirmed
+  populated for medical-supply-stocking sessions (see docs/medical-supply-*.md)
 
 PHASE 10S-4 — CONSERVATIVE ACTIVE ADAPTATION (FUTURE)
 - Promote after 30+ shadow sessions and policy reliability gates pass
@@ -163,6 +207,9 @@ PHASE 10S-5 — CROSS-SIM DASHBOARD VALIDATION (FUTURE)
 - Dashboard filtering by SimId
 - Cross-sim policy effectiveness comparison
 - Sim-specific adaptation parameter coverage analysis
+- Phase 10E behavior-state model-comparison/coverage endpoints already support a SimId
+  breakdown (see phase10e-temporal-behavior-state-prediction-evaluation.kql, Section 5-6)
+  — a Blazor sim filter UI on top of that data is still open
 
 --------------------------------------------------
 PHASE 11 — CONTINUOUS / ONLINE LEARNING (FUTURE)
@@ -192,10 +239,20 @@ PHASE 13 — DEMO / DASHBOARD / PRODUCTIZATION (FUTURE)
 --------------------------------------------------
 CURRENT STATUS
 --------------------------------------------------
-Completed through Phase 10A.
+Implementation complete through Phase 10E and Phase 10S-3. Phase 10E specifically is
+implementation-complete only — see its entry above for what remains before it can be
+called validated.
 
-Next step:
-→ Phase 10B (Temporal Embeddings + Training Dataset)
+Next steps (not started):
+→ Run the Phase 10E audit KQL against real ADX data, then train and publish a real
+  immutable model version (verify its manifest, confirm the runtime resolver actually
+  loads it, and confirm cross-simulation validation coverage against live data) —
+  required before any Phase 10F work, since Phase 10E's actual label-quality and
+  accuracy numbers are not yet known (architecture/implementation only).
+→ Phase 10S-4 (conservative active adaptation for medical-supply-stocking)
+→ Phase 10S-5 (cross-sim dashboard validation UI)
+→ Phase 10F (active or shadow guardrail integration for behavior-state predictions) —
+  explicitly not started as part of Phase 10E
 
 --------------------------------------------------
 KEY SYSTEM CAPABILITIES (CURRENT)

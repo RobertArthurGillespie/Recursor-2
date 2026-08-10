@@ -238,9 +238,8 @@ public class MedicalSupplyDebriefService : IMedicalSupplyDebriefService
     private readonly IAdxMedicalSupplyDebriefQueryService _debriefQuery;
     private readonly IAdxRecursorQueryService _recursorQuery;
     private readonly ILogger<MedicalSupplyDebriefService> _logger;
+    private readonly IConfiguration _configuration;
 
-    private const string AzureOpenAiEndpoint   = "https://manuscriptgenerator.openai.azure.com/";
-    private const string AzureOpenAiKey        = "F8fFcrOkGNjJFbL710c19YIU6Vq1H0sP0ifcZ0bM4eAJvZwT4FxHJQQJ99BLACYeBjFXJ3w3AAABACOGhJoF";
     private const string AzureOpenAiDeployment = "gpt-5.4-mini";
 
     private const string SystemPrompt = """
@@ -274,11 +273,13 @@ Return valid JSON only — no markdown, no extra commentary — with exactly the
     public MedicalSupplyDebriefService(
         IAdxMedicalSupplyDebriefQueryService debriefQuery,
         IAdxRecursorQueryService recursorQuery,
-        ILogger<MedicalSupplyDebriefService> logger)
+        ILogger<MedicalSupplyDebriefService> logger,
+        IConfiguration configuration)
     {
         _debriefQuery  = debriefQuery;
         _recursorQuery = recursorQuery;
         _logger        = logger;
+        _configuration = configuration;
     }
 
     public async Task<TrendAwareDebriefResponse> GenerateTrendAwareDebriefAsync(TrendAwareDebriefRequest request)
@@ -402,8 +403,17 @@ Return valid JSON only — no markdown, no extra commentary — with exactly the
 
         try
         {
-            var credential   = new AzureKeyCredential(AzureOpenAiKey);
-            var openAiClient = new AzureOpenAIClient(new Uri(AzureOpenAiEndpoint), credential);
+            var endpoint = _configuration["AzureOpenAi:ManuscriptGenerator:Endpoint"];
+            var key = _configuration["AzureOpenAi:ManuscriptGenerator:Key"];
+            if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(key))
+            {
+                throw new InvalidOperationException(
+                    "Missing required configuration 'AzureOpenAi:ManuscriptGenerator:Endpoint'/'Key'. " +
+                    "Set via user-secrets locally or App Service configuration / Key Vault in deployed environments.");
+            }
+
+            var credential   = new AzureKeyCredential(key);
+            var openAiClient = new AzureOpenAIClient(new Uri(endpoint), credential);
             var chatClient   = openAiClient.GetChatClient(AzureOpenAiDeployment);
 
             ChatMessage[] messages =

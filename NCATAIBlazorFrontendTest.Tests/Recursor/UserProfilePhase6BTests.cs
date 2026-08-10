@@ -82,6 +82,7 @@ public class UserProfilePhase6BTests
         public Task IngestTemporalPredictionTargetAsync(TemporalPredictionTargetRow row) => Task.CompletedTask;
         public Task IngestTemporalRiskPredictionAsync(TemporalRiskPredictionRow row) => Task.CompletedTask;
         public Task IngestTemporalElevatedRiskPredictionAsync(TemporalElevatedRiskPredictionRow row) => Task.CompletedTask;
+        public Task IngestTemporalBehaviorStatePredictionAsync(TemporalBehaviorStatePredictionRow row) => Task.CompletedTask;
     }
 
     // ── New profile creation ──────────────────────────────────────────────────

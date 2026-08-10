@@ -167,7 +167,7 @@ public class Phase14ADashboardTests
     [Fact]
     public void Build_EmptyRows_ReturnsEmptyTimeline()
     {
-        var result = DashboardTimelineBuilder.Build("sess-1", [], [], [], [], []);
+        var result = DashboardTimelineBuilder.Build("sess-1", [], [], [], [], [], []);
         Assert.Equal("sess-1", result.SessionId);
         Assert.Equal(0, result.TotalWindows);
         Assert.Equal(0, result.TotalAdaptations);
@@ -184,7 +184,7 @@ public class Phase14ADashboardTests
         {
             MakeTrainingRow(sessionId: "s1", windowIndex: 0, confusion: 0.5)
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, [], [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, [], [], [], [], []);
 
         Assert.Equal(1, result.TotalWindows);
         Assert.Equal(0, result.TotalAdaptations);
@@ -207,7 +207,7 @@ public class Phase14ADashboardTests
         {
             new(baseTime.AddSeconds(30), 0, "[]", "[]", "test reasoning", null, null, null, null, null, null, null, null)
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], [], []);
 
         Assert.Null(result.Windows[0].AdaptationDecision);   // 30 s gap > 5 s tolerance
         Assert.NotNull(result.Windows[1].AdaptationDecision); // 0 s gap — exact match
@@ -233,7 +233,7 @@ public class Phase14ADashboardTests
             new(baseTime.AddSeconds(31), 0, "[]", "[]", "reason-w1", null, null, null, null, null, null, null, null),
             new(baseTime.AddSeconds(61), 0, "[]", "[]", "reason-w2", null, null, null, null, null, null, null, null),
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], [], []);
 
         Assert.Equal("reason-w0", result.Windows[0].AdaptationDecision!.ReasoningSummary);
         Assert.Equal("reason-w1", result.Windows[1].AdaptationDecision!.ReasoningSummary);
@@ -254,7 +254,7 @@ public class Phase14ADashboardTests
             // 10 s away — exceeds the 5 s tolerance
             new(baseTime.AddSeconds(10), 0, "[]", "[]", "should-not-appear", null, null, null, null, null, null, null, null),
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], [], []);
 
         Assert.Null(result.Windows[0].AdaptationDecision);
         Assert.Equal(0, result.TotalAdaptations);
@@ -274,7 +274,7 @@ public class Phase14ADashboardTests
             new(baseTime.AddSeconds(2),  0, "[]", "[]", "reason-for-w0", null, null, null, null, null, null, null, null),
             new(baseTime.AddSeconds(28), 0, "[]", "[]", "reason-for-w1", null, null, null, null, null, null, null, null),
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], [], []);
 
         Assert.NotNull(result.Windows[0].AdaptationDecision);
         Assert.Equal("reason-for-w0", result.Windows[0].AdaptationDecision!.ReasoningSummary);
@@ -295,7 +295,7 @@ public class Phase14ADashboardTests
             new(WindowIndex: 0, Horizon: 1, PredictedNearTermRisk: "low",  Confidence: 0.8, ModelVersion: "v1"),
             new(WindowIndex: 0, Horizon: 2, PredictedNearTermRisk: "high", Confidence: 0.6, ModelVersion: "v1"),
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, [], preds, [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, [], preds, [], [], []);
 
         Assert.Equal(2, result.TotalPredictions);
         Assert.Equal(2, result.Windows[0].TemporalRiskPredictions.Count);
@@ -319,7 +319,7 @@ public class Phase14ADashboardTests
                 TargetNearTermRisk: "high", TargetBehaviorState: "struggling",
                 TargetConfusionScore: 0.8, TargetGoalUnderstanding: 0.3, TargetHintDependenceScore: 0.6)
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, [], preds, [], targets);
+        var result = DashboardTimelineBuilder.Build("s1", rows, [], preds, [], [], targets);
 
         Assert.True(result.Windows[0].H1PredictionCorrect);
         Assert.Null(result.Windows[0].H2PredictionCorrect);
@@ -346,7 +346,7 @@ public class Phase14ADashboardTests
             new(0, 1, 1, "high",   "struggling", 0.8, 0.3, 0.6),
             new(1, 2, 1, "medium", "recovering",  0.5, 0.5, 0.4),
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, [], preds, [], targets);
+        var result = DashboardTimelineBuilder.Build("s1", rows, [], preds, [], [], targets);
 
         Assert.Equal(0.0, result.H1PredictionAccuracy!.Value, precision: 5);
     }
@@ -358,7 +358,8 @@ public class Phase14ADashboardTests
     {
         var service = BuildServiceWithoutAdx();
         var result = await service.GetRecentSessionsAsync();
-        Assert.Empty(result);
+        Assert.Empty(result.Rows);
+        Assert.Equal(DashboardQueryStatus.ServiceUnavailable, result.Status);
     }
 
     [Fact]
@@ -366,7 +367,8 @@ public class Phase14ADashboardTests
     {
         var service = BuildServiceWithoutAdx();
         var result = await service.GetSessionTimelineAsync("test-session-id");
-        Assert.Null(result);
+        Assert.Null(result.Value);
+        Assert.Equal(DashboardQueryStatus.ServiceUnavailable, result.Status);
     }
 
     // ── Explanation field mapping ─────────────────────────────────────────────
@@ -385,7 +387,7 @@ public class Phase14ADashboardTests
                 null, null, null,
                 "[\"worsening_pattern\"]", "State summary.", "Why changed.", "Coach message.", "High confidence.")
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], [], []);
 
         var ad = result.Windows[0].AdaptationDecision;
         Assert.NotNull(ad);
@@ -410,7 +412,7 @@ public class Phase14ADashboardTests
             new(baseTime.AddSeconds(1), 0, "[]", "[]", "old reasoning",
                 null, null, null, null, null, null, null, null)
         };
-        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], []);
+        var result = DashboardTimelineBuilder.Build("s1", rows, adaptations, [], [], [], []);
 
         var ad = result.Windows[0].AdaptationDecision;
         Assert.NotNull(ad);

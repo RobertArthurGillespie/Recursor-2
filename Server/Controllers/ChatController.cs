@@ -14,9 +14,6 @@ using System.Text.Json.Serialization;
 using System.Text;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Text.Json;
-using System.Text;
 using System;
 
 using System.Net.Http;
@@ -44,6 +41,7 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers
         //AzureOpenAIClient _openAIClient;
 
         private readonly ILogger<ChatController> _logger;
+        private readonly IConfiguration _configuration;
         private static readonly HttpClient _httpClient = new();
         private string logString = string.Empty;
 
@@ -52,12 +50,25 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers
             //EmbeddingClient embeddingClient,
             //SearchClient searchClient,
             //ChatCompletionsClient chatCompletionsClient, // You'll need to deploy a chat model (e.g., gpt-3.5-turbo)
-            ILogger<ChatController> logger)
+            ILogger<ChatController> logger,
+            IConfiguration configuration)
         {
             //_embeddingClient = embeddingClient;
             //_searchClient = searchClient;
             //_chatCompletionsClient = chatCompletionsClient;
             _logger = logger;
+            _configuration = configuration;
+        }
+
+        private static string RequireConfig(string? value, string key)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new InvalidOperationException(
+                    $"Missing required configuration '{key}'. Set via user-secrets locally or App Service " +
+                    "configuration / Key Vault in deployed environments.");
+            }
+            return value;
         }
 
         [HttpGet("TestChatController")]
@@ -73,13 +84,17 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers
             {
                 return BadRequest("Message cannot be empty.");
             }
-            var deploymentName = "text-embedding-ada-002";
-            var credential = new AzureKeyCredential("84b28L6umwahMReEZA4cYIOReH92mLLe7mAk55zTYjrokQO1duX4JQQJ99BGACYeBjFXJ3w3AAABACOGbVNc");
-            var openAIClient = new AzureOpenAIClient(new Uri("https://ncatopenai.openai.azure.com/"), credential);
+            var chatEndpoint = RequireConfig(_configuration["AzureOpenAi:ChatController:Endpoint"], "AzureOpenAi:ChatController:Endpoint");
+            var chatKey = RequireConfig(_configuration["AzureOpenAi:ChatController:Key"], "AzureOpenAi:ChatController:Key");
+            var searchEndpoint = RequireConfig(_configuration["AzureSearch:Endpoint"], "AzureSearch:Endpoint");
+            var searchKey = RequireConfig(_configuration["AzureSearch:ApiKey"], "AzureSearch:ApiKey");
+
+            var credential = new AzureKeyCredential(chatKey);
+            var openAIClient = new AzureOpenAIClient(new Uri(chatEndpoint), credential);
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            _httpClient.DefaultRequestHeaders.Add("api-key", "IChtPwfoeucX1bqRLsTm1407bpbm43kIlKM88EB2zjAzSeBspIbJ");
-            
+            _httpClient.DefaultRequestHeaders.Add("api-key", searchKey);
+
             string searchContext = request.Message;
             var requestData = new
             {
@@ -94,7 +109,7 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers
 
             var json = JsonSerializer.Serialize(requestData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("https://ncatsearch.search.windows.net/indexes/ncat-index/docs/search?api-version=2024-07-01", content);
+            var response = await _httpClient.PostAsync($"{searchEndpoint.TrimEnd('/')}/indexes/ncat-index/docs/search?api-version=2024-07-01", content);
             string responseBody = await response.Content.ReadAsStringAsync();
             string searchResults = await response.Content.ReadAsStringAsync();
 

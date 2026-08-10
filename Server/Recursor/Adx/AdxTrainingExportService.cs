@@ -51,7 +51,7 @@ public class AdxTrainingExportService : IAdxTrainingExportService
         ILogger<AdxTrainingExportService> logger)
     {
         _queryProvider = services.GetService<ICslQueryProvider>();
-        _database = configuration["Adx:Database"] ?? "RecursorDb";
+        _database = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger = logger;
     }
 

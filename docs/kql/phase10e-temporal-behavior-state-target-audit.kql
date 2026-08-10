@@ -1,0 +1,238 @@
+// ============================================================
+// Phase 10E — TargetBehaviorState Label Quality Audit
+// ============================================================
+// Read-only analytics. No tables are created or altered, and no
+// C# behavior is changed by running this script.
+//
+// Purpose: quantify the quality of TemporalPredictionTargets.TargetBehaviorState
+// before it is used as a training label for the Phase 10E H1/H2/H3
+// behavior-state predictor. TargetBehaviorState is written by
+// TemporalEmbeddingService.BuildPredictionTargets (Server/Recursor/Services/
+// TemporalEmbeddingService.cs).
+//
+// Stage 12 (corrective pass): rewritten to (a) use the SAME NormalizeBehaviorState
+// classification the C# policy (BehaviorStateLabelPolicy.Normalize) and the dashboard
+// KQL (AdxDashboardQueryService.BuildBehaviorStateNormalizationKql) use — trim,
+// lowercase, "steady"->"stable" alias, then classify as missing / unknown / invalid /
+// a canonical label — so this audit can never silently diverge from what the trainer
+// and dashboard actually do with the same value; and (b) deduplicate defensively
+// (arg_max by logical key) before computing distributions, since ADX is append-only
+// and a replayed/retried ingest can produce more than one physical row for the same
+// logical target. Section 1 shows duplicate counts BEFORE dedup so that problem stays
+// visible; every other section runs against the deduplicated view.
+//
+// Three distinct "no real answer" states exist in this column and are reported
+// separately, never collapsed:
+//   missing  ("" / null)   — MultiSignalGuardrailService threw or never ran for that
+//                             window (exception swallowed in RecursorIngestionService);
+//                             the snapshot was never stamped. This is MISSING DATA.
+//   unknown  ("unknown")   — MultiSignalGuardrailService ran successfully but produced
+//                             zero hypotheses for the window. A legitimate NO-SIGNAL
+//                             outcome, not missing data, and not automatically "stable".
+//   invalid  (anything else not matching a canonical label or "steady" alias)
+//
+// The canonical label set (see Server/Recursor/Models/GuardrailModels.cs,
+// MultiSignalGuardrailSummary.OverallBehaviorState doc comment) is:
+//   "struggling" | "recovering" | "stable" | "mastering" | "conflicted"
+// See Server/Recursor/Services/BehaviorStateLabelPolicy.cs and
+// docs/recursor-phase10e-behavior-state-label-policy.md for the full policy
+// this audit feeds into.
+//
+// Prerequisites:
+//   - Phase 10B running: TemporalEmbeddings and TemporalPredictionTargets
+//     are being populated.
+//
+// Run each section independently (Shift+Enter per block in the ADX Web UI). The
+// `let` block below must be re-declared (or the whole file run top-to-bottom) before
+// any individual section that references NormalizeBehaviorState/DedupedTargets.
+// ============================================================
+
+
+// ── Shared classification + dedup — re-run this block before any section below ──
+let CanonicalBehaviorStates = dynamic(["struggling","recovering","stable","mastering","conflicted"]);
+let NormalizeBehaviorState = (raw: string) {
+    let trimmed = trim(" ", tolower(raw));
+    let mapped = iif(trimmed == "steady", "stable", trimmed);
+    case(
+        isempty(trimmed), "missing",
+        trimmed == "unknown", "unknown",
+        mapped in (CanonicalBehaviorStates), mapped,
+        "invalid"
+    )
+};
+let DedupedTargets = TemporalPredictionTargets
+| summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, SourceWindowIndex, Horizon;
+DedupedTargets | count
+
+
+// ── Section 1: Duplicate target rows (BEFORE dedup) ─────────────────────────
+// A target row is uniquely identified by (SessionId, UserId, SourceWindowIndex,
+// TargetWindowIndex, Horizon). More than one row for the same key indicates
+// re-ingestion or a pipeline retry bug — this is the only section that queries the
+// raw table directly rather than DedupedTargets, since it exists specifically to
+// surface what dedup would otherwise hide.
+TemporalPredictionTargets
+| summarize DuplicateCount = count() by SessionId, UserId, SourceWindowIndex, TargetWindowIndex, Horizon
+| where DuplicateCount > 1
+| order by DuplicateCount desc
+
+
+// ── Section 2: Row counts by horizon ──────────────────────────────────────
+DedupedTargets
+| summarize RowCount = count() by Horizon
+| order by Horizon asc
+
+
+// ── Section 3: Row counts by SimId ─────────────────────────────────────────
+// TemporalPredictionTargets does not carry SimId directly — join to the
+// source embedding to recover it. TemporalEmbeddings is also deduplicated
+// (Stage 7) so a duplicate embedding row can't inflate this either.
+DedupedTargets
+| join kind=inner (
+    TemporalEmbeddings
+    | summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+    | project SessionId, UserId, SourceWindowIndex = WindowIndex, SimId, ScenarioId
+) on SessionId, UserId, SourceWindowIndex
+| summarize RowCount = count() by SimId
+| order by RowCount desc
+
+
+// ── Section 4: Row counts by ScenarioId ────────────────────────────────────
+DedupedTargets
+| join kind=inner (
+    TemporalEmbeddings
+    | summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+    | project SessionId, UserId, SourceWindowIndex = WindowIndex, SimId, ScenarioId
+) on SessionId, UserId, SourceWindowIndex
+| summarize RowCount = count() by SimId, ScenarioId
+| order by SimId asc, RowCount desc
+
+
+// ── Section 5: Class distribution by horizon (missing/unknown/invalid/canonical) ──
+DedupedTargets
+| extend NormalizedLabel = NormalizeBehaviorState(TargetBehaviorState)
+| summarize RowCount = count() by Horizon, NormalizedLabel
+| order by Horizon asc, RowCount desc
+
+
+// ── Section 6: Class distribution by simulation and horizon ────────────────
+DedupedTargets
+| join kind=inner (
+    TemporalEmbeddings
+    | summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+    | project SessionId, UserId, SourceWindowIndex = WindowIndex, SimId
+) on SessionId, UserId, SourceWindowIndex
+| extend NormalizedLabel = NormalizeBehaviorState(TargetBehaviorState)
+| summarize RowCount = count() by SimId, Horizon, NormalizedLabel
+| order by SimId asc, Horizon asc, RowCount desc
+
+
+// ── Section 7: missing / unknown / invalid / valid counts ──────────────────
+DedupedTargets
+| extend LabelBucket = NormalizeBehaviorState(TargetBehaviorState)
+| extend LabelBucket = iff(LabelBucket in (CanonicalBehaviorStates), "valid", LabelBucket)
+| summarize RowCount = count() by LabelBucket
+| order by RowCount desc
+
+
+// ── Section 8: "unknown" / "missing" / "invalid" percentage by horizon ─────
+DedupedTargets
+| extend NormalizedLabel = NormalizeBehaviorState(TargetBehaviorState)
+| summarize
+    Total = count(),
+    UnknownCount = countif(NormalizedLabel == "unknown"),
+    MissingCount = countif(NormalizedLabel == "missing"),
+    InvalidCount = countif(NormalizedLabel == "invalid")
+    by Horizon
+| extend
+    UnknownPercent = round(100.0 * UnknownCount / Total, 2),
+    MissingPercent = round(100.0 * MissingCount / Total, 2),
+    InvalidPercent = round(100.0 * InvalidCount / Total, 2)
+| order by Horizon asc
+
+
+// ── Section 9: "unknown" / "missing" / "invalid" percentage by simulation ──
+DedupedTargets
+| join kind=inner (
+    TemporalEmbeddings
+    | summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+    | project SessionId, UserId, SourceWindowIndex = WindowIndex, SimId
+) on SessionId, UserId, SourceWindowIndex
+| extend NormalizedLabel = NormalizeBehaviorState(TargetBehaviorState)
+| summarize
+    Total = count(),
+    UnknownCount = countif(NormalizedLabel == "unknown"),
+    MissingCount = countif(NormalizedLabel == "missing"),
+    InvalidCount = countif(NormalizedLabel == "invalid")
+    by SimId
+| extend
+    UnknownPercent = round(100.0 * UnknownCount / Total, 2),
+    MissingPercent = round(100.0 * MissingCount / Total, 2),
+    InvalidPercent = round(100.0 * InvalidCount / Total, 2)
+| order by SimId asc
+
+
+// ── Section 10: Source-state → target-state transitions ────────────────────
+// The source window's behavior state is not stored directly on
+// TemporalPredictionTargets; it is decoded from the one-hot "State*"
+// features (indices 17–21) baked into the source TemporalEmbeddings row.
+// If none of the five one-hot flags are 1.0, the source window had no
+// resolved guardrail state (mirrors the missing/unknown split above).
+DedupedTargets
+| join kind=inner (
+    TemporalEmbeddings
+    | summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+    | project SessionId, UserId, SourceWindowIndex = WindowIndex,
+              StateStruggling = toreal(Values[17]),
+              StateRecovering = toreal(Values[18]),
+              StateStable     = toreal(Values[19]),
+              StateMastering  = toreal(Values[20]),
+              StateConflicted = toreal(Values[21])
+) on SessionId, UserId, SourceWindowIndex
+| extend SourceState = case(
+    StateStruggling == 1.0, "struggling",
+    StateRecovering == 1.0, "recovering",
+    StateStable == 1.0, "stable",
+    StateMastering == 1.0, "mastering",
+    StateConflicted == 1.0, "conflicted",
+    "(no-source-state)"
+  )
+| extend TargetState = NormalizeBehaviorState(TargetBehaviorState)
+| summarize TransitionCount = count() by Horizon, SourceState, TargetState
+| order by Horizon asc, TransitionCount desc
+
+
+// ── Section 11: Class balance (combined, all horizons) ──────────────────────
+DedupedTargets
+| extend NormalizedLabel = NormalizeBehaviorState(TargetBehaviorState)
+| summarize RowCount = count() by NormalizedLabel
+| extend Total = toscalar(DedupedTargets | count)
+| extend Percent = round(100.0 * RowCount / Total, 2)
+| order by RowCount desc
+
+
+// ── Section 12: Target rows whose source embedding is missing ───────────────
+DedupedTargets
+| join kind=leftanti (
+    TemporalEmbeddings
+    | summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+    | project SessionId, UserId, SourceWindowIndex = WindowIndex
+) on SessionId, UserId, SourceWindowIndex
+| summarize MissingEmbeddingJoinCount = count() by Horizon
+| order by Horizon asc
+
+
+// ── Section 13: Embeddings for which no target was generated ────────────────
+// Expected for the most recent 1–3 windows of an in-progress session (a
+// target can only be written once a later window exists to serve as the
+// source), so a nonzero count here is not automatically a bug — cross-check
+// against session Status before treating this as a data-quality problem.
+TemporalEmbeddings
+| summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, WindowIndex
+| project SessionId, UserId, WindowIndex, SimId, ScenarioId
+| join kind=leftanti (
+    DedupedTargets
+    | project SessionId, UserId, SourceWindowIndex
+) on SessionId, UserId, $left.WindowIndex == $right.SourceWindowIndex
+| summarize OrphanedEmbeddingCount = count() by SimId
+| order by OrphanedEmbeddingCount desc

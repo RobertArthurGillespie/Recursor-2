@@ -288,13 +288,29 @@ public class SimExplorerTests
     // Minimal stub that satisfies IAdxDashboardQueryService without ADX.
     private class NullDashboardQueryService : IAdxDashboardQueryService
     {
-        public Task<List<DashboardSessionSummaryDto>> GetRecentSessionsAsync(int count = 20)
-            => Task.FromResult(new List<DashboardSessionSummaryDto>());
+        public Task<DashboardQueryResult<DashboardSessionSummaryDto>> GetRecentSessionsAsync(int count = 20)
+            => Task.FromResult(new DashboardQueryResult<DashboardSessionSummaryDto>());
 
-        public Task<SessionTimelineDto?> GetSessionTimelineAsync(string sessionId)
-            => Task.FromResult<SessionTimelineDto?>(null);
+        public Task<DashboardSingleQueryResult<SessionTimelineDto>> GetSessionTimelineAsync(
+            string sessionId, string? riskModelVersion = null, string? behaviorStateModelVersion = null)
+            => Task.FromResult(new DashboardSingleQueryResult<SessionTimelineDto>());
 
-        public Task<List<ElevatedRiskModelComparisonRow>> GetElevatedRiskModelComparisonAsync()
-            => Task.FromResult(new List<ElevatedRiskModelComparisonRow>());
+        public Task<DashboardQueryResult<string>> GetAvailableBehaviorStateModelVersionsAsync(string sessionId)
+            => Task.FromResult(new DashboardQueryResult<string>());
+
+        public Task<DashboardQueryResult<ElevatedRiskModelComparisonRow>> GetElevatedRiskModelComparisonAsync()
+            => Task.FromResult(new DashboardQueryResult<ElevatedRiskModelComparisonRow>());
+
+        public Task<DashboardQueryResult<BehaviorStateModelComparisonRow>> GetBehaviorStateModelComparisonAsync(
+            string? simId = null, string? scenarioId = null, string? modelVersion = null, int? horizon = null)
+            => Task.FromResult(new DashboardQueryResult<BehaviorStateModelComparisonRow>());
+
+        public Task<DashboardQueryResult<BehaviorStateCoverageRow>> GetBehaviorStateCoverageAsync(
+            string? simId = null, string? scenarioId = null, string? modelVersion = null, int? horizon = null)
+            => Task.FromResult(new DashboardQueryResult<BehaviorStateCoverageRow>());
+
+        public Task<DashboardQueryResult<BehaviorStateConfusionMatrixCell>> GetBehaviorStateConfusionMatrixAsync(
+            string? simId = null, string? scenarioId = null, string? modelVersion = null, int? horizon = null)
+            => Task.FromResult(new DashboardQueryResult<BehaviorStateConfusionMatrixCell>());
     }
 }

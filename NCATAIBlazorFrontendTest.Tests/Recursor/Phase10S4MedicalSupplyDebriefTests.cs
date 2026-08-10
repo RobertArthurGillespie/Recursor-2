@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using NCATAIBlazorFrontendTest.Server.Controllers;
 using NCATAIBlazorFrontendTest.Server.Recursor.Adx;
@@ -9,6 +10,15 @@ using System.Text.Json;
 using Xunit;
 
 namespace NCATAIBlazorFrontendTest.Tests.Recursor;
+
+file static class MedicalSupplyDebriefServiceTestFactory
+{
+    // Corrective pass Stage 2: the service now requires IConfiguration for the Azure OpenAI
+    // endpoint/key (moved out of hard-coded source). No key is configured here, so every
+    // GenerateTrendAwareDebriefAsync call in this file falls back to FallbackResponse, matching
+    // this file's existing "GPT call fails in test environment" behavior.
+    public static IConfiguration EmptyConfig { get; } = new ConfigurationBuilder().Build();
+}
 
 /// <summary>
 /// Phase 10S-4: Trend-aware medical-supply debrief tests.
@@ -125,7 +135,8 @@ public class Phase10S4MedicalSupplyDebriefTests
 
         // Call service directly so we can inspect what IDs were passed to the ADX query.
         var svc = new MedicalSupplyDebriefService(
-            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance,
+            MedicalSupplyDebriefServiceTestFactory.EmptyConfig);
 
         await svc.GenerateTrendAwareDebriefAsync(request);
 
@@ -153,7 +164,8 @@ public class Phase10S4MedicalSupplyDebriefTests
         };
 
         var svc = new MedicalSupplyDebriefService(
-            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance,
+            MedicalSupplyDebriefServiceTestFactory.EmptyConfig);
 
         await svc.GenerateTrendAwareDebriefAsync(request);
 
@@ -423,7 +435,8 @@ public class Phase10S4MedicalSupplyDebriefTests
         };
 
         var svc = new MedicalSupplyDebriefService(
-            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance,
+            MedicalSupplyDebriefServiceTestFactory.EmptyConfig);
 
         await svc.GenerateTrendAwareDebriefAsync(request);
 
@@ -458,7 +471,8 @@ public class Phase10S4MedicalSupplyDebriefTests
         };
 
         var svc = new MedicalSupplyDebriefService(
-            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance,
+            MedicalSupplyDebriefServiceTestFactory.EmptyConfig);
 
         await svc.GenerateTrendAwareDebriefAsync(request);
 
@@ -503,7 +517,8 @@ public class Phase10S4MedicalSupplyDebriefTests
         };
 
         var svc = new MedicalSupplyDebriefService(
-            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance,
+            MedicalSupplyDebriefServiceTestFactory.EmptyConfig);
 
         await svc.GenerateTrendAwareDebriefAsync(request);
 
@@ -534,7 +549,8 @@ public class Phase10S4MedicalSupplyDebriefTests
         };
 
         var svc = new MedicalSupplyDebriefService(
-            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance);
+            fakeAdx, fakeRecursorQuery, NullLogger<MedicalSupplyDebriefService>.Instance,
+            MedicalSupplyDebriefServiceTestFactory.EmptyConfig);
 
         // GPT call fails in test environment → fallback response is returned.
         var result = await svc.GenerateTrendAwareDebriefAsync(request);

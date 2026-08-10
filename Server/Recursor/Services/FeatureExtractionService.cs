@@ -35,6 +35,8 @@ public class FeatureExtractionService : IFeatureExtractionService
 
         var adapter = _adapterFactory.GetAdapter(session.SimId);
 
+        // Trigger detection looks only at the incoming batch — a stage-completion or
+        // sim-specific force event only needs to appear in the batch that just arrived.
         bool accumulationTrigger = session.EventsSinceLastWindow >= AccumulationThreshold;
         bool stageTrigger        = batch.Events.Any(e => StageTriggerTypes.Contains(e.EventType));
         bool simSpecificTrigger  = adapter.ShouldForceWindow(batch);
@@ -42,7 +44,11 @@ public class FeatureExtractionService : IFeatureExtractionService
         if (!accumulationTrigger && !stageTrigger && !simSpecificTrigger)
             return null;
 
-        var events = batch.Events;
+        // The window itself is built from everything accumulated since the previous window
+        // (including this batch), not just the batch that happened to cross the trigger —
+        // the caller (RecursorIngestionService) has already appended this batch's events to
+        // the pending buffer before calling TryExtractWindow.
+        var events = session.PendingFeatureWindowEvents;
         long minSeq      = events.Min(e => e.SequenceNumber);
         long maxSeq      = events.Max(e => e.SequenceNumber);
         DateTime minTime = events.Min(e => e.TimestampUtc);

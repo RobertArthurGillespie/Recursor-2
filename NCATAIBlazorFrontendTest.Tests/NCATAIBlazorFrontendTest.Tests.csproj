@@ -15,6 +15,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!-- Stage 3 (corrective pass): real hosted ASP.NET Core pipeline for HostedHttpAuthorizationTests,
+         so authorization middleware ordering is verified against the actual pipeline, not just
+         reflection/direct policy evaluation. Version pinned to match the other 8.0.0 ASP.NET Core
+         package references in Server/NCATAIBlazorFrontendTest.Server.csproj. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

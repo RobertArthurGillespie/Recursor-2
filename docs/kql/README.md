@@ -9,6 +9,9 @@ KQL scripts for setting up and managing the Recursor Engine ADX database.
 | `recursor-adx-setup.kql` | Creates all Recursor telemetry tables and their named CSV ingestion mappings; includes migration alter-merge statements for existing databases |
 | `phase8c-policy-effectiveness-analytics.kql` | Phase 8C read-only analytics: 15 KQL queries evaluating intervention family effectiveness against `AdaptationEffectiveness` and `BehaviorStateTrainingRows` |
 | `phase8d-policy-reliability-scoring.kql` | Phase 8D read-only reliability scoring: stored function `PolicyFamilyReliability()` + 14 queries that classify families into tiers ("promising", "risky", "neutral", "insufficient-data") and produce a `Phase8ERecommendation` per family |
+| `phase10e-temporal-behavior-state-target-audit.kql` | Phase 10E read-only audit of `TemporalPredictionTargets.TargetBehaviorState` label quality: row counts by horizon/sim/scenario, class distribution, blank vs. "unknown" rates, source→target state transitions, duplicate rows, and missing embedding/target joins. Run before training the Phase 10E behavior-state predictor. |
+| `phase10e-temporal-behavior-state-predictions-setup.kql` | Phase 10E: creates `TemporalBehaviorStatePredictions` and its CSV ingestion mapping |
+| `phase10e-temporal-behavior-state-prediction-evaluation.kql` | Phase 10E read-only evaluation: joins `TemporalBehaviorStatePredictions` to `TemporalPredictionTargets` to compute per-horizon accuracy, per-class precision/recall, confusion matrices, coverage, and pending/invalid-target counts |
 
 ## Running the setup script
 
@@ -65,6 +68,7 @@ az kusto script create \
 | `UserBehaviorProfiles` | 27 | Append-only per-user profile snapshot; query with `arg_max(UpdatedAtUtc, *)` |
 | `UserBehaviorProfileUpdates` | 15 | Per-window behavioral observation for profile history and audit |
 | `AdaptationEffectiveness` | 19 | Phase 8B observability; one row per evaluated window pair after an adaptation fires |
+| `TemporalBehaviorStatePredictions` | 11 | Phase 10E shadow-only; one row per (session, window, horizon) multiclass behavior-state prediction |
 
 ## CSV ingestion mappings
 
@@ -83,6 +87,7 @@ corresponding `Build*Table` method in `AdxIngestionService.cs`.
 | `UserBehaviorProfilesCsvMapping` | `UserBehaviorProfiles` | 27 |
 | `UserBehaviorProfileUpdatesCsvMapping` | `UserBehaviorProfileUpdates` | 15 |
 | `AdaptationEffectivenessCsvMapping` | `AdaptationEffectiveness` | 19 |
+| `TemporalBehaviorStatePredictionsCsvMapping` | `TemporalBehaviorStatePredictions` | 11 |
 
 ## Re-running safely
 

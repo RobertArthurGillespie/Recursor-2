@@ -41,6 +41,9 @@ public class TemporalElevatedHorizonTrainingSummary
 {
     public int Horizon { get; set; }
     public int RowCount { get; set; }
+    // Stage 5: this trainer's own exclusion accounting, keyed by reason — independent of any
+    // shared-query-layer filtering, which no longer applies trainer-specific label rules.
+    public Dictionary<string, int> ExcludedRowCountsByReason { get; set; } = [];
     public Dictionary<string, int> LabelDistribution { get; set; } = [];
     public double? Accuracy { get; set; }
     public double? ElevatedPrecision { get; set; }
@@ -69,6 +72,13 @@ public class TemporalElevatedRiskTrainingReport
         "train locally and deploy the model zips, or configure an absolute writable path.";
     public int TotalRowsQueried { get; set; }
     public List<TemporalElevatedHorizonTrainingSummary> Horizons { get; set; } = [];
+
+    // ── Stage 4: immutable/atomic artifact publishing ───────────────────────
+    // True only when all three horizons trained, saved, and load-verified successfully and the
+    // version directory (with manifest.json) was atomically published.
+    public bool Published { get; set; }
+    public string? PublishError { get; set; }
+    public string? PublishedVersionDirectory { get; set; }
 }
 
 // Helper used only during evaluation — maps test-set rows to actual + predicted labels.

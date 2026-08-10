@@ -416,4 +416,26 @@ public static class AdxRowMapper
             ModelVersion          = prediction.ModelVersion,
             CreatedAtUtc          = createdAtUtc,
         };
+
+    public static TemporalBehaviorStatePredictionRow MapTemporalBehaviorStatePrediction(
+        NCATAIBlazorFrontendTest.Server.Recursor.Models.TemporalEmbeddingVector embedding,
+        NCATAIBlazorFrontendTest.Server.Recursor.ML.TemporalBehaviorStateHorizonPrediction prediction,
+        int horizon,
+        DateTime createdAtUtc) =>
+        new()
+        {
+            SessionId              = embedding.SessionId,
+            UserId                 = embedding.UserId,
+            SimId                  = embedding.SimId,
+            ScenarioId             = embedding.ScenarioId,
+            WindowIndex            = embedding.WindowIndex,
+            Horizon                = horizon,
+            PredictedBehaviorState = prediction.PredictedBehaviorState,
+            Confidence             = prediction.Confidence,
+            ClassProbabilities     = JsonSerializer.Serialize(prediction.ClassProbabilities, JsonOpts),
+            ModelVersion           = prediction.ModelVersion,
+            CreatedAtUtc           = createdAtUtc,
+            PredictionId           = NCATAIBlazorFrontendTest.Server.Recursor.Models.BehaviorStatePredictionKeys
+                .ComputePredictionId(embedding.SessionId, embedding.WindowIndex, horizon, prediction.ModelVersion),
+        };
 }

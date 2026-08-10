@@ -89,7 +89,7 @@ Returns `TemporalElevatedRiskTrainingReport`:
       "elevatedF1": 0.74,
       "falsePositives": 12,
       "falseNegatives": 17,
-      "modelPath": "Recursor/TrainingModels/temporal_elevated_risk_h1_v1.zip"
+      "modelPath": "Recursor/TrainingModels/versions/temporal-elevated-risk/temporal-elevated-risk-v1/h1.zip"
     },
     ...
   ]
@@ -99,17 +99,22 @@ Returns `TemporalElevatedRiskTrainingReport`:
 `labelDistribution` shows the original 3-class counts before collapsing.
 Restart the server after training to reload the new model files.
 
-## Model paths (appsettings.json)
+## Model version (appsettings.json)
 
 ```json
 "Recursor": {
   "Models": {
-    "TemporalElevatedRiskH1ModelPath": "Recursor/TrainingModels/temporal_elevated_risk_h1_v1.zip",
-    "TemporalElevatedRiskH2ModelPath": "Recursor/TrainingModels/temporal_elevated_risk_h2_v1.zip",
-    "TemporalElevatedRiskH3ModelPath": "Recursor/TrainingModels/temporal_elevated_risk_h3_v1.zip"
+    "TemporalElevatedRiskModelVersion": "temporal-elevated-risk-v1"
   }
 }
 ```
+
+The runtime resolver derives the H1/H2/H3 artifact paths from this version label — see
+`docs/recursor-model-versioning.md` for the full artifact contract (immutable version
+directories, manifest validation, activation procedure) and
+`docs/recursor-phase10d-elevated-risk-model-versioning.md` for the elevated-risk-specific
+train/compare workflow. `TemporalElevatedRiskH1ModelPath`/`H2ModelPath`/`H3ModelPath` remain
+available as explicit per-horizon overrides for non-standard deployments only.
 
 ## Pipeline wiring
 

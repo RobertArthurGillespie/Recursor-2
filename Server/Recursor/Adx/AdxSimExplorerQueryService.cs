@@ -11,8 +11,13 @@ public interface IAdxSimExplorerQueryService
 {
     Task<List<SimExplorerSimSummaryDto>> GetSimsAsync();
     Task<List<SimExplorerUserSummaryDto>> GetUsersForSimAsync(string simId);
+    Task<List<SimExplorerUserSummaryDto>> GetAllUsersAsync();
     Task<List<SimExplorerSessionSummaryDto>> GetSessionsForSimUserAsync(string simId, string userId);
-    Task<SimExplorerSessionDetailDto?> GetSessionDetailAsync(string simId, string userId, string sessionId);
+    // Stage 10: optional model-version overrides forwarded to IAdxDashboardQueryService.GetSessionTimelineAsync.
+    Task<SimExplorerSessionDetailDto?> GetSessionDetailAsync(
+        string simId, string userId, string sessionId,
+        string? riskModelVersion = null, string? behaviorStateModelVersion = null);
+    Task<List<string>> GetSimIdsForUserAsync(string userId);
 }
 
 public class AdxSimExplorerQueryService : IAdxSimExplorerQueryService
@@ -29,7 +34,7 @@ public class AdxSimExplorerQueryService : IAdxSimExplorerQueryService
         IAdxDashboardQueryService dashboardQuery)
     {
         _queryProvider  = services.GetService<ICslQueryProvider>();
-        _database       = configuration["Adx:Database"] ?? "RecursorDb";
+        _database       = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger         = logger;
         _dashboardQuery = dashboardQuery;
     }
@@ -92,6 +97,34 @@ windows
           FirstSeenUtc, LastSeenUtc
 | order by LastSeenUtc desc";
 
+    public static string BuildAllUsersKql() => @"let windows = BehaviorStateTrainingRows
+| summarize
+    ScenarioCount          = dcount(ScenarioId),
+    SessionCount           = dcount(SessionId),
+    WindowCount            = count(),
+    AvgConfusionScore      = avg(ConfusionScore),
+    AvgGoalUnderstanding   = avg(GoalUnderstanding),
+    AvgHintDependenceScore = avg(HintDependenceScore),
+    FirstSeenUtc           = min(CreatedAtUtc),
+    LastSeenUtc            = max(CreatedAtUtc)
+  by UserId;
+let raw = RawEvents
+| summarize RawEventCount = count() by UserId;
+let sessionSim = BehaviorStateTrainingRows
+| summarize by SessionId, UserId;
+let adapt = AdaptationDecisions_v2
+| join kind=inner sessionSim on SessionId
+| summarize AdaptationCount = count() by UserId;
+windows
+| join kind=leftouter raw on UserId
+| join kind=leftouter adapt on UserId
+| project UserId, ScenarioCount, SessionCount, WindowCount,
+          RawEventCount          = coalesce(RawEventCount, tolong(0)),
+          AdaptationCount        = coalesce(AdaptationCount, tolong(0)),
+          AvgConfusionScore, AvgGoalUnderstanding, AvgHintDependenceScore,
+          FirstSeenUtc, LastSeenUtc
+| order by LastSeenUtc desc";
+
     public static string BuildSessionsForSimUserKql(string sanitizedSimId, string sanitizedUserId) => $@"let windows = BehaviorStateTrainingRows
 | where SimId == '{sanitizedSimId}' and UserId == '{sanitizedUserId}'
 | summarize
@@ -132,6 +165,12 @@ windows
           SuccessCount     = coalesce(SuccessCount, tolong(0)),
           FirstSeenUtc, LastSeenUtc
 | order by LastSeenUtc desc";
+
+    public static string BuildSimIdsForUserKql(string sanitizedUserId) => $@"BehaviorStateTrainingRows
+| where UserId == '{sanitizedUserId}'
+| summarize LastSeenUtc = max(CreatedAtUtc) by SimId
+| order by LastSeenUtc desc
+| project SimId";
 
     public static string BuildRawEventsKql(string sanitizedSessionId) => $@"RawEvents
 | where SessionId == '{sanitizedSessionId}'
@@ -219,6 +258,45 @@ windows
         }
     }
 
+    public async Task<List<SimExplorerUserSummaryDto>> GetAllUsersAsync()
+    {
+        if (_queryProvider is null)
+        {
+            _logger.LogWarning("ADX not configured — sim-explorer all-users returning empty.");
+            return [];
+        }
+
+        var kql = BuildAllUsersKql();
+        try
+        {
+            using var reader = await _queryProvider.ExecuteQueryAsync(_database, kql, new ClientRequestProperties());
+            var results = new List<SimExplorerUserSummaryDto>();
+            while (reader.Read())
+            {
+                results.Add(new SimExplorerUserSummaryDto
+                {
+                    UserId                 = reader.IsDBNull(0) ? "" : reader.GetString(0),
+                    ScenarioCount          = (int)reader.GetInt64(1),
+                    SessionCount           = (int)reader.GetInt64(2),
+                    WindowCount            = (int)reader.GetInt64(3),
+                    RawEventCount          = reader.GetInt64(4),
+                    AdaptationCount        = (int)reader.GetInt64(5),
+                    AvgConfusionScore      = reader.IsDBNull(6)  ? null : reader.GetDouble(6),
+                    AvgGoalUnderstanding   = reader.IsDBNull(7)  ? null : reader.GetDouble(7),
+                    AvgHintDependenceScore = reader.IsDBNull(8)  ? null : reader.GetDouble(8),
+                    FirstSeenUtc           = reader.GetDateTime(9),
+                    LastSeenUtc            = reader.GetDateTime(10),
+                });
+            }
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Sim explorer all-users query failed.");
+            return [];
+        }
+    }
+
     public async Task<List<SimExplorerSessionSummaryDto>> GetSessionsForSimUserAsync(string simId, string userId)
     {
         if (_queryProvider is null)
@@ -264,8 +342,37 @@ windows
         }
     }
 
+    public async Task<List<string>> GetSimIdsForUserAsync(string userId)
+    {
+        if (_queryProvider is null)
+        {
+            _logger.LogWarning("ADX not configured — sim-explorer sim-ids-for-user returning empty.");
+            return [];
+        }
+
+        var uid = Sanitize(userId);
+        var kql = BuildSimIdsForUserKql(uid);
+        try
+        {
+            using var reader = await _queryProvider.ExecuteQueryAsync(_database, kql, new ClientRequestProperties());
+            var results = new List<string>();
+            while (reader.Read())
+            {
+                if (!reader.IsDBNull(0))
+                    results.Add(reader.GetString(0));
+            }
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Sim explorer sim-ids-for-user query failed for user '{UserId}'.", uid);
+            return [];
+        }
+    }
+
     public async Task<SimExplorerSessionDetailDto?> GetSessionDetailAsync(
-        string simId, string userId, string sessionId)
+        string simId, string userId, string sessionId,
+        string? riskModelVersion = null, string? behaviorStateModelVersion = null)
     {
         if (_queryProvider is null)
         {
@@ -281,8 +388,13 @@ windows
         var meta = await QuerySessionMetaAsync(sid, uid, sessId);
         if (meta is null) return null;
 
-        // Delegate timeline assembly to the existing dashboard service.
-        var timeline = await _dashboardQuery.GetSessionTimelineAsync(sessionId);
+        // Delegate timeline assembly to the existing dashboard service. Stage 7: the dashboard
+        // service now returns a typed Status alongside the value; sim-explorer's own session
+        // lookup (QuerySessionMetaAsync above) is the authoritative existence check for this
+        // page, so only the timeline Value itself is threaded through here — a null Value
+        // (session-not-found or the underlying query failing) still degrades to a null timeline
+        // exactly as before, matching this method's existing behavior for its own callers.
+        var timeline = (await _dashboardQuery.GetSessionTimelineAsync(sessionId, riskModelVersion, behaviorStateModelVersion)).Value;
 
         var rawEvents     = await QueryRawEventsAsync(sessId);
         var countByCategory  = await QueryEventCountsAsync(sessId, "Category");

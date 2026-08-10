@@ -136,6 +136,17 @@ public class RecursorPoliciesOptions
     /// </summary>
     public bool EnablePhase8AGuardrailModifier { get; set; } = false;
 
+    // ── Phase 10E: shadow-only behavior-state temporal predictor ─────────────
+
+    /// <summary>
+    /// When true, runs the Phase 10E H1/H2/H3 behavior-state predictor after temporal
+    /// embedding generation and persists predictions to TemporalBehaviorStatePredictions.
+    /// Purely observational — this never feeds adaptation decisions, guardrails, policy
+    /// selection, hint behavior, difficulty, time pressure, or any other sim parameter,
+    /// regardless of this flag's value. Default: false.
+    /// </summary>
+    public bool EnableTemporalBehaviorStatePrediction { get; set; } = false;
+
     // ── Baseline hint-progression streak thresholds ───────────────────────────
 
     /// <summary>
@@ -187,4 +198,23 @@ public class RecursorPoliciesOptions
     /// Default: 3.
     /// </summary>
     public int ModerateGuardrailRecoveryOverrideRequiresEligibleWindows { get; set; } = 3;
+
+    // ── Model-training endpoint gate ──────────────────────────────────────────
+
+    /// <summary>
+    /// Master on/off switch for all Recursor model-training endpoints (temporal-risk,
+    /// elevated-risk, Phase 10E behavior-state). When false, training endpoints return
+    /// 403 Forbidden and do not execute, regardless of caller authorization. Default: true
+    /// (endpoints are still gated by <see cref="ModelTrainingAllowedEnvironments"/> and by
+    /// the RecursorModelAdmin authorization policy).
+    /// </summary>
+    public bool EnableModelTraining { get; set; } = true;
+
+    /// <summary>
+    /// ASP.NET Core environment names (IWebHostEnvironment.EnvironmentName) in which model
+    /// training endpoints may execute. Defaults to Development only — widen explicitly via
+    /// configuration for approved staging/training environments. This is independent of and
+    /// in addition to the RecursorModelAdmin authorization requirement.
+    /// </summary>
+    public string[] ModelTrainingAllowedEnvironments { get; set; } = new[] { "Development" };
 }

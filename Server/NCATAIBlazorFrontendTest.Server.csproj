@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>false</InvariantGlobalization>
+    <UserSecretsId>recursor-engine-9f2c5b3a-server-dev-secrets</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

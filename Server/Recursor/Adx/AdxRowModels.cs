@@ -1,4 +1,5 @@
 using System.Text.Json;
+using NCATAIBlazorFrontendTest.Shared;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Adx;
 
@@ -351,4 +352,28 @@ public class TemporalElevatedRiskPredictionRow
     public double Confidence { get; set; }
     public string ModelVersion { get; set; } = "";
     public DateTime CreatedAtUtc { get; set; }
+}
+
+// ── Phase 10E: TemporalBehaviorStatePredictions row ───────────────────────────
+// Shadow/observability-only. Multiclass over the five canonical behavior-state
+// labels (see Server/Recursor/Services/BehaviorStateLabelPolicy.cs). Never used
+// to gate or modify adaptation decisions.
+public class TemporalBehaviorStatePredictionRow
+{
+    public string SessionId { get; set; } = "";
+    public string UserId { get; set; } = "";
+    public string SimId { get; set; } = "";
+    public string ScenarioId { get; set; } = "";
+    public int WindowIndex { get; set; }
+    public int Horizon { get; set; }
+    public string PredictedBehaviorState { get; set; } = "";
+    public double Confidence { get; set; }
+    public string ClassProbabilities { get; set; } = ""; // dynamic — JSON object of {label: probability}
+    public string ModelVersion { get; set; } = "";
+    public DateTime CreatedAtUtc { get; set; }
+    // Stage 4 (corrective pass): deterministic logical identity — see
+    // BehaviorStatePredictionKeys.ComputePredictionId. Appended as the last column (ordinal 11)
+    // rather than reordered in, so this is an additive schema change against any already-ingested
+    // rows / existing CSV mapping ordinals.
+    public string PredictionId { get; set; } = "";
 }

@@ -17,6 +17,10 @@ public interface ITemporalElevatedRiskModelTrainingService
 
 public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskModelTrainingService
 {
+    // Stage 4: immutable-version family name — versions/{ModelFamily}/{version}/h{n}.zip + manifest.json.
+    public const string ModelFamily = "temporal-elevated-risk";
+    private const int SplitSeed = 42;
+
     private readonly IAdxTemporalTrainingQueryService _queryService;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _env;
@@ -40,6 +44,7 @@ public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskMod
             ? (_configuration["Recursor:Models:TemporalElevatedRiskModelVersion"]
                ?? TemporalElevatedRiskPredictionService.ModelVersion)
             : modelVersion;
+        var sanitizedVersion = SanitizeModelVersion(resolvedVersion);
 
         var report = new TemporalElevatedRiskTrainingReport
         {
@@ -47,6 +52,33 @@ public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskMod
             GeneratedAtUtc  = DateTime.UtcNow,
             Warning         = BuildTrainingWarning(resolvedVersion),
         };
+
+        if (sanitizedVersion.Length == 0)
+        {
+            report.PublishError = $"Invalid modelVersion '{resolvedVersion}'.";
+            return report;
+        }
+
+        // Stage 4: immutable versioning. An existing published version (manifest.json already
+        // present) is never retrained/overwritten — callers must choose a new version label.
+        if (ModelVersionPublisher.VersionExists(_env.ContentRootPath, ModelFamily, sanitizedVersion))
+        {
+            report.PublishError =
+                $"Model version '{resolvedVersion}' already exists for family '{ModelFamily}' and is immutable. " +
+                "Choose a new version label to train again.";
+            _logger.LogWarning("[TemporalElevatedRiskModelTrainingService] {Error}", report.PublishError);
+            return report;
+        }
+
+        using var session = ModelVersionPublisher.TryBeginPublish(_env.ContentRootPath, ModelFamily, sanitizedVersion);
+        if (session is null)
+        {
+            report.PublishError =
+                $"Another training request for model version '{resolvedVersion}' (family '{ModelFamily}') " +
+                "is already in progress.";
+            _logger.LogWarning("[TemporalElevatedRiskModelTrainingService] {Error}", report.PublishError);
+            return report;
+        }
 
         var allRows = await _queryService.QueryTrainingRowsAsync();
         report.TotalRowsQueried = allRows.Count;
@@ -56,24 +88,92 @@ public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskMod
             allRows.Count, resolvedVersion);
 
         for (int horizon = 1; horizon <= 3; horizon++)
-            report.Horizons.Add(TrainHorizon(horizon, allRows, resolvedVersion));
+            report.Horizons.Add(TrainHorizon(horizon, allRows, resolvedVersion, session));
+
+        // All-or-nothing publish: if any horizon failed, nothing for this version is published.
+        if (report.Horizons.Count == 3 && report.Horizons.All(h => h.Error is null))
+        {
+            var manifest = BuildManifest(sanitizedVersion, resolvedVersion, report.Horizons);
+            report.PublishedVersionDirectory = session.Complete(manifest);
+            report.Published = true;
+            _logger.LogInformation(
+                "[TemporalElevatedRiskModelTrainingService] Published version '{Version}' to '{Dir}'.",
+                resolvedVersion, report.PublishedVersionDirectory);
+        }
+        else
+        {
+            var failedCount = report.Horizons.Count(h => h.Error is not null);
+            report.Published = false;
+            report.PublishError =
+                $"Publish skipped: {failedCount} of {report.Horizons.Count} horizon(s) failed to train, save, " +
+                "or load-verify. No artifacts were published for this version (all-or-nothing).";
+            _logger.LogWarning("[TemporalElevatedRiskModelTrainingService] {Error}", report.PublishError);
+        }
 
         return report;
+    }
+
+    private static ModelVersionManifest BuildManifest(
+        string sanitizedVersion, string resolvedVersion, List<TemporalElevatedHorizonTrainingSummary> horizons)
+    {
+        var manifest = new ModelVersionManifest
+        {
+            ModelFamily = ModelFamily,
+            ModelVersion = resolvedVersion,
+            CreatedAtUtc = DateTime.UtcNow,
+            CompletionStatus = "Complete",
+            FeatureEmbeddingVersion = Services.TemporalEmbeddingService.EmbeddingVersion,
+            SplitSeed = SplitSeed,
+        };
+
+        foreach (var h in horizons)
+        {
+            manifest.Horizons.Add(new ModelVersionHorizonManifest
+            {
+                Horizon = h.Horizon,
+                FileName = $"h{h.Horizon}.zip",
+                TrainingRowCount = h.RowCount,
+                LabelDistribution = h.LabelDistribution,
+                // Binary trainer reports accuracy/precision/recall/F1 for the "elevated" class
+                // only (see TemporalElevatedHorizonTrainingSummary) — it does not compute a
+                // macro F1 across a canonical class set the way the Phase 10E trainer does.
+                ValidationMicroAccuracy = h.Accuracy ?? 0,
+                ValidationMacroF1 = 0,
+            });
+        }
+
+        return manifest;
     }
 
     // ── Per-horizon training ──────────────────────────────────────────────────
 
     private TemporalElevatedHorizonTrainingSummary TrainHorizon(
-        int horizon, List<TemporalRiskTrainingRow> allRows, string modelVersion)
+        int horizon, List<TemporalRiskTrainingRow> allRows, string modelVersion, ModelVersionPublishSession session)
     {
         var summary = new TemporalElevatedHorizonTrainingSummary { Horizon = horizon };
 
-        // Filter to this horizon; skip rows with wrong-length vectors or empty labels.
-        var rows = allRows
-            .Where(r => r.Horizon == horizon
-                && r.EmbeddingValues.Length == 25
-                && !string.IsNullOrEmpty(r.TargetNearTermRisk))
-            .ToList();
+        // Filter to this horizon; this trainer validates its own TargetNearTermRisk target —
+        // the shared query service no longer applies any trainer-specific label rule (Stage 5).
+        var horizonRows = allRows.Where(r => r.Horizon == horizon).ToList();
+        var excluded = new Dictionary<string, int>();
+        var rows = new List<TemporalRiskTrainingRow>();
+        foreach (var r in horizonRows)
+        {
+            if (r.EmbeddingValues.Length != 25)
+            {
+                excluded.TryGetValue("missing-or-invalid-embedding", out var c1);
+                excluded["missing-or-invalid-embedding"] = c1 + 1;
+                continue;
+            }
+            if (string.IsNullOrEmpty(r.TargetNearTermRisk))
+            {
+                excluded.TryGetValue("missing-risk-target-label", out var c2);
+                excluded["missing-risk-target-label"] = c2 + 1;
+                continue;
+            }
+            rows.Add(r);
+        }
+        summary.ExcludedRowCountsByReason = excluded;
 
         summary.RowCount = rows.Count;
 
@@ -82,8 +182,8 @@ public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskMod
             .GroupBy(r => r.TargetNearTermRisk)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        var modelPath = ResolveVersionedModelPath(horizon, modelVersion);
-        summary.ModelPath = modelPath;
+        var stagingPath = session.GetHorizonStagingPath(horizon);
+        summary.ModelPath = Path.Combine(session.FinalDirectory, $"h{horizon}.zip");
 
         if (rows.Count < 10)
         {
@@ -142,12 +242,18 @@ public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskMod
             var evalWithStrings = predictionPipeline.Transform(split.TestSet);
             ComputeBinaryMetrics(mlContext, evalWithStrings, summary, horizon);
 
-            var dir = Path.GetDirectoryName(modelPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+            mlContext.Model.Save(predictionPipeline, split.TrainSet.Schema, stagingPath);
 
-            mlContext.Model.Save(predictionPipeline, split.TrainSet.Schema, modelPath);
-            _logger.LogInformation("[ElevatedH{H}] Model saved to '{Path}'.", horizon, modelPath);
+            if (!ModelVersionPublishSession.TryVerifyLoadable(mlContext, stagingPath, out var loadError))
+            {
+                summary.Error = $"Model saved but failed load verification: {loadError}";
+                _logger.LogError("[ElevatedH{H}] {Error}", horizon, summary.Error);
+                return summary;
+            }
+
+            _logger.LogInformation(
+                "[ElevatedH{H}] Model staged and load-verified at '{Path}' (final: '{Final}').",
+                horizon, stagingPath, summary.ModelPath);
         }
         catch (Exception ex)
         {
@@ -244,30 +350,31 @@ public class TemporalElevatedRiskModelTrainingService : ITemporalElevatedRiskMod
     }
 
     // Resolves the .zip path for a horizon + version.
-    // If the explicit config path's filename matches the expected versioned filename, uses it (preserves v1 paths).
-    // Otherwise auto-generates: Recursor/TrainingModels/temporal_elevated_risk_h{n}_{suffix}.zip
+    //
+    // Stage 3 (corrective pass): this now matches the layout ModelVersionPublisher actually
+    // writes to. Previously this auto-generated a flat filename
+    // (Recursor/TrainingModels/temporal_elevated_risk_h{n}_{suffix}.zip) that the publisher
+    // never wrote to, so a freshly trained/published version was unreachable by the runtime
+    // resolver. An explicit config path, if set, is now always honored verbatim (no basename
+    // matching) — silently discarding a configured override was itself a bug; version
+    // consistency for an explicit override is checked separately via
+    // ModelVersionManifestValidator.ValidateExplicitOverridePath, not by inspecting the
+    // filename.
     // Public static so Program.cs can use the same logic as the trainer at startup.
     public static string ResolveVersionedModelPath(
         int horizon, string modelVersion, string contentRootPath, string? explicitConfigPath)
     {
-        var suffix           = ExtractVersionSuffix(modelVersion);
-        var expectedFileName = $"temporal_elevated_risk_h{horizon}_{suffix}.zip";
-
-        if (!string.IsNullOrWhiteSpace(explicitConfigPath) &&
-            string.Equals(Path.GetFileName(explicitConfigPath), expectedFileName, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(explicitConfigPath))
         {
             return Path.IsPathRooted(explicitConfigPath)
                 ? explicitConfigPath
                 : Path.Combine(contentRootPath, explicitConfigPath);
         }
 
-        return Path.Combine(contentRootPath, "Recursor", "TrainingModels", expectedFileName);
+        return Path.Combine(
+            ModelVersionPublisher.GetVersionDirectory(contentRootPath, ModelFamily, modelVersion),
+            $"h{horizon}.zip");
     }
-
-    private string ResolveVersionedModelPath(int horizon, string modelVersion) =>
-        ResolveVersionedModelPath(
-            horizon, modelVersion, _env.ContentRootPath,
-            _configuration[$"Recursor:Models:TemporalElevatedRiskH{horizon}ModelPath"]);
 
     private static string BuildTrainingWarning(string modelVersion) =>
         "Shadow-only binary elevated-risk model (labels: low / elevated). " +

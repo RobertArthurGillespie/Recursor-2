@@ -6,6 +6,7 @@ using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Shared;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text.Json;
 
@@ -56,8 +57,15 @@ public class RecursorIngestionService : IRecursorIngestionService
     private readonly ITemporalEmbeddingService _temporalEmbedding;
     private readonly ITemporalRiskPredictionService _temporalRiskPrediction;
     private readonly ITemporalElevatedRiskPredictionService _temporalElevatedRiskPrediction;
+    private readonly ITemporalBehaviorStatePredictionService _temporalBehaviorStatePrediction;
     private readonly RecursorPoliciesOptions _policies;
     private readonly ILogger<RecursorIngestionService> _logger;
+
+    // Stage 7: per-session lock guarding the behavior-state prediction block below, so two
+    // concurrent requests processing the same session/window cannot both observe "not yet
+    // completed" for the same horizon and both ingest it. Keyed by SessionId; static so it is
+    // shared across all instances of this (scoped/transient) service within the process.
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> BehaviorStatePredictionLocks = new();
 
     public RecursorIngestionService(
     IAdxIngestionService adxIngestion,
@@ -82,6 +90,7 @@ public class RecursorIngestionService : IRecursorIngestionService
     ITemporalEmbeddingService temporalEmbedding,
     ITemporalRiskPredictionService temporalRiskPrediction,
     ITemporalElevatedRiskPredictionService temporalElevatedRiskPrediction,
+    ITemporalBehaviorStatePredictionService temporalBehaviorStatePrediction,
     IOptions<RecursorPoliciesOptions> policiesOptions,
     ILogger<RecursorIngestionService> logger)
     {
@@ -107,6 +116,7 @@ public class RecursorIngestionService : IRecursorIngestionService
         _temporalEmbedding = temporalEmbedding;
         _temporalRiskPrediction = temporalRiskPrediction;
         _temporalElevatedRiskPrediction = temporalElevatedRiskPrediction;
+        _temporalBehaviorStatePrediction = temporalBehaviorStatePrediction;
         _policies = policiesOptions.Value;
         _logger = logger;
     }
@@ -118,9 +128,12 @@ public class RecursorIngestionService : IRecursorIngestionService
         await _adxIngestion.IngestRawEventsAsync(rawEventRows);
         _logger.LogInformation("Ingested {Count} raw events for session {SessionId}.", rawEventRows.Count, session.SessionId);
 
-        // Step 6: Update in-memory session counters.
+        // Step 6: Update in-memory session counters and append this batch's events to the
+        // pending feature-window buffer exactly once, so a later trigger scores everything
+        // accumulated since the previous window rather than only the triggering batch.
         session.EventCount += batch.Events.Count;
         session.EventsSinceLastWindow += batch.Events.Count;
+        session.PendingFeatureWindowEvents.AddRange(batch.Events);
         session.BatchCount += 1;
         session.LastSeenAtUtc = DateTime.UtcNow;
         _sessionRepository.Update(session);
@@ -133,10 +146,14 @@ public class RecursorIngestionService : IRecursorIngestionService
             return new IngestionResult { AdaptationProduced = false };
         }
 
-        // Step 8: Ingest feature window into ADX.
+        // Step 8: Ingest feature window into ADX. If this throws, the exception propagates
+        // before any of the resets below run, so EventsSinceLastWindow and the pending event
+        // buffer are left untouched — the next batch's window will still include every event
+        // from this failed attempt, and none are lost.
         await _adxIngestion.IngestFeatureWindowAsync(AdxRowMapper.MapFeatureWindow(featureWindow));
         session.LatestFeatureWindowId = featureWindow.Id;
         session.EventsSinceLastWindow = 0; // reset accumulation after window is produced
+        session.PendingFeatureWindowEvents = new List<RawEventRecord>(); // clear buffer now that the window is durably ingested
         _sessionRepository.Update(session);
         _logger.LogInformation("Feature window {WindowIndex} produced for session {SessionId}.", featureWindow.WindowIndex, session.SessionId);
 
@@ -507,6 +524,15 @@ public class RecursorIngestionService : IRecursorIngestionService
             }
         }
 
+        // Phase 10E: shadow behavior-state prediction — strictly observational. Feature-flagged
+        // off by default (Recursor:Policies:EnableTemporalBehaviorStatePrediction). Never modifies
+        // adaptation decisions, guardrails, policy selection, hint behavior, difficulty, time
+        // pressure, or any other simulation parameter, regardless of this flag's value.
+        if (embedding is not null && _policies.EnableTemporalBehaviorStatePrediction)
+        {
+            await ProcessBehaviorStatePredictionAsync(session, snapshot, embedding);
+        }
+
         // Step 12: Ingest hypothesis set into ADX.
         await _adxIngestion.IngestHypothesisSetAsync(AdxRowMapper.MapHypothesisSet(hypothesisSet));
         session.LatestHypothesisSetId = hypothesisSet.Id;
@@ -728,6 +754,86 @@ public class RecursorIngestionService : IRecursorIngestionService
             SequenceSummary = sequenceSummary,
             TrajectorySummary = trajectoryClassification
         };
+    }
+
+    // Stage 7 (corrective pass): per-horizon idempotent shadow behavior-state prediction.
+    // Strictly observational — never modifies adaptation decisions, guardrails, policy
+    // selection, hint behavior, difficulty, time pressure, or any other simulation parameter.
+    //
+    // Idempotency design: each of the three horizons is checked and marked complete
+    // independently (CompletedBehaviorStatePredictionKeys, keyed by WindowIndex:Horizon:
+    // ModelVersion) immediately after ITS OWN ingest succeeds, rather than once after the whole
+    // loop. This means a retry after a partial failure (H1 ingested, H2 threw) only reprocesses
+    // H2/H3, never re-ingests H1 — the failure of one horizon can never incorrectly mark another
+    // horizon complete, and can never incorrectly leave an already-completed horizon eligible
+    // for re-ingestion. A per-session semaphore serializes concurrent calls for the same
+    // session so two racing requests for the same window cannot both observe "not completed"
+    // for the same horizon. This in-process guard is the authoritative defense against tight
+    // concurrent duplication; because the in-memory session record does not survive a process
+    // restart (by design — session state is in-memory only per the Recursor architecture spec),
+    // every ADX consumer of TemporalBehaviorStatePredictions additionally deduplicates
+    // defensively by logical key (arg_max CreatedAtUtc) so a duplicate physical row from a
+    // post-restart replay can never inflate a count or a metric — see
+    // AdxDashboardQueryService and AdxTemporalTrainingQueryService.
+    private async Task ProcessBehaviorStatePredictionAsync(
+        SessionDocument session, TrajectorySnapshot snapshot, TemporalEmbeddingVector embedding)
+    {
+        var gate = BehaviorStatePredictionLocks.GetOrAdd(session.SessionId, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync();
+        try
+        {
+            var behaviorStateResult = _temporalBehaviorStatePrediction.Predict(embedding);
+            var behaviorStateNow = DateTime.UtcNow;
+            var sessionChanged = false;
+
+            foreach (var (pred, h) in new[]
+            {
+                (behaviorStateResult.Horizon1, 1),
+                (behaviorStateResult.Horizon2, 2),
+                (behaviorStateResult.Horizon3, 3),
+            })
+            {
+                if (pred is null) continue;
+
+                var key = BehaviorStatePredictionKeys.For(snapshot.WindowIndex, h, pred.ModelVersion);
+                if (session.CompletedBehaviorStatePredictionKeys.Contains(key))
+                {
+                    _logger.LogDebug(
+                        "Behavior-state shadow prediction already ingested — skipping. " +
+                        "SessionId={SessionId} WindowIndex={WindowIndex} Horizon={Horizon} ModelVersion={ModelVersion}",
+                        session.SessionId, snapshot.WindowIndex, h, pred.ModelVersion);
+                    continue;
+                }
+
+                try
+                {
+                    _logger.LogInformation(
+                        "Behavior-state shadow prediction. SessionId={SessionId} WindowIndex={WindowIndex} " +
+                        "Horizon={Horizon} PredictedState={State} Confidence={Confidence:0.000} ModelVersion={ModelVersion}",
+                        session.SessionId, snapshot.WindowIndex, h,
+                        pred.PredictedBehaviorState, pred.Confidence, pred.ModelVersion);
+                    await _adxIngestion.IngestTemporalBehaviorStatePredictionAsync(
+                        AdxRowMapper.MapTemporalBehaviorStatePrediction(embedding, pred, h, behaviorStateNow));
+
+                    session.CompletedBehaviorStatePredictionKeys.Add(key);
+                    sessionChanged = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Behavior-state shadow prediction failed for session {SessionId}, horizon {Horizon}. " +
+                        "Other horizons are still attempted; this horizon remains eligible for retry.",
+                        session.SessionId, h);
+                }
+            }
+
+            if (sessionChanged)
+                _sessionRepository.Update(session);
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
 
     private static void PopulateExplanationFields(

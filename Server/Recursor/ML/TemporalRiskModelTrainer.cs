@@ -10,11 +10,18 @@ public interface ITemporalRiskModelTrainingService
 {
     // Queries ADX, trains one SdcaMaximumEntropy multiclass model per horizon (1–3),
     // saves models to configured paths, and returns a full training report.
-    Task<TemporalRiskTrainingReport> TrainAsync();
+    // modelVersion overrides the configured/default version for this run (Stage 4: immutable
+    // versioning — introduced to bring this trainer in line with the elevated-risk and Phase
+    // 10E trainers, which already supported per-run version labels).
+    Task<TemporalRiskTrainingReport> TrainAsync(string? modelVersion = null);
 }
 
 public class TemporalRiskModelTrainingService : ITemporalRiskModelTrainingService
 {
+    // Stage 4: immutable-version family name — versions/{ModelFamily}/{version}/h{n}.zip + manifest.json.
+    public const string ModelFamily = "temporal-risk";
+    private const int SplitSeed = 42;
+
     private readonly IAdxTemporalTrainingQueryService _queryService;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _env;
@@ -32,42 +39,147 @@ public class TemporalRiskModelTrainingService : ITemporalRiskModelTrainingServic
         _logger = logger;
     }
 
-    public async Task<TemporalRiskTrainingReport> TrainAsync()
+    public async Task<TemporalRiskTrainingReport> TrainAsync(string? modelVersion = null)
     {
-        var report = new TemporalRiskTrainingReport();
+        var resolvedVersion = string.IsNullOrWhiteSpace(modelVersion)
+            ? (_configuration["Recursor:Models:TemporalRiskModelVersion"] ?? TemporalRiskPredictionService.ModelVersion)
+            : modelVersion;
+        var sanitizedVersion = SanitizeModelVersion(resolvedVersion);
+
+        var report = new TemporalRiskTrainingReport
+        {
+            ModelVersion = resolvedVersion,
+            GeneratedAtUtc = DateTime.UtcNow,
+        };
+
+        if (sanitizedVersion.Length == 0)
+        {
+            report.PublishError = $"Invalid modelVersion '{resolvedVersion}'.";
+            return report;
+        }
+
+        // Stage 4: immutable versioning. An existing published version (manifest.json already
+        // present) is never retrained/overwritten — callers must choose a new version label.
+        if (ModelVersionPublisher.VersionExists(_env.ContentRootPath, ModelFamily, sanitizedVersion))
+        {
+            report.PublishError =
+                $"Model version '{resolvedVersion}' already exists for family '{ModelFamily}' and is immutable. " +
+                "Choose a new version label to train again.";
+            _logger.LogWarning("[TemporalRiskModelTrainingService] {Error}", report.PublishError);
+            return report;
+        }
+
+        using var session = ModelVersionPublisher.TryBeginPublish(_env.ContentRootPath, ModelFamily, sanitizedVersion);
+        if (session is null)
+        {
+            report.PublishError =
+                $"Another training request for model version '{resolvedVersion}' (family '{ModelFamily}') " +
+                "is already in progress.";
+            _logger.LogWarning("[TemporalRiskModelTrainingService] {Error}", report.PublishError);
+            return report;
+        }
 
         var allRows = await _queryService.QueryTrainingRowsAsync();
         report.TotalRowsQueried = allRows.Count;
 
         _logger.LogInformation(
-            "[TemporalRiskModelTrainingService] {Total} rows queried from ADX.", allRows.Count);
+            "[TemporalRiskModelTrainingService] {Total} rows queried from ADX. Version={Version}.",
+            allRows.Count, resolvedVersion);
 
         for (int horizon = 1; horizon <= 3; horizon++)
-            report.Horizons.Add(TrainHorizon(horizon, allRows));
+            report.Horizons.Add(TrainHorizon(horizon, allRows, session));
+
+        if (report.Horizons.Count == 3 && report.Horizons.All(h => h.Error is null))
+        {
+            var manifest = BuildManifest(resolvedVersion, report.Horizons);
+            report.PublishedVersionDirectory = session.Complete(manifest);
+            report.Published = true;
+            _logger.LogInformation(
+                "[TemporalRiskModelTrainingService] Published version '{Version}' to '{Dir}'.",
+                resolvedVersion, report.PublishedVersionDirectory);
+        }
+        else
+        {
+            var failedCount = report.Horizons.Count(h => h.Error is not null);
+            report.Published = false;
+            report.PublishError =
+                $"Publish skipped: {failedCount} of {report.Horizons.Count} horizon(s) failed to train, save, " +
+                "or load-verify. No artifacts were published for this version (all-or-nothing).";
+            _logger.LogWarning("[TemporalRiskModelTrainingService] {Error}", report.PublishError);
+        }
 
         return report;
     }
 
+    private static ModelVersionManifest BuildManifest(string resolvedVersion, List<TemporalHorizonTrainingSummary> horizons)
+    {
+        var manifest = new ModelVersionManifest
+        {
+            ModelFamily = ModelFamily,
+            ModelVersion = resolvedVersion,
+            CreatedAtUtc = DateTime.UtcNow,
+            CompletionStatus = "Complete",
+            FeatureEmbeddingVersion = Services.TemporalEmbeddingService.EmbeddingVersion,
+            SplitSeed = SplitSeed,
+        };
+
+        foreach (var h in horizons)
+        {
+            manifest.Horizons.Add(new ModelVersionHorizonManifest
+            {
+                Horizon = h.Horizon,
+                FileName = $"h{h.Horizon}.zip",
+                TrainingRowCount = h.RowCount,
+                LabelDistribution = h.LabelDistribution,
+                ValidationMicroAccuracy = h.MacroAccuracy ?? 0,
+                ValidationMacroF1 = 0,
+            });
+        }
+
+        return manifest;
+    }
+
+    // Strips any character that is not a letter, digit, dash, underscore, or dot.
+    public static string SanitizeModelVersion(string version) =>
+        new string(version.Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.').ToArray());
+
     // ── Per-horizon training ──────────────────────────────────────────────────
 
-    private TemporalHorizonTrainingSummary TrainHorizon(int horizon, List<TemporalRiskTrainingRow> allRows)
+    private TemporalHorizonTrainingSummary TrainHorizon(
+        int horizon, List<TemporalRiskTrainingRow> allRows, ModelVersionPublishSession session)
     {
         var summary = new TemporalHorizonTrainingSummary { Horizon = horizon };
 
-        // Filter to this horizon; skip rows with wrong-length vectors or empty labels.
-        var rows = allRows
-            .Where(r => r.Horizon == horizon
-                && r.EmbeddingValues.Length == 25
-                && !string.IsNullOrEmpty(r.TargetNearTermRisk))
-            .ToList();
+        // Filter to this horizon; this trainer validates its own TargetNearTermRisk target —
+        // the shared query service no longer applies any trainer-specific label rule (Stage 5).
+        var horizonRows = allRows.Where(r => r.Horizon == horizon).ToList();
+        var excluded = new Dictionary<string, int>();
+        var rows = new List<TemporalRiskTrainingRow>();
+        foreach (var r in horizonRows)
+        {
+            if (r.EmbeddingValues.Length != 25)
+            {
+                excluded.TryGetValue("missing-or-invalid-embedding", out var c1);
+                excluded["missing-or-invalid-embedding"] = c1 + 1;
+                continue;
+            }
+            if (string.IsNullOrEmpty(r.TargetNearTermRisk))
+            {
+                excluded.TryGetValue("missing-risk-target-label", out var c2);
+                excluded["missing-risk-target-label"] = c2 + 1;
+                continue;
+            }
+            rows.Add(r);
+        }
+        summary.ExcludedRowCountsByReason = excluded;
 
         summary.RowCount = rows.Count;
         summary.LabelDistribution = rows
             .GroupBy(r => r.TargetNearTermRisk)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        var modelPath = ResolveModelPath($"Recursor:Models:TemporalRiskH{horizon}ModelPath");
-        summary.ModelPath = modelPath;
+        var stagingPath = session.GetHorizonStagingPath(horizon);
+        summary.ModelPath = Path.Combine(session.FinalDirectory, $"h{horizon}.zip");
 
         if (rows.Count < 10)
         {
@@ -135,31 +247,27 @@ public class TemporalRiskModelTrainingService : ITemporalRiskModelTrainingServic
                 "[Horizon {H}] MacroAccuracy={Acc:F4} LogLoss={LL:F4}.",
                 horizon, metrics.MacroAccuracy, metrics.LogLoss);
 
-            if (string.IsNullOrWhiteSpace(modelPath))
-            {
-                summary.Error =
-                    $"No model path configured for horizon {horizon} " +
-                    $"(key: Recursor:Models:TemporalRiskH{horizon}ModelPath). Model not saved.";
-                _logger.LogWarning("[Horizon {H}] {Error}", horizon, summary.Error);
-            }
-            else
-            {
-                var dir = Path.GetDirectoryName(modelPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
+            // Stage 2 — prediction pipeline.
+            // Fit the MapKeyToValue estimator (requires training data to resolve the key
+            // vocabulary) then append the resulting transformer so that
+            // TemporalRiskPredictionService.Predict() receives a string PredictedLabel.
+            var keyToValueTransformer = mlContext.Transforms.Conversion
+                .MapKeyToValue(outputColumnName: "PredictedLabel", inputColumnName: "PredictedLabel")
+                .Fit(evalPredictions);
+            var predictionPipeline = trainedModel.Append(keyToValueTransformer);
 
-                // Stage 2 — prediction pipeline.
-                // Fit the MapKeyToValue estimator (requires training data to resolve the key
-                // vocabulary) then append the resulting transformer so that
-                // TemporalRiskPredictionService.Predict() receives a string PredictedLabel.
-                var keyToValueTransformer = mlContext.Transforms.Conversion
-                    .MapKeyToValue(outputColumnName: "PredictedLabel", inputColumnName: "PredictedLabel")
-                    .Fit(evalPredictions);
-                var predictionPipeline = trainedModel.Append(keyToValueTransformer);
+            mlContext.Model.Save(predictionPipeline, split.TrainSet.Schema, stagingPath);
 
-                mlContext.Model.Save(predictionPipeline, split.TrainSet.Schema, modelPath);
-                _logger.LogInformation("[Horizon {H}] Model saved to '{Path}'.", horizon, modelPath);
+            if (!ModelVersionPublishSession.TryVerifyLoadable(mlContext, stagingPath, out var loadError))
+            {
+                summary.Error = $"Model saved but failed load verification: {loadError}";
+                _logger.LogError("[Horizon {H}] {Error}", horizon, summary.Error);
+                return summary;
             }
+
+            _logger.LogInformation(
+                "[Horizon {H}] Model staged and load-verified at '{Path}' (final: '{Final}').",
+                horizon, stagingPath, summary.ModelPath);
         }
         catch (Exception ex)
         {
@@ -168,16 +276,5 @@ public class TemporalRiskModelTrainingService : ITemporalRiskModelTrainingServic
         }
 
         return summary;
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private string? ResolveModelPath(string configKey)
-    {
-        var configured = _configuration[configKey];
-        if (string.IsNullOrWhiteSpace(configured)) return null;
-        return Path.IsPathRooted(configured)
-            ? configured
-            : Path.Combine(_env.ContentRootPath, configured);
     }
 }

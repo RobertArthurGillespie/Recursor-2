@@ -43,7 +43,7 @@ public class AdxUserProfileQueryService : IAdxUserProfileQueryService
         // Returns null when ADX ClusterUri is not configured — same pattern as all
         // other Recursor ADX services.
         _queryProvider = services.GetService<ICslQueryProvider>();
-        _database = configuration["Adx:Database"] ?? "RecursorDb";
+        _database = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger = logger;
     }
 

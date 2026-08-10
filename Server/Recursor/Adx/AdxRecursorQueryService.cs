@@ -45,7 +45,7 @@ public class AdxRecursorQueryService : IAdxRecursorQueryService
     {
         // GetService returns null when not registered (ADX not configured).
         _queryProvider = services.GetService<ICslQueryProvider>();
-        _database = configuration["Adx:Database"] ?? "RecursorDb";
+        _database = configuration["Adx:Database"] ?? "RecursorDbMain";
         _logger = logger;
     }
 

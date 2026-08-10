@@ -8,6 +8,11 @@ public class TemporalRiskTrainingRow
 {
     public string SessionId { get; set; } = "";
     public string UserId { get; set; } = "";
+    // SimId/ScenarioId come from the source embedding row (TemporalEmbeddings). Added for
+    // Phase 10E per-simulation metrics; existing consumers (3-class and elevated-risk
+    // trainers) simply ignore these two fields.
+    public string SimId { get; set; } = "";
+    public string ScenarioId { get; set; } = "";
     public int SourceWindowIndex { get; set; }
     public int TargetWindowIndex { get; set; }
     public int Horizon { get; set; }
@@ -67,6 +72,10 @@ public class TemporalHorizonTrainingSummary
 {
     public int Horizon { get; set; }
     public int RowCount { get; set; }
+    // Stage 5: this trainer's own exclusion accounting, keyed by reason (e.g.
+    // "missing-or-invalid-embedding", "missing-risk-target-label") — independent of any
+    // shared-query-layer filtering, which no longer applies trainer-specific label rules.
+    public Dictionary<string, int> ExcludedRowCountsByReason { get; set; } = [];
     public Dictionary<string, int> LabelDistribution { get; set; } = [];
     public double? MacroAccuracy { get; set; }
     public double? LogLoss { get; set; }
@@ -77,6 +86,8 @@ public class TemporalHorizonTrainingSummary
 // Full report returned by POST /api/recursor/train-temporal-risk.
 public class TemporalRiskTrainingReport
 {
+    public string ModelVersion { get; set; } = "";
+    public DateTime GeneratedAtUtc { get; set; } = DateTime.UtcNow;
     public string Warning { get; set; } =
         "Shadow-only baseline model. Predictions are logged/persisted for observability only. " +
         "This model does not affect adaptation decisions. " +
@@ -86,4 +97,9 @@ public class TemporalRiskTrainingReport
         "package — train locally and deploy the model zips, or configure an absolute writable path.";
     public int TotalRowsQueried { get; set; }
     public List<TemporalHorizonTrainingSummary> Horizons { get; set; } = [];
+
+    // ── Stage 4: immutable/atomic artifact publishing ───────────────────────
+    public bool Published { get; set; }
+    public string? PublishError { get; set; }
+    public string? PublishedVersionDirectory { get; set; }
 }

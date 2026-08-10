@@ -34,6 +34,13 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Fail fast with an actionable message when required secrets are missing, instead of letting
+// the JWT/EF Core pipelines throw an opaque exception later. Never log the secret value itself.
+// Local development: `dotnet user-secrets set "Jwt:Key" "<value>"` (UserSecretsId is set in the
+// .csproj). Deployed environments: App Service configuration / environment variables / Key Vault.
+RequireSecret(builder.Configuration, "Jwt:Key", "JWT signing key", "Jwt__Key");
+RequireSecret(builder.Configuration, "ConnectionStrings:DefaultConnection", "SQL connection string", "ConnectionStrings__DefaultConnection");
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
@@ -54,7 +61,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Gates every Recursor model-training endpoint (temporal-risk, elevated-risk, Phase 10E
+    // behavior-state). Requires an authenticated caller with the "Admin" role claim, matching
+    // the Role claim AuthController already issues on login. Enabling the JWT bearer/authorization
+    // middleware alone does not make an endpoint require this — [Authorize(Policy = "RecursorModelAdmin")]
+    // must be applied explicitly, which RecursorController does for each training action.
+    options.AddPolicy("RecursorModelAdmin", policy => policy.RequireRole("Admin"));
+});
 builder.Services.AddApiAuthorization();
 builder.Services.AddCors(options =>
 {
@@ -135,11 +150,29 @@ builder.Services.AddScoped<IExplanationGenerationService, AzureOpenAiExplanation
 builder.Services.AddScoped<IBehaviorStateFeatureVectorBuilder, BehaviorStateFeatureVectorBuilder>();
 builder.Services.AddScoped<IMultiSignalGuardrailService, MultiSignalGuardrailService>();
 builder.Services.AddScoped<IPhase8AGuardrailModifierService, Phase8AGuardrailModifierService>();
+
+//Sim-specific services
+// Register the universal state service for Dependency Injection
+builder.Services.AddScoped<BlobStateService>();
+
 // Phase 8B: singleton — holds pending adaptation evaluations across requests.
 builder.Services.AddSingleton<IAdaptationEffectivenessService, AdaptationEffectivenessService>();
 // Recursor ML prediction: use real ML.NET service if at least one model file is configured
 // and present; otherwise fall back to the no-op shadow service so the app starts without
 // any trained models.
+static void RequireSecret(IConfiguration configuration, string key, string friendlyName, string envVarName)
+{
+    if (string.IsNullOrWhiteSpace(configuration[key]))
+    {
+        throw new InvalidOperationException(
+            $"Missing required configuration value '{key}' ({friendlyName}). Set it via the " +
+            $"'{envVarName}' environment variable, 'dotnet user-secrets set \"{key}\" \"<value>\"' " +
+            "for local development (see docs/recursor-required-secrets.md), or App Service " +
+            "configuration / Azure Key Vault / managed identity in deployed environments. " +
+            "This value must never be committed to source control.");
+    }
+}
+
 static string? ResolveModelPath(string? configured, string contentRoot) =>
     string.IsNullOrWhiteSpace(configured)
         ? null
@@ -210,12 +243,63 @@ builder.Services.AddSingleton<ITemporalRiskPredictionService>(sp =>
         resolvedTemporalRiskH3Path);
 });
 
+// Stage 10 (corrective pass): warns loudly (never throws — a missing model file is a normal,
+// tolerated state in this architecture; see the prediction services' own shadow/no-op fallback)
+// when a family's configured ModelVersion and an explicit H{n}ModelPath disagree — e.g. the
+// historical drift where TemporalElevatedRiskModelVersion said "v1" while the H1..H3 paths said
+// "_v2.zip". Validation logic lives in ModelVersionConsistencyValidator (unit tested); this
+// runs before the DI container / logging pipeline is built, so it writes directly to stderr
+// rather than through ILogger — still visible in console/App Service log streams.
+static void WarnIfExplicitPathVersionMismatch(
+    string familyName, int horizon, string configuredVersion, string expectedSuffix, string? explicitConfigPath)
+{
+    var problem = ModelVersionConsistencyValidator.CheckExplicitPathMatchesVersion(
+        familyName, horizon, configuredVersion, expectedSuffix, explicitConfigPath);
+    if (problem is not null)
+        Console.Error.WriteLine($"[Startup WARNING] {problem}");
+}
+
+// Stage 3 (corrective pass): fails startup clearly (not a warning) when a resolved model
+// version is inconsistent — a published version directory with no/broken manifest, or an
+// explicit override that points into a different version's published directory. This is
+// distinct from "no model trained yet", which stays a tolerated, non-error state (see the
+// prediction services' own shadow/no-op fallback for a null/missing path) — this only fires
+// when something WAS published/configured but doesn't add up, so it must never load silently.
+static void ValidateResolvedModelVersion(
+    string family, string version, string contentRoot,
+    string? explicitH1, string? explicitH2, string? explicitH3,
+    string resolvedH1, string resolvedH2, string resolvedH3)
+{
+    if (string.IsNullOrWhiteSpace(explicitH1) && string.IsNullOrWhiteSpace(explicitH2) && string.IsNullOrWhiteSpace(explicitH3))
+    {
+        // Canonical mode: all three horizons resolve into the shared immutable version directory.
+        ModelVersionManifestValidator.ValidateVersionDirectory(contentRoot, family, version);
+        return;
+    }
+
+    // Explicit-override (legacy) mode: cross-check each configured horizon individually.
+    if (!string.IsNullOrWhiteSpace(explicitH1))
+        ModelVersionManifestValidator.ValidateExplicitOverridePath(resolvedH1, family, version, 1);
+    if (!string.IsNullOrWhiteSpace(explicitH2))
+        ModelVersionManifestValidator.ValidateExplicitOverridePath(resolvedH2, family, version, 2);
+    if (!string.IsNullOrWhiteSpace(explicitH3))
+        ModelVersionManifestValidator.ValidateExplicitOverridePath(resolvedH3, family, version, 3);
+}
+
 // Phase 10D-1/10D-4: binary elevated-risk predictor — training service and prediction service.
 builder.Services.AddSingleton<ITemporalElevatedRiskModelTrainingService, TemporalElevatedRiskModelTrainingService>();
 
 var elevatedRiskModelVersion =
     builder.Configuration["Recursor:Models:TemporalElevatedRiskModelVersion"]
     ?? TemporalElevatedRiskPredictionService.ModelVersion;
+var elevatedRiskExpectedSuffix =
+    TemporalElevatedRiskModelTrainingService.ExtractVersionSuffix(elevatedRiskModelVersion);
+for (int h = 1; h <= 3; h++)
+{
+    WarnIfExplicitPathVersionMismatch(
+        "TemporalElevatedRisk", h, elevatedRiskModelVersion, elevatedRiskExpectedSuffix,
+        builder.Configuration[$"Recursor:Models:TemporalElevatedRiskH{h}ModelPath"]);
+}
 
 // Use the same version-based path resolver as the trainer — setting TemporalElevatedRiskModelVersion
 // is sufficient to load the right model files without also updating each HnModelPath key.
@@ -229,6 +313,13 @@ var resolvedElevatedRiskH3Path = TemporalElevatedRiskModelTrainingService.Resolv
     3, elevatedRiskModelVersion, builder.Environment.ContentRootPath,
     builder.Configuration["Recursor:Models:TemporalElevatedRiskH3ModelPath"]);
 
+ValidateResolvedModelVersion(
+    TemporalElevatedRiskModelTrainingService.ModelFamily, elevatedRiskModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskH1ModelPath"],
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskH2ModelPath"],
+    builder.Configuration["Recursor:Models:TemporalElevatedRiskH3ModelPath"],
+    resolvedElevatedRiskH1Path, resolvedElevatedRiskH2Path, resolvedElevatedRiskH3Path);
+
 builder.Services.AddSingleton<ITemporalElevatedRiskPredictionService>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<TemporalElevatedRiskPredictionService>>();
@@ -238,6 +329,52 @@ builder.Services.AddSingleton<ITemporalElevatedRiskPredictionService>(sp =>
         resolvedElevatedRiskH2Path,
         resolvedElevatedRiskH3Path,
         elevatedRiskModelVersion);
+});
+
+// Phase 10E: multiclass behavior-state predictor (shadow-only) — training service and
+// prediction service. Registration always happens (mirrors the elevated-risk pattern above);
+// whether the prediction service is actually invoked per-window is gated separately by the
+// Recursor:Models:TemporalBehaviorStateEnabled flag checked in RecursorIngestionService.
+builder.Services.AddSingleton<ITemporalBehaviorStateModelTrainingService, TemporalBehaviorStateModelTrainingService>();
+
+var behaviorStateModelVersion =
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateModelVersion"]
+    ?? TemporalBehaviorStatePredictionService.ModelVersion;
+var behaviorStateExpectedSuffix =
+    TemporalBehaviorStateModelTrainingService.ExtractVersionSuffix(behaviorStateModelVersion);
+for (int h = 1; h <= 3; h++)
+{
+    WarnIfExplicitPathVersionMismatch(
+        "TemporalBehaviorState", h, behaviorStateModelVersion, behaviorStateExpectedSuffix,
+        builder.Configuration[$"Recursor:Models:TemporalBehaviorStateH{h}ModelPath"]);
+}
+
+var resolvedBehaviorStateH1Path = TemporalBehaviorStateModelTrainingService.ResolveVersionedModelPath(
+    1, behaviorStateModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateH1ModelPath"]);
+var resolvedBehaviorStateH2Path = TemporalBehaviorStateModelTrainingService.ResolveVersionedModelPath(
+    2, behaviorStateModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateH2ModelPath"]);
+var resolvedBehaviorStateH3Path = TemporalBehaviorStateModelTrainingService.ResolveVersionedModelPath(
+    3, behaviorStateModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateH3ModelPath"]);
+
+ValidateResolvedModelVersion(
+    TemporalBehaviorStateModelTrainingService.ModelFamily, behaviorStateModelVersion, builder.Environment.ContentRootPath,
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateH1ModelPath"],
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateH2ModelPath"],
+    builder.Configuration["Recursor:Models:TemporalBehaviorStateH3ModelPath"],
+    resolvedBehaviorStateH1Path, resolvedBehaviorStateH2Path, resolvedBehaviorStateH3Path);
+
+builder.Services.AddSingleton<ITemporalBehaviorStatePredictionService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<TemporalBehaviorStatePredictionService>>();
+    return new TemporalBehaviorStatePredictionService(
+        logger,
+        resolvedBehaviorStateH1Path,
+        resolvedBehaviorStateH2Path,
+        resolvedBehaviorStateH3Path,
+        behaviorStateModelVersion);
 });
 
 bool anyModelPresent =
@@ -310,16 +447,23 @@ else
     app.UseHsts();
 }
 
-// Use the CORS policy
-app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
+// Stage 2 (corrective pass): UseRouting() must run before UseAuthentication()/UseAuthorization()
+// so endpoint-specific metadata (e.g. [Authorize(Policy = "RecursorModelAdmin")] on
+// RecursorController's training actions) has actually been selected by the time the
+// authorization middleware evaluates it. The previous order ran CORS/auth/authz ahead of
+// routing, so authorization always saw a null endpoint and effectively never enforced
+// per-endpoint policies through the real request pipeline (see HostedHttpAuthorizationTests).
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Use the CORS policy
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
 // Add services to the container.
 
 //builder.Services.AddEndpointsApiExplorer();
@@ -390,3 +534,8 @@ catch (Exception ex)
 }*/
 //NCATAIBlazorFrontendTest.Server.Recursor.ML.RecursorMlTrainingRunner.TrainHintDependenceModel_WithEmbeddings();
 app.Run();
+
+// Stage 3 (corrective pass): exposes the top-level Program for WebApplicationFactory<Program> in
+// the test project (HostedHttpAuthorizationTests), so authorization can be verified through the
+// real hosted ASP.NET Core pipeline instead of only via reflection/direct policy evaluation.
+public partial class Program { }

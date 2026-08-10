@@ -58,22 +58,33 @@ The endpoint returns a `TemporalRiskTrainingReport` with:
   - `labelDistribution` — `{"low": N, "medium": N, "high": N}`
   - `macroAccuracy` — macro-averaged accuracy on the held-out 20% test split
   - `logLoss` — multiclass log loss
-  - `modelPath` — where the model zip was written (relative to content root)
+  - `modelPath` — the artifact's path inside its published immutable version directory
+    (`Recursor/TrainingModels/versions/temporal-risk/{version}/h{horizon}.zip`) — **not** the
+    flat path the running app actually loads from (see below)
   - `error` — set if training failed or was skipped for this horizon
 
-3. **Restart or redeploy the server** to load the newly trained models.
-   `TemporalRiskPredictionService` is a singleton that loads model files once at startup —
-   the running process will not pick up newly written zips until the app restarts.
+3. **Point the runtime config at the published artifacts, then restart or redeploy.**
+   Unlike the elevated-risk and behavior-state families, `TemporalRiskPredictionService`'s
+   runtime wiring in `Program.cs` only ever loads from the three explicit
+   `Recursor:Models:TemporalRiskH{1,2,3}ModelPath` config keys — it does not auto-derive a path
+   from `TemporalRiskModelVersion` the way the other two families do. After training, set those
+   three keys to the `h1.zip`/`h2.zip`/`h3.zip` paths inside the version directory the training
+   report's `modelPath` values point at (see `docs/recursor-model-versioning.md` for the full
+   artifact contract). `TemporalRiskPredictionService` is a singleton that loads model files
+   once at startup — the running process will not pick up a newly published version until the
+   app restarts with the updated config.
 
 After restart, `TemporalRiskPredictionService` will load all three horizon models and
 run shadow inference on every ingestion window.
 
 > **Azure App Service caution:** If the app is deployed as a read-only package (the default
-> zip-deploy mode), relative model paths like `Recursor/TrainingModels/temporal_risk_h1_v1.zip`
-> will refer to a location inside the read-only package mount and writes will fail. In that
-> environment, either train locally and include the model zips in the deployment artifact, or
-> set the three `Recursor:Models:TemporalRiskH*ModelPath` config keys to absolute paths on a
-> writable volume (e.g. `D:\home\data\models\temporal_risk_h1_v1.zip` on Windows App Service).
+> zip-deploy mode), relative model paths under `Recursor/TrainingModels/versions/...` will
+> refer to a location inside the read-only package mount and training writes will fail. In that
+> environment, either train locally and include the published version directory in the
+> deployment artifact, or set the three `Recursor:Models:TemporalRiskH*ModelPath` config keys to
+> absolute paths on a writable volume (e.g. `D:\home\data\models\temporal_risk_h1_v1.zip` on
+> Windows App Service — an explicit override path is not required to live under `ModelRoot` or
+> follow the version-directory naming).
 
 ---
 
@@ -81,11 +92,14 @@ run shadow inference on every ingestion window.
 
 | Config key | Default path |
 |---|---|
-| `Recursor:Models:TemporalRiskH1ModelPath` | `Recursor/TrainingModels/temporal_risk_h1_v1.zip` |
-| `Recursor:Models:TemporalRiskH2ModelPath` | `Recursor/TrainingModels/temporal_risk_h2_v1.zip` |
-| `Recursor:Models:TemporalRiskH3ModelPath` | `Recursor/TrainingModels/temporal_risk_h3_v1.zip` |
+| `Recursor:Models:TemporalRiskH1ModelPath` | `Recursor/TrainingModels/versions/temporal-risk/temporal-risk-v1/h1.zip` |
+| `Recursor:Models:TemporalRiskH2ModelPath` | `Recursor/TrainingModels/versions/temporal-risk/temporal-risk-v1/h2.zip` |
+| `Recursor:Models:TemporalRiskH3ModelPath` | `Recursor/TrainingModels/versions/temporal-risk/temporal-risk-v1/h3.zip` |
 
-Paths are relative to the server `ContentRootPath` unless absolute.
+Paths are relative to the server `ContentRootPath` unless absolute. These are explicit
+per-horizon overrides — temporal-risk's runtime wiring always requires them (it does not
+auto-derive a path from a configured version label the way elevated-risk/behavior-state do; see
+`docs/recursor-model-versioning.md`).
 
 ---
 

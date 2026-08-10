@@ -49,12 +49,16 @@ namespace NCATAIBlazorFrontendTest.Server.Controllers
 
                 PasswordHelper.CreatePasswordHash(request.Password, out string passwordHash, out string passwordSalt);
 
+                // Self-service registration must never grant an elevated role: the "Admin" role
+                // claim gates the RecursorModelAdmin authorization policy on model-training
+                // endpoints, so honoring a caller-supplied Role here would let anyone self-escalate.
+                // Promoting an account to Admin requires a direct data change, not this endpoint.
                 var user = new User
                 {
                     Username = request.Username,
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
-                    Role = request.Role
+                    Role = "User"
                 };
 
                 _context.Users.Add(user);

@@ -1,32 +1,54 @@
 @page "/profile"
+@page "/profile/{TargetUserId}"
 @attribute [Authorize]
 @using System.Security.Claims
 @inject List<TestUserProfile> TestUsers
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthStateProvider
 
-<PageTitle>My Profile</PageTitle>
+<PageTitle>@(string.IsNullOrEmpty(TargetUserId) ? "My Profile" : "User Profile")</PageTitle>
 
-<h2>My Profile</h2>
+<h2>@(string.IsNullOrEmpty(TargetUserId) ? "My Profile" : "User Profile")</h2>
 
 <AuthorizeView>
     <Authorized>
         @{
-            var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-            var username = context.User.Identity?.Name ?? userId;
-            var role = context.User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
-            var profile = TestUsers.FirstOrDefault(u => u.UserId == userId);
+            var selfUserId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var isAdmin = context.User.IsInRole("Admin");
+
+            string displayUserId;
+            TestUserProfile? profile;
+
+            if (!string.IsNullOrEmpty(TargetUserId) && isAdmin)
+            {
+                displayUserId = TargetUserId;
+                profile = TestUsers.FirstOrDefault(u => u.UserId == TargetUserId);
+            }
+            else
+            {
+                displayUserId = selfUserId;
+                profile = TestUsers.FirstOrDefault(u => u.UserId == selfUserId);
+            }
+
+            var username = profile?.Username ?? context.User.Identity?.Name ?? displayUserId;
+            var role = profile?.Role ?? context.User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
         }
 
         <div class="card mb-4 p-3">
             <h5 class="fw-semibold mb-1">@username</h5>
             <p class="text-muted mb-0 fs-13">Role: <strong>@role</strong></p>
-            <p class="text-muted mb-0 fs-13">User ID: <code>@userId</code></p>
+            <p class="text-muted mb-0 fs-13">User ID: <code>@displayUserId</code></p>
         </div>
 
-        @if (profile is not null && profile.PlayedSimIds.Count > 0)
+        @if (_loadingSims)
         {
-            <h5 class="mb-3">Your Simulations</h5>
+            <p><em>Loading simulations...</em></p>
+        }
+        else if (_playedSimIds.Count > 0)
+        {
+            <h5 class="mb-3">@(displayUserId == selfUserId ? "Your" : $"{username}'s") Simulations</h5>
             <div class="row g-3">
-                @foreach (var simId in profile.PlayedSimIds)
+                @foreach (var simId in _playedSimIds)
                 {
                     <div class="col-md-4">
                         <div class="card h-100 p-3">
@@ -34,7 +56,7 @@
                                 <i class="ti ti-device-gamepad-2 me-1"></i>@simId
                             </h6>
                             <a class="btn btn-sm btn-outline-primary mt-auto"
-                               href="/recursor-sims/@Uri.EscapeDataString(simId)/users/@Uri.EscapeDataString(userId)/sessions">
+                               href="/recursor-sims/@Uri.EscapeDataString(simId)/users/@Uri.EscapeDataString(displayUserId)/sessions">
                                 View Session Details
                             </a>
                         </div>
@@ -48,3 +70,38 @@
         }
     </Authorized>
 </AuthorizeView>
+
+@code {
+    [Parameter] public string? TargetUserId { get; set; }
+
+    private List<string> _playedSimIds = new();
+    private bool _loadingSims = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loadingSims = true;
+        _playedSimIds = new();
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var selfUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var isAdmin = authState.User.IsInRole("Admin");
+
+            var target = !string.IsNullOrEmpty(TargetUserId) && isAdmin ? TargetUserId : selfUserId;
+
+            if (!string.IsNullOrEmpty(target))
+            {
+                _playedSimIds = await Http.GetFromJsonAsync<List<string>>(
+                    $"api/recursor/sim-explorer/users/{Uri.EscapeDataString(target)}/sims") ?? new();
+            }
+        }
+        catch
+        {
+            _playedSimIds = new();
+        }
+        finally
+        {
+            _loadingSims = false;
+        }
+    }
+}

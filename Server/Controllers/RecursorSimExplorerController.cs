@@ -30,6 +30,17 @@ public class RecursorSimExplorerController : ControllerBase
     }
 
     /// <summary>
+    /// GET /api/recursor/sim-explorer/users
+    /// Returns all unique users cross-simulation represented in ADX with aggregate counts.
+    /// </summary>
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = await _simExplorer.GetAllUsersAsync();
+        return Ok(users);
+    }
+
+    /// <summary>
     /// GET /api/recursor/sim-explorer/sims/{simId}/users
     /// Returns all users that have sessions for the specified sim.
     /// </summary>
@@ -38,6 +49,17 @@ public class RecursorSimExplorerController : ControllerBase
     {
         var users = await _simExplorer.GetUsersForSimAsync(simId);
         return Ok(users);
+    }
+
+    /// <summary>
+    /// GET /api/recursor/sim-explorer/users/{userId}/sims
+    /// Returns a list of distinct SimIds that the specified user has recorded telemetry for.
+    /// </summary>
+    [HttpGet("users/{userId}/sims")]
+    public async Task<IActionResult> GetSimsForUser(string userId)
+    {
+        var sims = await _simExplorer.GetSimIdsForUserAsync(userId);
+        return Ok(sims);
     }
 
     /// <summary>
@@ -52,13 +74,16 @@ public class RecursorSimExplorerController : ControllerBase
     }
 
     /// <summary>
-    /// GET /api/recursor/sim-explorer/sims/{simId}/users/{userId}/sessions/{sessionId}
+    /// GET /api/recursor/sim-explorer/sims/{simId}/users/{userId}/sessions/{sessionId}?riskModelVersion=&amp;behaviorStateModelVersion=
     /// Returns detail for a single session: Recursor timeline, raw events, and event counts.
+    /// Stage 10: optional model-version overrides — see RecursorDashboardController.GetSessionTimeline.
     /// </summary>
     [HttpGet("sims/{simId}/users/{userId}/sessions/{sessionId}")]
-    public async Task<IActionResult> GetSessionDetail(string simId, string userId, string sessionId)
+    public async Task<IActionResult> GetSessionDetail(
+        string simId, string userId, string sessionId,
+        [FromQuery] string? riskModelVersion = null, [FromQuery] string? behaviorStateModelVersion = null)
     {
-        var detail = await _simExplorer.GetSessionDetailAsync(simId, userId, sessionId);
+        var detail = await _simExplorer.GetSessionDetailAsync(simId, userId, sessionId, riskModelVersion, behaviorStateModelVersion);
         if (detail is null)
             return NotFound(new { Error = $"Session '{sessionId}' not found for sim '{simId}' user '{userId}'." });
         return Ok(detail);

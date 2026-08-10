@@ -119,6 +119,47 @@ else if (_detail is not null)
             </div>
         </div>
 
+        <!-- Behavior-state (Phase 10E, shadow-only) summary cards -->
+        <p class="text-muted small mb-1"><strong>Shadow-only behavior-state prediction</strong> — observational only, never controls adaptation.</p>
+        <!-- Stage 10: explicit model-version selector — the timeline never mixes versions; this
+             shows exactly which version the accuracy figures below were computed against. -->
+        <div class="d-flex align-items-center gap-2 mb-2" style="font-size:0.85rem">
+            <span class="text-muted">Model version:</span>
+            @if (_availableBehaviorStateVersions.Count > 1)
+            {
+                <select class="form-select form-select-sm" style="width:auto" value="@_selectedBehaviorStateVersion" @onchange="OnBehaviorStateVersionChangedAsync">
+                    @foreach (var v in _availableBehaviorStateVersions)
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <code>@(tl.SelectedBehaviorStateModelVersion is { Length: > 0 } ? tl.SelectedBehaviorStateModelVersion : "(none)")</code>
+            }
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6 col-md-4">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.H1BehaviorStateAccuracy)</div>
+                    <div class="text-muted small">H1 Behavior-State Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.H2BehaviorStateAccuracy)</div>
+                    <div class="text-muted small">H2 Behavior-State Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card text-center py-2">
+                    <div class="fs-5 fw-bold">@FormatPct(tl.H3BehaviorStateAccuracy)</div>
+                    <div class="text-muted small">H3 Behavior-State Accuracy</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Timeline table -->
         <div class="table-responsive">
             <table class="table table-sm table-bordered" style="font-size:0.82rem">
@@ -139,6 +180,9 @@ else if (_detail is not null)
                         <th>H1</th>
                         <th>H2</th>
                         <th>H3</th>
+                        <th>H1 State (shadow)</th>
+                        <th>H2 State (shadow)</th>
+                        <th>H3 State (shadow)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -218,6 +262,9 @@ else if (_detail is not null)
                             <td>@HorizonCell(w, 1)</td>
                             <td>@HorizonCell(w, 2)</td>
                             <td>@HorizonCell(w, 3)</td>
+                            <td>@BehaviorStateHorizonCell(w, 1)</td>
+                            <td>@BehaviorStateHorizonCell(w, 2)</td>
+                            <td>@BehaviorStateHorizonCell(w, 3)</td>
                         </tr>
                     }
                 </tbody>
@@ -225,7 +272,8 @@ else if (_detail is not null)
         </div>
         <p class="text-muted small mt-1">
             Win = window index &bull; State = guardrail behavior state &bull;
-            Risk = trajectory near-term risk &bull; H1/H2/H3 = temporal prediction horizon (✓ / ✗ / —)
+            Risk = trajectory near-term risk &bull; H1/H2/H3 = near-term-risk temporal prediction horizon (✓ / ✗ / —) &bull;
+            H1/H2/H3 State (shadow) = Phase 10E shadow-only behavior-state prediction vs eventual outcome
         </p>
     }
 
@@ -350,12 +398,38 @@ else if (_detail is not null)
 
     private List<string> _categories = [];
 
+    // Stage 10: behavior-state model-version selector. Populated from the ADX-observed distinct
+    // versions for this session; changing it re-fetches the timeline scoped to exactly that
+    // version, so predictions/accuracy never silently mix versions.
+    private List<string> _availableBehaviorStateVersions = [];
+    private string? _selectedBehaviorStateVersion;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            _detail = await Http.GetFromJsonAsync<SimExplorerSessionDetailDto>(
-                $"api/recursor/sim-explorer/sims/{Uri.EscapeDataString(SimId)}/users/{Uri.EscapeDataString(UserId)}/sessions/{Uri.EscapeDataString(SessionId)}");
+            _availableBehaviorStateVersions = await Http.GetFromJsonAsync<List<string>>(
+                $"api/recursor/dashboard/session/{Uri.EscapeDataString(SessionId)}/behavior-state-model-versions") ?? [];
+        }
+        catch
+        {
+            // Non-fatal — the selector just starts empty (still shows the configured default).
+        }
+
+        await LoadDetailAsync(behaviorStateModelVersion: null);
+    }
+
+    private async Task LoadDetailAsync(string? behaviorStateModelVersion)
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var url = $"api/recursor/sim-explorer/sims/{Uri.EscapeDataString(SimId)}/users/{Uri.EscapeDataString(UserId)}/sessions/{Uri.EscapeDataString(SessionId)}";
+            if (!string.IsNullOrEmpty(behaviorStateModelVersion))
+                url += $"?behaviorStateModelVersion={Uri.EscapeDataString(behaviorStateModelVersion)}";
+
+            _detail = await Http.GetFromJsonAsync<SimExplorerSessionDetailDto>(url);
 
             if (_detail is not null)
             {
@@ -365,6 +439,10 @@ else if (_detail is not null)
                     .Distinct()
                     .OrderBy(c => c)
                     .ToList();
+
+                // Reflect the version the server actually used (the deterministic default the
+                // first time through, or the caller's explicit selection thereafter).
+                _selectedBehaviorStateVersion = _detail.Timeline?.SelectedBehaviorStateModelVersion;
             }
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -381,24 +459,39 @@ else if (_detail is not null)
         }
     }
 
+    private async Task OnBehaviorStateVersionChangedAsync(ChangeEventArgs e)
+    {
+        var selected = e.Value?.ToString();
+        await LoadDetailAsync(selected);
+    }
+
     // ── Display helpers ───────────────────────────────────────────────────────
 
     private static string FormatPct(double? v) => v.HasValue ? $"{v.Value:P0}" : "—";
 
     private static string TruncateStr(string s, int len) => s.Length <= len ? s : s[..len] + "…";
 
-    private static string StateRowClass(string state) => state switch
+    // Stage 5 (corrective pass): normalizes through BehaviorStateLabelPolicy (trim/case/alias)
+    // before matching, instead of an exact-string switch — "Struggling", " struggling ", and
+    // "struggling" must all resolve to the same row class, and "steady" must resolve the same
+    // as "stable".
+    private static string StateRowClass(string state)
     {
-        "struggling" => "table-danger",
-        "recovering" => "table-warning",
-        "mastering"  => "table-success",
-        "conflicted" => "table-secondary",
-        _            => ""
-    };
+        var canonical = BehaviorStateLabelPolicy.Normalize(state).CanonicalLabel;
+        return canonical switch
+        {
+            "struggling" => "table-danger",
+            "recovering" => "table-warning",
+            "mastering"  => "table-success",
+            "conflicted" => "table-secondary",
+            _            => ""
+        };
+    }
 
     private static MarkupString StateBadge(string state)
     {
-        var cls = state switch
+        var canonical = BehaviorStateLabelPolicy.Normalize(state).CanonicalLabel ?? state;
+        var cls = canonical switch
         {
             "struggling" => "bg-danger",
             "recovering" => "bg-warning text-dark",
@@ -407,7 +500,7 @@ else if (_detail is not null)
             "conflicted" => "bg-secondary",
             _            => "bg-light text-dark"
         };
-        return (MarkupString)$"<span class=\"badge {cls}\">{state}</span>";
+        return (MarkupString)$"<span class=\"badge {cls}\">{canonical}</span>";
     }
 
     private static MarkupString RiskBadge(string risk)
@@ -492,6 +585,34 @@ else if (_detail is not null)
         };
         var label = string.IsNullOrEmpty(risk) ? "?" : risk;
         return $"<span class=\"badge {cls}\">{label}</span>";
+    }
+
+    private static MarkupString BehaviorStateHorizonCell(WindowTimelineDto w, int horizon)
+    {
+        var pred   = w.BehaviorStatePredictions.FirstOrDefault(p => p.Horizon == horizon);
+        var target = w.TemporalPredictionTargets.FirstOrDefault(t => t.Horizon == horizon);
+        var correct = horizon == 1 ? w.H1BehaviorStateCorrect
+                    : horizon == 2 ? w.H2BehaviorStateCorrect
+                    :                w.H3BehaviorStateCorrect;
+
+        if (pred is null && target is null)
+            return (MarkupString)"<span class=\"text-muted\">—</span>";
+
+        var predHtml = pred is not null ? StateBadge(pred.PredictedBehaviorState).Value : "—";
+        // Stage 5 (corrective pass): resolves through the same BehaviorStateLabelPolicy the
+        // server-side correctness calculation (DashboardTimelineBuilder.ComputeBehaviorStateCorrectness)
+        // already uses, instead of a separate `!= "unknown"` check — so the label shown here and
+        // the ✓/✗ correctness icon next to it can never disagree about what counts as "pending".
+        var targetHtml = BehaviorStateLabelPolicy.Normalize(target?.TargetBehaviorState).IsTrainable
+            ? StateBadge(target!.TargetBehaviorState).Value
+            : "<span class=\"text-muted\">pending</span>";
+        var icon = correct switch
+        {
+            true  => "<span class=\"text-success fw-bold\">✓</span>",
+            false => "<span class=\"text-danger fw-bold\">✗</span>",
+            null  => "<span class=\"text-muted\">—</span>"
+        };
+        return (MarkupString)$"{predHtml}&rarr;{targetHtml} {icon}";
     }
 
     private static bool HasExplanation(AdaptationDecisionTimelineDto ad) =>

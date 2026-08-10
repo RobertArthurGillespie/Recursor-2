@@ -1,5 +1,6 @@
 using System.Text.Json;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
+using NCATAIBlazorFrontendTest.Shared;
 
 namespace NCATAIBlazorFrontendTest.Server.Recursor.Services;
 
@@ -128,7 +129,7 @@ public class TemporalEmbeddingService : ITemporalEmbeddingService
                 SourceWindowIndex = source.WindowIndex,
                 TargetWindowIndex = current.WindowIndex,
                 Horizon = horizon,
-                TargetBehaviorState = current.OverallBehaviorState,
+                TargetBehaviorState = NormalizeTargetBehaviorState(current.OverallBehaviorState),
                 TargetNearTermRisk = trajectorySummary?.PredictedNearTermRisk ?? "low",
                 TargetConfusionScore = current.ConfusionScore,
                 TargetGoalUnderstanding = current.GoalUnderstanding,
@@ -138,6 +139,31 @@ public class TemporalEmbeddingService : ITemporalEmbeddingService
         }
 
         return targets;
+    }
+
+    // Stage 5 (corrective pass): persists through BehaviorStateLabelPolicy instead of the raw
+    // MultiSignalGuardrailSummary.OverallBehaviorState literal, so every consumer of
+    // TargetBehaviorState reads an already-canonical/well-known value instead of each having to
+    // remember to re-normalize (the Blazor dashboard bypass this pass also fixes is exactly what
+    // happens when a consumer forgets to). Every branch below still resolves identically under
+    // BehaviorStateLabelPolicy.Normalize on read, so this changes nothing about which rows are
+    // trainable/correct — it only removes drift (whitespace, casing, aliases) at the source.
+    internal static string NormalizeTargetBehaviorState(string? rawOverallBehaviorState)
+    {
+        var result = BehaviorStateLabelPolicy.Normalize(rawOverallBehaviorState);
+        return result.Status switch
+        {
+            // Never fabricate "stable" (or any label) for a row that lacks evidence.
+            BehaviorStateLabelStatus.Valid => result.CanonicalLabel!,
+            BehaviorStateLabelStatus.Missing => "",
+            // Canonical lowercase sentinel — the exact literal every other consumer (KQL,
+            // DashboardTimelineBuilder, ClassifyRow) already checks for.
+            BehaviorStateLabelStatus.NoSignal => "unknown",
+            // Invalid: preserve the raw literal verbatim (not blanked) so it remains visible for
+            // audit — BehaviorStateLabelPolicy.Normalize will classify it as Invalid again on
+            // every subsequent read, identically to today.
+            _ => rawOverallBehaviorState ?? "",
+        };
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

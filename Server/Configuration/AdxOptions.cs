@@ -13,7 +13,7 @@ public class AdxOptions
     public string IngestUri { get; set; } = "";
 
     /// <summary>ADX database name.</summary>
-    public string Database { get; set; } = "RecursorDb";
+    public string Database { get; set; } = "RecursorDbMain";
 
     /// <summary>Azure tenant ID. Required for ServicePrincipal and UserPrompt auth.</summary>
     public string TenantId { get; set; } = "";

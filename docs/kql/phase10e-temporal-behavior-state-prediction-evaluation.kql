@@ -1,0 +1,180 @@
+// ============================================================
+// Phase 10E — Behavior-State Prediction Evaluation
+// ============================================================
+// Read-only analytics. Joins TemporalBehaviorStatePredictions to
+// TemporalPredictionTargets to evaluate the shadow-only H1/H2/H3 behavior-state
+// predictor. No tables are created or altered, and no C# behavior is changed
+// by running this script.
+//
+// A prediction row is joined to its eventual target on
+// (SessionId, UserId, Horizon, WindowIndex == SourceWindowIndex) — the same
+// join convention used by docs/kql/phase10b-temporal-embeddings-setup.kql and
+// the elevated-risk model comparison query.
+//
+// Stage 12 (corrective pass):
+//   - Both sides are deduplicated (arg_max by logical key) before joining — ADX is
+//     append-only, so a replayed/retried ingest must not inflate any count here.
+//
+// Stage 6/9 (corrective pass): predictions dedup by LogicalPredictionId, not raw PredictionId —
+// pre-migration rows (ingested before the PredictionId column existed) have PredictionId == ""
+// and fall back to a legacy composite identity (SessionId, WindowIndex, Horizon, ModelVersion),
+// the same fields PredictionId itself is a deterministic hash of. Without this fallback, every
+// blank-PredictionId row across every session would collapse into a single logical prediction.
+// New rows (nonblank PredictionId) are unaffected. No destructive backfill of legacy rows is
+// required or performed by this script.
+//   - Label classification uses the SAME NormalizeBehaviorState function as
+//     BehaviorStateLabelPolicy.Normalize (C#) and AdxDashboardQueryService's dashboard
+//     KQL, instead of an ad-hoc `isempty(...) or ... == "unknown"` check — this also
+//     now distinguishes missing / unknown / invalid rather than collapsing them into
+//     one "invalid-target" bucket.
+//   - Section 3 (per-class precision/recall/F1) forces all five canonical classes into
+//     the output even with zero support/predictions, mirroring the Stage 8 fix to
+//     TemporalBehaviorStateModelTrainingService.ComputeMetricsSlice — a class the
+//     model never predicts can no longer silently vanish from macro-F1.
+//   - Sections are segmented by SimId/ScenarioId/ModelVersion (Stage 11) and every
+//     section excludes non-canonical targets from correctness the same way.
+//
+// Coverage states (never conflate these):
+//   "resolved"        — a target row exists and TargetBehaviorState is one of
+//                        the five canonical labels (see BehaviorStateLabelPolicy.cs).
+//   "pending"         — no target row exists yet for this window/horizon
+//                        (expected for the most recent windows of an
+//                        in-progress session — NOT an error).
+//   "missing-target"  — a target row exists but TargetBehaviorState is blank.
+//   "unknown-target"  — a target row exists but the guardrail found no signal.
+//   "invalid-target"  — a target row exists with an unrecognized label literal.
+// None of the last three are ever counted as an incorrect prediction.
+//
+// Prerequisites:
+//   - Phase 10E running: TemporalBehaviorStatePredictions is being populated.
+//
+// Run Section 0 first (Shift+Enter) to declare the shared lets, then any section below.
+// ============================================================
+
+
+// ── Section 0: shared classification, dedup, and join — run before any section below ──
+let CanonicalBehaviorStates = dynamic(["struggling","recovering","stable","mastering","conflicted"]);
+let NormalizeBehaviorState = (raw: string) {
+    let trimmed = trim(" ", tolower(raw));
+    let mapped = iif(trimmed == "steady", "stable", trimmed);
+    case(
+        isempty(trimmed), "missing",
+        trimmed == "unknown", "unknown",
+        mapped in (CanonicalBehaviorStates), mapped,
+        "invalid"
+    )
+};
+let predictions = TemporalBehaviorStatePredictions
+| extend LogicalPredictionId = iif(isempty(PredictionId), strcat("legacy|", SessionId, "|", tostring(WindowIndex), "|", tostring(Horizon), "|", ModelVersion), PredictionId)
+| summarize arg_max(CreatedAtUtc, *) by LogicalPredictionId;
+let allTargets = TemporalPredictionTargets
+| summarize arg_max(CreatedAtUtc, *) by SessionId, UserId, SourceWindowIndex, Horizon;
+let validTargets = allTargets
+| extend NormalizedTarget = NormalizeBehaviorState(TargetBehaviorState)
+| where NormalizedTarget in (CanonicalBehaviorStates); // excludes missing/unknown/invalid — never a legitimate class
+let joined = predictions
+| join kind=inner validTargets on SessionId, UserId, Horizon
+| where WindowIndex == SourceWindowIndex
+| extend PredictedNormalized = NormalizeBehaviorState(PredictedBehaviorState)
+| project ModelVersion, Horizon, SimId, ScenarioId, Actual = NormalizedTarget, Predicted = PredictedNormalized;
+joined | take 10
+
+
+// ── Section 1: Prediction coverage (resolved / pending / missing / unknown / invalid) ──
+predictions
+| join kind=leftouter allTargets on SessionId, UserId, Horizon, $left.WindowIndex == $right.SourceWindowIndex
+| extend NormalizedTarget = iif(isnull(SourceWindowIndex), "pending", NormalizeBehaviorState(TargetBehaviorState))
+| extend Coverage = case(
+    NormalizedTarget == "pending", "pending",
+    NormalizedTarget == "missing", "missing-target",
+    NormalizedTarget == "unknown", "unknown-target",
+    NormalizedTarget == "invalid", "invalid-target",
+    "resolved"
+  )
+| summarize Count = count() by ModelVersion, Horizon, Coverage
+| order by ModelVersion asc, Horizon asc, Coverage asc
+
+
+// ── Section 2: H1 / H2 / H3 accuracy (resolved rows only) ───────────────────
+joined
+| summarize
+    Total = count(),
+    Correct = countif(Predicted == Actual),
+    Accuracy = countif(Predicted == Actual) * 1.0 / count()
+    by Horizon, ModelVersion
+| order by Horizon asc, ModelVersion asc
+
+
+// ── Section 3: Per-class precision / recall / F1 (all 5 canonical classes always shown) ──
+// SupportCount = actual occurrences of the class (recall denominator).
+// PredictedCount = times the model predicted the class (precision denominator).
+// TruePositive = correct predictions of that class.
+// A class with zero support and zero predictions still appears with
+// Precision=0, Recall=0, F1=0 — never silently dropped from the output.
+let modelHorizons = joined | summarize by ModelVersion, Horizon;
+let classUniverse = modelHorizons | extend ClassLabel = CanonicalBehaviorStates | mv-expand ClassLabel to typeof(string);
+let byActual = joined
+| summarize SupportCount = count(), TruePositive = countif(Predicted == Actual)
+    by ModelVersion, Horizon, ClassLabel = Actual;
+let byPredicted = joined
+| summarize PredictedCount = count()
+    by ModelVersion, Horizon, ClassLabel = Predicted;
+classUniverse
+| join kind=leftouter byActual on ModelVersion, Horizon, ClassLabel
+| join kind=leftouter byPredicted on ModelVersion, Horizon, ClassLabel
+| project
+    ModelVersion,
+    Horizon,
+    ClassLabel,
+    SupportCount   = coalesce(SupportCount, 0),
+    TruePositive   = coalesce(TruePositive, 0),
+    PredictedCount = coalesce(PredictedCount, 0)
+| extend
+    Recall    = iif(SupportCount == 0, 0.0, TruePositive * 1.0 / SupportCount),
+    Precision = iif(PredictedCount == 0, 0.0, TruePositive * 1.0 / PredictedCount)
+| extend F1 = iif(Precision + Recall == 0, 0.0, 2.0 * Precision * Recall / (Precision + Recall))
+| order by ModelVersion asc, Horizon asc, ClassLabel asc
+
+
+// ── Section 4: Confusion matrix (actual x predicted counts, all canonical pairs) ──
+let classUniverse4 = (joined | summarize by ModelVersion, Horizon)
+| extend Actual = CanonicalBehaviorStates | mv-expand Actual to typeof(string)
+| extend Predicted = CanonicalBehaviorStates | mv-expand Predicted to typeof(string);
+let observed = joined | summarize Count = count() by ModelVersion, Horizon, Actual, Predicted;
+classUniverse4
+| join kind=leftouter observed on ModelVersion, Horizon, Actual, Predicted
+| project ModelVersion, Horizon, Actual, Predicted, Count = coalesce(Count, 0)
+| order by ModelVersion asc, Horizon asc, Actual asc, Predicted asc
+
+
+// ── Section 5: Metrics by SimId (Stage 11 segmentation) ─────────────────────
+// "All simulations" = this table with SimId summarized away; filter to one SimId
+// (e.g. `| where SimId == "medical-supply-stocking"`) to isolate that simulation —
+// do not read the combined row as proof of cross-simulation generalization.
+joined
+| summarize
+    Total = count(),
+    Correct = countif(Predicted == Actual),
+    Accuracy = countif(Predicted == Actual) * 1.0 / count()
+    by SimId, Horizon, ModelVersion
+| order by SimId asc, Horizon asc
+
+
+// ── Section 6: Metrics by ScenarioId ──────────────────────────────────────────
+joined
+| summarize
+    Total = count(),
+    Correct = countif(Predicted == Actual),
+    Accuracy = countif(Predicted == Actual) * 1.0 / count()
+    by SimId, ScenarioId, Horizon, ModelVersion
+| order by SimId asc, ScenarioId asc, Horizon asc
+
+
+// ── Section 7: Metrics by model version (all sims, all horizons combined) ───
+joined
+| summarize
+    Total = count(),
+    Correct = countif(Predicted == Actual),
+    Accuracy = countif(Predicted == Actual) * 1.0 / count()
+    by ModelVersion
+| order by ModelVersion asc

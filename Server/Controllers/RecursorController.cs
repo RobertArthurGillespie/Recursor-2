@@ -1,9 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using NCATAIBlazorFrontendTest.Server.Configuration;
 using NCATAIBlazorFrontendTest.Server.Recursor.Api;
 using NCATAIBlazorFrontendTest.Server.Recursor.ML;
 using NCATAIBlazorFrontendTest.Server.Recursor.Models;
 using NCATAIBlazorFrontendTest.Server.Recursor.Repositories;
 using NCATAIBlazorFrontendTest.Server.Recursor.Services;
+using NCATAIBlazorFrontendTest.Shared;
 
 namespace NCATAIBlazorFrontendTest.Server.Controllers;
 
@@ -18,8 +23,11 @@ public class RecursorController : ControllerBase
     private readonly ITemporalEmbeddingService _temporalEmbedding;
     private readonly ITemporalRiskModelTrainingService _temporalRiskTraining;
     private readonly ITemporalElevatedRiskModelTrainingService _temporalElevatedRiskTraining;
+    private readonly ITemporalBehaviorStateModelTrainingService _temporalBehaviorStateTraining;
     private readonly IRecursorSimContractValidator _simContractValidator;
     private readonly IConfiguration _config;
+    private readonly RecursorPoliciesOptions _policies;
+    private readonly IWebHostEnvironment _env;
 
     public RecursorController(
         IRecursorSessionService sessionService,
@@ -29,8 +37,11 @@ public class RecursorController : ControllerBase
         ITemporalEmbeddingService temporalEmbedding,
         ITemporalRiskModelTrainingService temporalRiskTraining,
         ITemporalElevatedRiskModelTrainingService temporalElevatedRiskTraining,
+        ITemporalBehaviorStateModelTrainingService temporalBehaviorStateTraining,
         IRecursorSimContractValidator simContractValidator,
-        IConfiguration config)
+        IConfiguration config,
+        IOptions<RecursorPoliciesOptions> policiesOptions,
+        IWebHostEnvironment env)
     {
         _sessionService = sessionService;
         _policyRecommendationService = policyRecommendationService;
@@ -39,8 +50,42 @@ public class RecursorController : ControllerBase
         _temporalEmbedding = temporalEmbedding;
         _temporalRiskTraining = temporalRiskTraining;
         _temporalElevatedRiskTraining = temporalElevatedRiskTraining;
+        _temporalBehaviorStateTraining = temporalBehaviorStateTraining;
         _simContractValidator = simContractValidator;
         _config = config;
+        _policies = policiesOptions.Value;
+        _env = env;
+    }
+
+    /// <summary>
+    /// Returns 403 Forbidden if model training is disabled by configuration or not permitted
+    /// in the current environment; otherwise null, meaning the caller may proceed. This is
+    /// independent of and in addition to the RecursorModelAdmin authorization policy applied
+    /// to each training action — authorization answers "who", this answers "where/whether".
+    /// </summary>
+    internal IActionResult? CheckModelTrainingEnabled()
+    {
+        if (!_policies.EnableModelTraining)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Error = "Model training is disabled by configuration (Recursor:Policies:EnableModelTraining=false)."
+            });
+        }
+
+        var allowedEnvironments = _policies.ModelTrainingAllowedEnvironments ?? Array.Empty<string>();
+        var isAllowedEnvironment = allowedEnvironments.Any(
+            e => string.Equals(e, _env.EnvironmentName, StringComparison.OrdinalIgnoreCase));
+        if (!isAllowedEnvironment)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                Error = $"Model training is not permitted in the '{_env.EnvironmentName}' environment. " +
+                        $"Allowed environments: {string.Join(", ", allowedEnvironments)}."
+            });
+        }
+
+        return null;
     }
 
     /// <summary>POST /api/recursor/sessions/start</summary>
@@ -231,20 +276,42 @@ public class RecursorController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/recursor/train-temporal-risk — Dev/admin only.
+    /// POST /api/recursor/train-temporal-risk — RecursorModelAdmin only.
     ///
     /// Phase 10C-2: Queries joined temporal training rows from ADX, trains one
     /// SdcaMaximumEntropy multiclass model per horizon (1–3), saves model files
     /// to configured paths, and returns a full training report.
     ///
+    /// Optional query parameter: ?modelVersion=temporal-risk-v2
+    /// Allowed characters: letters, numbers, dash, underscore, dot.
+    /// If omitted, uses the configured/default version (temporal-risk-v1).
+    ///
+    /// Stage 4: immutable versioning — an existing version is never retrained/overwritten;
+    /// artifacts publish atomically to versions/temporal-risk/{version}/ only if all three
+    /// horizons train, save, and load-verify successfully (see report.Published).
+    ///
     /// This endpoint trains a shadow-only baseline model. It does NOT affect
     /// adaptation decisions, policy suppression, or any live pipeline behavior.
-    /// Restart the server after training to load the new models.
+    /// Publishing a version does not activate it — update configuration and restart/redeploy.
     /// </summary>
     [HttpPost("train-temporal-risk")]
-    public async Task<IActionResult> TrainTemporalRisk()
+    [Authorize(Policy = "RecursorModelAdmin")]
+    public async Task<IActionResult> TrainTemporalRisk([FromQuery] string? modelVersion = null)
     {
-        var report = await _temporalRiskTraining.TrainAsync();
+        if (CheckModelTrainingEnabled() is { } disabled) return disabled;
+
+        if (modelVersion is not null)
+        {
+            var sanitized = TemporalRiskModelTrainingService.SanitizeModelVersion(modelVersion);
+            if (sanitized != modelVersion || sanitized.Length == 0)
+                return BadRequest(new
+                {
+                    Error = $"Invalid modelVersion '{modelVersion}'. " +
+                            "Use only letters, numbers, dash, underscore, and dot."
+                });
+        }
+
+        var report = await _temporalRiskTraining.TrainAsync(modelVersion);
         return Ok(report);
     }
 
@@ -263,8 +330,11 @@ public class RecursorController : ControllerBase
     /// Shadow-only. Does NOT affect adaptation decisions. Restart after training.
     /// </summary>
     [HttpPost("train-temporal-elevated-risk")]
+    [Authorize(Policy = "RecursorModelAdmin")]
     public async Task<IActionResult> TrainTemporalElevatedRisk([FromQuery] string? modelVersion = null)
     {
+        if (CheckModelTrainingEnabled() is { } disabled) return disabled;
+
         if (modelVersion is not null)
         {
             var sanitized = TemporalElevatedRiskModelTrainingService.SanitizeModelVersion(modelVersion);
@@ -277,6 +347,45 @@ public class RecursorController : ControllerBase
         }
 
         var report = await _temporalElevatedRiskTraining.TrainAsync(modelVersion);
+        return Ok(report);
+    }
+
+    /// <summary>
+    /// POST /api/recursor/train-temporal-behavior-state — Dev/admin only.
+    ///
+    /// Phase 10E: Queries joined temporal training rows from ADX, normalizes/excludes labels
+    /// via BehaviorStateLabelPolicy (canonical: struggling/recovering/stable/mastering/conflicted;
+    /// blank and "unknown" rows are excluded, never fabricated), trains one SdcaMaximumEntropy
+    /// multiclass model per horizon (1-3) using a session-level train/validation split, saves
+    /// model files to versioned paths, and returns a full training report with combined and
+    /// per-simulation metrics.
+    ///
+    /// Optional query parameter: ?modelVersion=temporal-behavior-state-v2
+    /// Allowed characters: letters, numbers, dash, underscore, dot.
+    /// If omitted, uses the configured/default version (temporal-behavior-state-v1).
+    ///
+    /// Shadow-only. Does NOT affect adaptation decisions, guardrails, policy selection, hint
+    /// behavior, difficulty, time pressure, or any other simulation parameter. Restart/redeploy
+    /// after training so TemporalBehaviorStatePredictionService loads the new model files.
+    /// </summary>
+    [HttpPost("train-temporal-behavior-state")]
+    [Authorize(Policy = "RecursorModelAdmin")]
+    public async Task<IActionResult> TrainTemporalBehaviorState([FromQuery] string? modelVersion = null)
+    {
+        if (CheckModelTrainingEnabled() is { } disabled) return disabled;
+
+        if (modelVersion is not null)
+        {
+            var sanitized = TemporalBehaviorStateModelTrainingService.SanitizeModelVersion(modelVersion);
+            if (sanitized != modelVersion || sanitized.Length == 0)
+                return BadRequest(new
+                {
+                    Error = $"Invalid modelVersion '{modelVersion}'. " +
+                            "Use only letters, numbers, dash, underscore, and dot."
+                });
+        }
+
+        var report = await _temporalBehaviorStateTraining.TrainAsync(modelVersion);
         return Ok(report);
     }
 

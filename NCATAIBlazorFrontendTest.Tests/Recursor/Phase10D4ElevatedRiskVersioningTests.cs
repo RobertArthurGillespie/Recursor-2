@@ -198,24 +198,32 @@ public class Phase10D4ElevatedRiskVersioningTests
     }
 
     [Fact]
-    public void ResolveVersionedModelPath_V2_WithV1ConfigPath_GeneratesV2Path()
+    public void ResolveVersionedModelPath_V2ConfiguredWithV1ConfigPath_HonorsConfigPathVerbatim()
     {
-        // Config still points to v1 zip — should generate the v2 path instead of following config.
+        // Stage 3 (corrective pass): an explicit config path is always honored verbatim, even if
+        // its filename doesn't look like it matches the configured version — silently discarding
+        // a configured override in favor of an auto-generated path was itself a bug. Version
+        // consistency for an explicit override is now checked separately (and only against a
+        // manifest.json, if present) by ModelVersionManifestValidator.ValidateExplicitOverridePath.
         var configPath = "Recursor/TrainingModels/temporal_elevated_risk_h1_v1.zip";
         var result = TemporalElevatedRiskModelTrainingService.ResolveVersionedModelPath(
             1, "temporal-elevated-risk-v2", "C:/app", configPath);
 
-        Assert.EndsWith("temporal_elevated_risk_h1_v2.zip", result.Replace('\\', '/'));
-        Assert.DoesNotContain("_v1.zip", result);
+        Assert.EndsWith("temporal_elevated_risk_h1_v1.zip", result.Replace('\\', '/'));
     }
 
     [Fact]
-    public void ResolveVersionedModelPath_V2_WithNoConfigPath_GeneratesV2Path()
+    public void ResolveVersionedModelPath_V2_WithNoConfigPath_ResolvesToVersionDirectory()
     {
+        // Stage 3 (corrective pass): with no explicit override, resolution must match the
+        // immutable directory layout ModelVersionPublisher actually writes to.
         var result = TemporalElevatedRiskModelTrainingService.ResolveVersionedModelPath(
             2, "temporal-elevated-risk-v2", "C:/app", null);
 
-        Assert.EndsWith("temporal_elevated_risk_h2_v2.zip", result.Replace('\\', '/'));
+        var expected = Path.Combine(
+            ModelVersionPublisher.GetVersionDirectory("C:/app", TemporalElevatedRiskModelTrainingService.ModelFamily, "temporal-elevated-risk-v2"),
+            "h2.zip");
+        Assert.Equal(expected, result);
     }
 
     [Fact]
